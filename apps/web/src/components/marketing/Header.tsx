@@ -42,7 +42,7 @@ const Header = () => {
               key={item.name}
               href={item.href}
               target="_blank"
-              className="text-gray-400 hover:text-white transition-colors text-sm font-medium"
+              className="text-neutral-500 hover:text-white transition-colors text-sm font-medium"
             >
               {item.name}
             </Link>
@@ -51,7 +51,7 @@ const Header = () => {
         <div className="hidden md:flex items-center space-x-6">
           <button
             onClick={() => setShowComingSoon(true)}
-            className="bg-[#00c48c] text-black px-4 py-2 rounded-lg font-semibold  text-xs"
+            className="bg-green-400 rounded-sm text-black px-4 py-2.5 font-semibold  text-xs"
           >
             Launch App
           </button>

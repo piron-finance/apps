@@ -1,28 +1,25 @@
 "use client";
 
+import { PixelGrid } from "../fancy/pixel-grid";
+
 export function Hero() {
   return (
     <section
       className="relative bg-black py-40 pb-16 overflow-hidden"
-      style={{
-        backgroundImage: `
-          radial-gradient(circle at 1px 1px, rgba(255,255,255,0.09) 1px, transparent 0),
-          linear-gradient(45deg, transparent 48%, rgba(255,255,255,0.03) 49%, rgba(255,255,255,0.03) 51%, transparent 52%),
-          linear-gradient(-45deg, transparent 48%, rgba(255,255,255,0.03) 49%, rgba(255,255,255,0.03) 51%, transparent 52%)
-        `,
-        backgroundSize: "20px 20px, 40px 40px, 40px 40px",
-      }}
     >
-      <div className="flex flex-col items-center px-8 max-w-7xl mx-auto">
+      <div className="absolute top-0 left-0 w-full h-full">
+        <PixelGrid className="w-full h-full" pixelColor="#1A1A1B" />
+      </div>
+      <div className="relative flex flex-col z-10 items-center px-8 max-w-7xl mx-auto">
         <div className="space-y-6 text-center">
-          <h1 className="text-5xl lg:text-7xl font-extrabold text-white leading-tight">
-            The Global Money Market
+          <h1 className="text-5xl lg:text-8xl font-extrabold text-white leading-tight tracking-tight">
+            The Global Money
             <br />
-            Protocol
+            Market Protocol
           </h1>
 
           <div className="flex justify-center">
-            <p className="text-center text-xl text-gray-400 leading-relaxed max-w-3xl">
+            <p className="text-center text-lg text-neutral-500 leading-relaxed max-w-3xl">
               Access high-quality money market instruments from Lagos to New
               York to Istanbul. Earn transparent yield on Treasury bills,
               Commercial Paper, and cash equivalents, onchain.
@@ -30,10 +27,10 @@ export function Hero() {
           </div>
 
           <div className="flex items-center justify-center space-x-4 pt-4">
-            <button className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-black px-8 py-4 rounded-lg font-semibold transition-all text-lg">
+            <button className="bg-green-400 rounded-sm text-black px-8 py-3 font-semibold transition-all text-lg cursor-pointer">
               Start Earning
             </button>
-            <button className="border border-gray-600 text-gray-300 hover:text-white hover:border-gray-400 px-8 py-4 rounded-lg font-semibold transition-all text-lg">
+            <button className="border border-gray-600 rounded-sm text-gray-300 hover:text-white hover:border-gray-400 px-8 py-3 font-semibold transition-all text-lg cursor-pointer">
               Go to Docs
             </button>
           </div>
