@@ -3,6 +3,12 @@
 import React from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import {
+  AnalyticsChartIcon,
+  LiquidityPoolIcon,
+  ShieldIcon,
+  VaultIcon,
+} from "@/components/assets/icon";
 
 export function WhyPironPools() {
   return (
@@ -14,19 +20,18 @@ export function WhyPironPools() {
       className="bg-black text-white py-20 mt-16 "
     >
       <div className="max-w-7xl mx-auto px-8">
-        <div className="text-center mb-14">
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight">
-            Automates your onchain yield opportunities
+        <div className="text-center mb-20">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-center">
+            Automates your onchain <br /> yield opportunities
           </h2>
-          <p className="mt-4 text-gray-400 max-w-2xl mx-auto leading-relaxed">
-            No complex jargon, flexible liquidity, and transparent fees,
-            delivered through professionally managed SPVs. Less fuss, more
-            yield.
+          <p className="mt-4 text-neutral-500 max-w-2xl mx-auto leading-relaxed">
+            Flexible liquidity and transparent fees via professionally managed
+            SPVs.
           </p>
 
           <div className="mt-8">
             <button
-              className="bg-[#00c48c] text-black rounded-full px-6 py-3 font-medium shadow-sm"
+              className="bg-white text-black rounded-sm px-6 py-3 font-medium shadow-sm"
               aria-label="See how it works"
             >
               See how it works
@@ -58,12 +63,10 @@ export function WhyPironPools() {
                 </p>
 
                 <div className="mt-8 opacity-70">
-                  <Image
-                    src="/icons/vault-icon.svg"
-                    alt="Vault security"
-                    width={260}
-                    height={120}
+                  <VaultIcon
                     className="w-full max-w-[260px] h-auto"
+                    width={200}
+                    height={200}
                   />
                 </div>
               </div>
@@ -91,12 +94,10 @@ export function WhyPironPools() {
                 </p>
 
                 <div className="mt-8 opacity-70">
-                  <Image
-                    src="/icons/liquidity-pool-icon.svg"
-                    alt="Liquidity pool"
-                    width={260}
-                    height={120}
+                  <LiquidityPoolIcon
                     className="w-full max-w-[260px] h-auto"
+                    width={200}
+                    height={200}
                   />
                 </div>
               </div>
@@ -124,12 +125,10 @@ export function WhyPironPools() {
                 </p>
 
                 <div className="mt-8 opacity-70">
-                  <Image
-                    src="/icons/analytics-chart-icon.svg"
-                    alt="Analytics chart"
-                    width={260}
-                    height={120}
+                  <AnalyticsChartIcon
                     className="w-full max-w-[260px] h-auto"
+                    width={200}
+                    height={200}
                   />
                 </div>
               </div>
@@ -157,12 +156,10 @@ export function WhyPironPools() {
                 </p>
 
                 <div className="mt-8 opacity-70">
-                  <Image
-                    src="/icons/shield-icon.svg"
-                    alt="Security shield"
-                    width={220}
-                    height={120}
+                  <ShieldIcon
                     className="w-full max-w-[260px] h-auto"
+                    width={200}
+                    height={200}
                   />
                 </div>
               </div>

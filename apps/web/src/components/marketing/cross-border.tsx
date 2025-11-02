@@ -80,15 +80,12 @@ export function CrossBorder() {
                 whileHover={{ scale: 1.1 }}
               >
                 <motion.div
-                  className="bg-black border border-white/10 rounded-full w-26 h-26 flex flex-col items-center justify-center text-center backdrop-blur-md hover:bg-white/10 transition-colors"
+                  className="bg-[#171717] rounded-full py-1 pr-3 pl-3 flex items-center justify-center text-center backdrop-blur-md hover:bg-white/10 transition-colors gap-2"
                   whileHover={{ y: -2 }}
                 >
-                  <div className="text-2xl mb-1">{c.icon}</div>
-                  <div className="text-white font-semibold text-xs">
+                  <div className="text-lg">{c.icon}</div>
+                  <div className="text-white font-semibold text-base">
                     {c.name}
-                  </div>
-                  <div className="text-gray-400 text-[10px] leading-tight">
-                    {c.desc}
                   </div>
                 </motion.div>
               </motion.div>
