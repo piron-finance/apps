@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { poolsApi } from "@/lib/api/endpoints";
 import type { PoolFilters } from "@/lib/api/types";
 
@@ -18,14 +18,31 @@ export function usePoolsData(filters?: PoolFilters) {
 
 /**
  * Hook to fetch single pool by ID
+ * Smart: Uses cached data from pools list if available
  */
 export function usePoolData(poolId: string) {
+  const queryClient = useQueryClient();
+
   return useQuery({
     queryKey: ["pool", poolId],
     queryFn: () => poolsApi.getById(poolId),
     enabled: !!poolId,
     staleTime: 30000,
     retry: 2,
+    initialData: () => {
+      // Try to get pool from any cached pools list
+      const poolsQueries = queryClient.getQueriesData({ queryKey: ["pools"] });
+
+      for (const [, data] of poolsQueries) {
+        if (data && typeof data === "object" && "data" in data) {
+          const poolsData = data as { data: any[] };
+          const pool = poolsData.data.find((p: any) => p.id === poolId);
+          if (pool) return pool;
+        }
+      }
+
+      return undefined;
+    },
   });
 }
 

@@ -5,61 +5,63 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Share, FileText } from "lucide-react";
+import { Share, FileText, Loader2 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams } from "next/navigation";
-
-const POOL_DATA: Record<string, any> = {
-  "1": {
-    name: "Flexible Stable Yield - Base",
-    subtitle: "USDC native on Base • NAV updates daily",
-    status: "Open",
-    currentAPY: "5.2%",
-    tvl: "$48.3M",
-    netFlows24h: "+$0.8M",
-    liquidity: "T+0/T+1",
-    fees: "0.30% mgmt • 10% expense ratio",
-    assets: "T-Bills",
-    admin: "Piron SPV Ltd.",
-    poolType: "Flexible Stable Yield",
-    benchmark: "SOFR + spread",
-    risk: "Low",
-    redemption: "Same day to T+1",
-    auditor: "Top-tier",
-    reporting: "Monthly statements",
-    estimatedDailyYield: "0.014%",
-    network: "Base",
-    minDeposit: "10 USDC",
-    exitTerms: "T+0/T+1",
-  },
-};
-
-const ACTIVITY_DATA = [
-  {
-    time: "2025-03-03 14:02",
-    type: "Deposit",
-    amount: "25,000 USDC",
-    status: "Completed",
-  },
-  {
-    time: "2025-02-14 09:15",
-    type: "Withdraw",
-    amount: "-10,000 USDC",
-    status: "Completed",
-  },
-];
+import {
+  usePoolData,
+  usePoolAnalytics,
+  usePoolNavHistory,
+} from "@/hooks/usePoolsData";
+import { useUserPositionInPool } from "@/hooks/useUserData";
 
 export default function PoolDetailPage() {
   const params = useParams();
   const poolId = params.id as string;
-  const pool = POOL_DATA[poolId] || POOL_DATA["1"];
 
-  const [selectedTimeframe, setSelectedTimeframe] = useState("All");
+  // Fetch pool data
+  const { data: pool, isLoading: poolLoading } = usePoolData(poolId);
+  const { data: analytics, isLoading: analyticsLoading } =
+    usePoolAnalytics(poolId);
+  const { data: navHistory, isLoading: navLoading } = usePoolNavHistory(
+    poolId,
+    "30d",
+    "daily"
+  );
+
+  // TODO: Replace with actual user ID from auth
+  const userId = "user-id-placeholder";
+  const { data: userPosition } = useUserPositionInPool(userId, poolId);
+
+  const [selectedTimeframe, setSelectedTimeframe] = useState("30d");
   const [depositAmount, setDepositAmount] = useState("");
-  const [userBalance] = useState("0.00 USDC");
-  const [accruedYield] = useState("—");
-  const [sharePrice] = useState("1.0083");
+
+  const isLoading = poolLoading || analyticsLoading;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-black text-white p-8 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin text-[#00c48c] mx-auto mb-4" />
+          <p className="text-gray-400">Loading pool details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!pool) {
+    return (
+      <div className="min-h-screen bg-black text-white p-8 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-400">Pool not found</p>
+          <Link href="/pools">
+            <Button className="mt-4">Back to Pools</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black text-white p-8 space-y-8">
@@ -73,12 +75,23 @@ export default function PoolDetailPage() {
 
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-[#1b1305] flex items-center justify-center">
-            <Image src="/pironLogo.png" alt="Pool" width={64} height={64} />
+          <div className="w-16 h-16 rounded-full bg-[#1b1305] flex items-center justify-center overflow-hidden">
+            <Image
+              src="/pironLogo.png"
+              alt="Pool"
+              width={64}
+              height={64}
+              className="object-cover"
+            />
           </div>
           <div>
             <h1 className="text-3xl font-bold text-white">{pool.name}</h1>
-            <p className="text-gray-400 mt-1">{pool.subtitle}</p>
+            <p className="text-gray-400 mt-1">
+              {pool.assetSymbol} •{" "}
+              {pool.poolType === "STABLE_YIELD"
+                ? "Flexible Liquidity"
+                : "Fixed Term"}
+            </p>
           </div>
           <Badge className="bg-[#00c48c]/20 text-[#00c48c] border-0 ml-4">
             {pool.status}
@@ -136,7 +149,11 @@ export default function PoolDetailPage() {
                       Current APY
                     </div>
                     <div className="text-2xl font-bold text-white">
-                      {pool.currentAPY}
+                      {pool.analytics?.apy
+                        ? `${Number(pool.analytics.apy).toFixed(2)}%`
+                        : pool.discountRate
+                          ? `${Number(pool.discountRate).toFixed(2)}%`
+                          : "N/A"}
                     </div>
                   </CardContent>
                 </Card>
@@ -144,17 +161,19 @@ export default function PoolDetailPage() {
                   <CardContent className="p-4">
                     <div className="text-sm text-gray-500 mb-1">TVL</div>
                     <div className="text-2xl font-bold text-white">
-                      {pool.tvl}
+                      {pool.analytics?.totalValueLocked
+                        ? `$${(parseFloat(pool.analytics.totalValueLocked) / 1000000).toFixed(2)}M`
+                        : "$0"}
                     </div>
                   </CardContent>
                 </Card>
                 <Card className="bg-[#070707] border-white/5">
                   <CardContent className="p-4">
                     <div className="text-sm text-gray-500 mb-1">
-                      24h Net Flows
+                      Unique Investors
                     </div>
                     <div className="text-2xl font-bold text-white">
-                      {pool.netFlows24h}
+                      {pool.analytics?.uniqueInvestors || 0}
                     </div>
                   </CardContent>
                 </Card>
@@ -166,22 +185,30 @@ export default function PoolDetailPage() {
 
               <div className="grid grid-cols-2 gap-4 text-sm pt-4 border-t border-[#1f2a2a]">
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Liquidity</span>
+                  <span className="text-gray-500">Asset</span>
                   <span className="text-white font-medium">
-                    {pool.liquidity}
+                    {pool.assetSymbol}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Fees</span>
-                  <span className="text-white font-medium">{pool.fees}</span>
+                  <span className="text-gray-500">Min Investment</span>
+                  <span className="text-white font-medium">
+                    ${parseFloat(pool.minInvestment).toFixed(0)}
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Assets</span>
-                  <span className="text-white font-medium">{pool.assets}</span>
+                  <span className="text-gray-500">Pool Type</span>
+                  <span className="text-white font-medium">
+                    {pool.poolType === "STABLE_YIELD"
+                      ? "Stable Yield"
+                      : "Single Asset"}
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Admin</span>
-                  <span className="text-white font-medium">{pool.admin}</span>
+                  <span className="text-gray-500">Region</span>
+                  <span className="text-white font-medium">
+                    {pool.region || pool.country || "Global"}
+                  </span>
                 </div>
               </div>
             </CardContent>
@@ -203,17 +230,21 @@ export default function PoolDetailPage() {
                       Your Balance
                     </div>
                     <div className="text-xl font-bold text-white">
-                      {userBalance}
+                      {userPosition?.totalShares
+                        ? `${parseFloat(userPosition.totalShares).toFixed(2)} ${pool.assetSymbol}`
+                        : `0.00 ${pool.assetSymbol}`}
                     </div>
                   </CardContent>
                 </Card>
                 <Card className="bg-[#070707] border-[#1f2a2a] ">
                   <CardContent className="p-4">
                     <div className="text-sm text-gray-500 mb-1">
-                      Accrued Yield
+                      Position Value
                     </div>
                     <div className="text-xl font-bold text-white">
-                      {accruedYield}
+                      {userPosition?.currentValue
+                        ? `$${parseFloat(userPosition.currentValue).toFixed(2)}`
+                        : "$0.00"}
                     </div>
                   </CardContent>
                 </Card>
@@ -223,7 +254,9 @@ export default function PoolDetailPage() {
                       Share Price (NAV)
                     </div>
                     <div className="text-xl font-bold text-white">
-                      {sharePrice}
+                      {pool.analytics?.navPerShare
+                        ? `$${parseFloat(pool.analytics.navPerShare).toFixed(4)}`
+                        : "$1.0000"}
                     </div>
                   </CardContent>
                 </Card>
@@ -236,17 +269,15 @@ export default function PoolDetailPage() {
                   <div>Amount</div>
                   <div>Status</div>
                 </div>
-                {ACTIVITY_DATA.map((activity, idx) => (
-                  <div
-                    key={idx}
-                    className="grid grid-cols-4 gap-4 text-sm py-3 border-b border-white/5"
-                  >
-                    <div className="text-gray-400">{activity.time}</div>
-                    <div className="text-white">{activity.type}</div>
-                    <div className="text-white">{activity.amount}</div>
-                    <div className="text-gray-400">{activity.status}</div>
+                {userPosition ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <p>Transaction history coming soon</p>
                   </div>
-                ))}
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <p>No position in this pool yet</p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -255,38 +286,52 @@ export default function PoolDetailPage() {
             <CardContent className="p-6 space-y-6">
               <h2 className="text-xl text-white font-bold">About this Pool</h2>
 
-              <div className="grid grid-cols-2 gap-y-4 text-sm">
-                <div className="flex justify-between pr-8">
-                  <span className="text-gray-500">Pool Type</span>
-                  <span className="text-white font-medium">
-                    {pool.poolType}
-                  </span>
-                </div>
-                <div className="flex justify-between pr-8">
-                  <span className="text-gray-500">Benchmark</span>
-                  <span className="text-white font-medium">
-                    {pool.benchmark}
-                  </span>
-                </div>
-                <div className="flex justify-between pr-8">
-                  <span className="text-gray-500">Risk</span>
-                  <span className="text-white font-medium">{pool.risk}</span>
-                </div>
-                <div className="flex justify-between pr-8">
-                  <span className="text-gray-500">Redemption</span>
-                  <span className="text-white font-medium">
-                    {pool.redemption}
-                  </span>
-                </div>
-                <div className="flex justify-between pr-8">
-                  <span className="text-gray-500">Auditor</span>
-                  <span className="text-white font-medium">{pool.auditor}</span>
-                </div>
-                <div className="flex justify-between pr-8">
-                  <span className="text-gray-500">Reporting</span>
-                  <span className="text-white font-medium">
-                    {pool.reporting}
-                  </span>
+              <div className="space-y-3">
+                <p className="text-gray-300">
+                  {pool.description || "No description available."}
+                </p>
+
+                <div className="grid grid-cols-2 gap-y-4 text-sm pt-4">
+                  <div className="flex justify-between pr-8">
+                    <span className="text-gray-500">Pool Type</span>
+                    <span className="text-white font-medium">
+                      {pool.poolType === "STABLE_YIELD"
+                        ? "Stable Yield"
+                        : "Single Asset"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between pr-8">
+                    <span className="text-gray-500">Security Type</span>
+                    <span className="text-white font-medium">
+                      {pool.securityType || "N/A"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between pr-8">
+                    <span className="text-gray-500">Risk Rating</span>
+                    <span className="text-white font-medium">
+                      {pool.riskRating || "Not rated"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between pr-8">
+                    <span className="text-gray-500">Issuer</span>
+                    <span className="text-white font-medium">
+                      {pool.issuer || "N/A"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between pr-8">
+                    <span className="text-gray-500">Region</span>
+                    <span className="text-white font-medium">
+                      {pool.region || pool.country || "Global"}
+                    </span>
+                  </div>
+                  {pool.maturityDate && (
+                    <div className="flex justify-between pr-8">
+                      <span className="text-gray-500">Maturity Date</span>
+                      <span className="text-white font-medium">
+                        {new Date(pool.maturityDate).toLocaleDateString()}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -320,7 +365,9 @@ export default function PoolDetailPage() {
               <div className="flex items-center justify-between">
                 <h2 className="text-xl text-white font-bold">Invest</h2>
                 <span className="text-sm text-gray-500">
-                  Flexible exits available
+                  {pool.poolType === "STABLE_YIELD"
+                    ? "Flexible exits"
+                    : "Fixed term"}
                 </span>
               </div>
 
@@ -335,38 +382,54 @@ export default function PoolDetailPage() {
                       placeholder="0"
                       value={depositAmount}
                       onChange={(e) => setDepositAmount(e.target.value)}
-                      className="w-full bg-black/40 border-white/10 text-white text-right pr-16 h-12"
+                      className="w-full bg-black/40 border-white/10 text-white text-right pr-20 h-12"
                     />
                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
-                      USDC
+                      {pool.assetSymbol}
                     </span>
                   </div>
                 </div>
 
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Est. daily yield</span>
-                  <span className="text-white">{pool.estimatedDailyYield}</span>
-                </div>
+                {pool.analytics?.apy && depositAmount && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500">Est. daily yield</span>
+                    <span className="text-white">
+                      $
+                      {(
+                        (parseFloat(depositAmount) *
+                          parseFloat(pool.analytics.apy)) /
+                        365 /
+                        100
+                      ).toFixed(2)}
+                    </span>
+                  </div>
+                )}
 
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Network</span>
-                  <span className="text-white">{pool.network}</span>
+                  <span className="text-gray-500">Chain ID</span>
+                  <span className="text-white">{pool.chainId}</span>
                 </div>
 
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Min deposit</span>
-                  <span className="text-white">{pool.minDeposit}</span>
+                  <span className="text-white">
+                    ${parseFloat(pool.minInvestment).toFixed(0)}
+                  </span>
                 </div>
 
                 <div className="flex justify-between text-sm pb-4 border-b border-white/5">
-                  <span className="text-gray-500">Exit terms</span>
-                  <span className="text-white">{pool.exitTerms}</span>
+                  <span className="text-gray-500">Pool Address</span>
+                  <span className="text-white text-xs">
+                    {pool.poolAddress.slice(0, 6)}...
+                    {pool.poolAddress.slice(-4)}
+                  </span>
                 </div>
 
                 {/* Warning Banner */}
                 <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3">
                   <p className="text-sm text-yellow-500">
-                    Ensure wallet is on {pool.network} to deposit to this pool.
+                    Ensure wallet is on Chain ID {pool.chainId} to deposit to
+                    this pool.
                   </p>
                 </div>
 

@@ -33,7 +33,12 @@ apiClient.interceptors.response.use(
   (error) => {
     if (error.response) {
       // Server responded with error status
-      console.error("API Error:", error.response.data);
+      console.error("API Error:", {
+        url: error.config?.url,
+        method: error.config?.method,
+        status: error.response.status,
+        data: error.response.data,
+      });
       if (error.response.data.message) {
         console.error("Detailed message:", error.response.data.message);
       }
