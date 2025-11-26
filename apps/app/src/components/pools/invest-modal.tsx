@@ -113,39 +113,42 @@ export function InvestModal({
   };
 
   const renderInputStep = () => (
-    <div className="space-y-6">
-      <div className="space-y-4">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="space-y-3 sm:space-y-4">
         <div>
-          <Label htmlFor="amount" className="text-sm font-medium text-white">
+          <Label
+            htmlFor="amount"
+            className="text-xs sm:text-sm font-medium text-white"
+          >
             Investment Amount (USD)
           </Label>
           <div className="relative mt-2">
-            <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3 h-3 sm:w-4 sm:h-4 text-slate-400" />
             <Input
               id="amount"
               type="number"
               placeholder="0.00"
               value={amount}
               onChange={(e) => handleAmountChange(e.target.value)}
-              className="pl-10 bg-slate-800 border-slate-700 text-white text-lg h-12"
+              className="pl-9 sm:pl-10 bg-slate-800 border-slate-700 text-white text-base sm:text-lg h-10 sm:h-12"
               min={minInvestment}
               step="0.01"
             />
           </div>
           {error && (
-            <p className="text-red-400 text-sm mt-1 flex items-center gap-1">
-              <AlertTriangle className="w-4 h-4" />
+            <p className="text-red-400 text-xs sm:text-sm mt-1 flex items-center gap-1">
+              <AlertTriangle className="w-3 h-3 sm:w-4 sm:h-4" />
               {error}
             </p>
           )}
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={() => setAmount(pool.minInvestment)}
-            className="border-slate-600 text-slate-300 hover:bg-slate-700"
+            className="border-slate-600 text-slate-300 hover:bg-slate-700 text-xs h-8"
           >
             Min: {formatCurrency(pool.minInvestment)}
           </Button>
@@ -153,7 +156,7 @@ export function InvestModal({
             variant="outline"
             size="sm"
             onClick={() => setAmount("1000")}
-            className="border-slate-600 text-slate-300 hover:bg-slate-700"
+            className="border-slate-600 text-slate-300 hover:bg-slate-700 text-xs h-8"
           >
             $1,000
           </Button>
@@ -161,7 +164,7 @@ export function InvestModal({
             variant="outline"
             size="sm"
             onClick={() => setAmount("5000")}
-            className="border-slate-600 text-slate-300 hover:bg-slate-700"
+            className="border-slate-600 text-slate-300 hover:bg-slate-700 text-xs h-8"
           >
             $5,000
           </Button>
@@ -169,12 +172,14 @@ export function InvestModal({
       </div>
 
       {amount && validation.isValid && (
-        <div className="bg-slate-800/50 rounded-lg p-4 space-y-3">
+        <div className="bg-slate-800/50 rounded-lg p-3 sm:p-4 space-y-3">
           <div className="flex items-center gap-2">
-            <Calculator className="w-4 h-4 text-blue-400" />
-            <h4 className="font-medium text-white">Investment Summary</h4>
+            <Calculator className="w-3 h-3 sm:w-4 sm:h-4 text-blue-400" />
+            <h4 className="text-sm sm:text-base font-medium text-white">
+              Investment Summary
+            </h4>
           </div>
-          <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
             <div>
               <span className="text-slate-400">Investment Amount</span>
               <p className="font-semibold text-white">
@@ -204,10 +209,10 @@ export function InvestModal({
       )}
 
       {withdrawalPenalty > 0 && (
-        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
+        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 sm:p-4">
           <div className="flex items-start gap-2">
-            <Info className="w-4 h-4 text-yellow-400 mt-0.5" />
-            <div className="text-sm">
+            <Info className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
+            <div className="text-xs sm:text-sm">
               <p className="font-medium text-yellow-400">
                 Early Withdrawal Penalty
               </p>
@@ -220,11 +225,11 @@ export function InvestModal({
         </div>
       )}
 
-      <div className="flex gap-3">
+      <div className="flex gap-2 sm:gap-3">
         <Button
           variant="outline"
           onClick={handleClose}
-          className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-700"
+          className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-700 text-xs sm:text-sm h-9 sm:h-10"
         >
           Cancel
         </Button>
@@ -232,7 +237,7 @@ export function InvestModal({
           <Button
             onClick={handleNext}
             disabled={!validation.isValid}
-            className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+            className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-xs sm:text-sm h-9 sm:h-10"
           >
             Review Investment
           </Button>
@@ -246,14 +251,18 @@ export function InvestModal({
   );
 
   const renderConfirmStep = () => (
-    <div className="space-y-6">
-      <div className="bg-slate-800/50 rounded-lg p-6 space-y-4">
-        <h4 className="font-semibold text-white">Confirm Investment Details</h4>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="bg-slate-800/50 rounded-lg p-4 sm:p-6 space-y-3 sm:space-y-4">
+        <h4 className="text-sm sm:text-base font-semibold text-white">
+          Confirm Investment Details
+        </h4>
 
-        <div className="space-y-3">
-          <div className="flex justify-between">
+        <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
+          <div className="flex justify-between gap-2">
             <span className="text-slate-400">Pool</span>
-            <span className="font-medium text-white">{pool.name}</span>
+            <span className="font-medium text-white text-right truncate max-w-[60%]">
+              {pool.name}
+            </span>
           </div>
           <div className="flex justify-between">
             <span className="text-slate-400">Investment Amount</span>
@@ -283,10 +292,10 @@ export function InvestModal({
         </div>
       </div>
 
-      <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+      <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 sm:p-4">
         <div className="flex items-start gap-2">
-          <Info className="w-4 h-4 text-blue-400 mt-0.5" />
-          <div className="text-sm">
+          <Info className="w-3 h-3 sm:w-4 sm:h-4 text-blue-400 mt-0.5 flex-shrink-0" />
+          <div className="text-xs sm:text-sm">
             <p className="font-medium text-blue-400">Investment Terms</p>
             <ul className="text-blue-300 mt-1 space-y-1">
               <li>• Funds will be locked until maturity or early withdrawal</li>
@@ -297,26 +306,30 @@ export function InvestModal({
         </div>
       </div>
 
-      <div className="flex gap-3">
+      <div className="flex gap-2 sm:gap-3">
         <Button
           variant="outline"
           onClick={() => setStep("input")}
-          className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-700"
+          className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-700 text-xs sm:text-sm h-9 sm:h-10"
         >
           Back
         </Button>
         <Button
           onClick={handleInvest}
           disabled={isLoading}
-          className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+          className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-xs sm:text-sm h-9 sm:h-10"
         >
           {isLoading ? (
             <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Processing...
+              <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin" />
+              <span className="hidden sm:inline">Processing...</span>
+              <span className="sm:hidden">Processing</span>
             </>
           ) : (
-            "Confirm Investment"
+            <>
+              <span className="hidden sm:inline">Confirm Investment</span>
+              <span className="sm:hidden">Confirm</span>
+            </>
           )}
         </Button>
       </div>
@@ -324,15 +337,15 @@ export function InvestModal({
   );
 
   const renderProcessingStep = () => (
-    <div className="text-center space-y-6">
+    <div className="text-center space-y-4 sm:space-y-6 py-4">
       <div className="flex justify-center">
-        <Loader2 className="w-12 h-12 text-purple-500 animate-spin" />
+        <Loader2 className="w-10 h-10 sm:w-12 sm:h-12 text-purple-500 animate-spin" />
       </div>
       <div>
-        <h4 className="font-semibold text-white mb-2">
+        <h4 className="text-base sm:text-lg font-semibold text-white mb-2">
           Processing Investment...
         </h4>
-        <p className="text-slate-400">
+        <p className="text-xs sm:text-sm text-slate-400 px-4">
           Please confirm the transaction in your wallet and wait for
           confirmation.
         </p>
@@ -341,24 +354,24 @@ export function InvestModal({
   );
 
   const renderSuccessStep = () => (
-    <div className="text-center space-y-6">
+    <div className="text-center space-y-4 sm:space-y-6 py-4">
       <div className="flex justify-center">
-        <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center">
-          <CheckCircle className="w-8 h-8 text-green-400" />
+        <div className="w-14 h-14 sm:w-16 sm:h-16 bg-green-500/20 rounded-full flex items-center justify-center">
+          <CheckCircle className="w-7 h-7 sm:w-8 sm:h-8 text-green-400" />
         </div>
       </div>
       <div>
-        <h4 className="font-semibold text-white mb-2">
+        <h4 className="text-base sm:text-lg font-semibold text-white mb-2">
           Investment Successful!
         </h4>
-        <p className="text-slate-400">
+        <p className="text-xs sm:text-sm text-slate-400 px-4">
           Your investment of {formatCurrency(amount)} has been processed
           successfully.
         </p>
       </div>
       <Button
         onClick={handleClose}
-        className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+        className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-sm h-10"
       >
         Close
       </Button>
@@ -367,15 +380,15 @@ export function InvestModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md bg-slate-900 border-slate-700">
+      <DialogContent className="sm:max-w-md bg-slate-900 border-slate-700 mx-4">
         <DialogHeader>
-          <DialogTitle className="text-white">
+          <DialogTitle className="text-base sm:text-lg text-white">
             {step === "input" && "Invest in Pool"}
             {step === "confirm" && "Confirm Investment"}
             {step === "processing" && "Processing Investment"}
             {step === "success" && "Investment Complete"}
           </DialogTitle>
-          <DialogDescription className="text-slate-400">
+          <DialogDescription className="text-xs sm:text-sm text-slate-400">
             {step === "input" && `Invest in ${pool.name}`}
             {step === "confirm" && "Please review your investment details"}
             {step === "processing" && "Your investment is being processed"}

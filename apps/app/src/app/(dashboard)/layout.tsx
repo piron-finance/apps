@@ -3,15 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bell } from "lucide-react";
-// import { useUser } from "@clerk/nextjs";
-// import { useAccount } from "wagmi";
+import { useAccount } from "wagmi";
+import { useWeb3Modal } from "@web3modal/wagmi/react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 
 const navItems = [
   { name: "Pools", href: "/" },
-  { name: "Dashboard", href: "/pools" },
-  { name: "Institutions", href: "/portfolio" },
+  { name: "Portfolio", href: "/portfolio" },
   { name: "Docs", href: "/docs" },
 ];
 
@@ -21,36 +20,39 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const { address, isConnected } = useAccount();
+  const { open } = useWeb3Modal();
   // const { user } = useUser();
   // const { address } = useAccount();
 
   return (
     <div className="min-h-screen bg-black">
-      <header className="sticky top-0 z-50 bg-black border-b border-white/10">
-        <div className="flex items-center justify-between px-8 h-16">
-          <div className="flex items-center gap-8">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded flex items-center justify-center">
+      <header className="sticky top-0 z-50 bg-black border-b border-white/20">
+        <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 h-14 sm:h-16">
+          <div className="flex items-center gap-4 sm:gap-6 lg:gap-8 flex-1 min-w-0">
+            <Link href="/" className="flex items-center gap-2 flex-shrink-0">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded flex items-center justify-center">
                 <Image
                   src="/pironLogo.png"
                   alt="Piron"
                   width={100}
                   height={100}
+                  className="object-contain"
                 />
               </div>
-              <span className="text-lg font-bold text-white">
+              <span className="text-base sm:text-lg font-bold text-white hidden sm:inline">
                 Piron Finance
               </span>
             </Link>
 
-            <nav className="flex items-center gap-2">
+            <nav className="hidden md:flex items-center gap-1 lg:gap-2">
               {navItems.map((item) => {
                 const isActive = pathname === item.href;
                 return (
                   <Link
                     key={item.name}
                     href={item.href}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    className={`px-3 lg:px-4 py-1.5 lg:py-2 rounded-lg text-xs lg:text-sm font-medium transition-colors whitespace-nowrap ${
                       isActive
                         ? "bg-[#1a3a2e] text-white"
                         : "text-gray-400 hover:text-white hover:bg-white/5"
@@ -63,19 +65,46 @@ export default function DashboardLayout({
             </nav>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
             <Button
               variant="ghost"
               size="icon"
-              className="text-gray-400 hover:text-white hover:bg-white/5"
+              className="text-gray-400 hover:text-white hover:bg-white/5 hidden sm:flex"
             >
-              <Bell className="w-5 h-5" />
+              <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
-            <Button className="bg-[#00c48c] hover:bg-[#00d49a] text-black font-semibold px-6">
-              Connect Wallet
+            <Button
+              onClick={() => open()}
+              className="bg-[#00c48c] hover:bg-[#00d49a] text-black font-semibold px-3 sm:px-4 lg:px-6 text-xs sm:text-sm"
+            >
+              {isConnected && address
+                ? `${address.slice(0, 6)}...${address.slice(-4)}`
+                : "Connect Wallet"}
             </Button>
           </div>
         </div>
+
+        {/* Mobile Navigation */}
+        <nav className="md:hidden border-t border-white/20 px-4 py-2 overflow-x-auto">
+          <div className="flex items-center gap-2 min-w-max">
+            {navItems.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
+                    isActive
+                      ? "bg-[#1a3a2e] text-white"
+                      : "text-gray-400 hover:text-white hover:bg-white/5"
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
       </header>
 
       <main>{children}</main>

@@ -237,3 +237,15 @@ export const fiatApi = {
     return data;
   },
 };
+
+/**
+ * Pool Deposit - Build deposit transaction
+ */
+export const buildDepositTransaction = async (depositData: {
+  poolAddress: string;
+  amount: string;
+  receiver: string;
+}) => {
+  const { data } = await apiClient.post("/deposits", depositData);
+  return data;
+};

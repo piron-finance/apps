@@ -124,26 +124,28 @@ export default function DashboardPage() {
   const { data: poolsData, isLoading: poolsLoading } = usePoolsData();
 
   return (
-    <div className="min-h-screen bg-black px-8 py-6 space-y-12">
-      <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-black px-4 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-6 sm:space-y-8 lg:space-y-12">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white">Piron Pools</h1>
-          <p className="text-gray-400 mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">
+            Piron Pools
+          </h1>
+          <p className="text-gray-400 mt-1 text-sm sm:text-base">
             Discover tokenized assets across global money markets.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0">
           {["All networks", "Retail", "Institutional"].map((filter) => (
             <Button
               key={filter}
               variant="outline"
               size="sm"
               onClick={() => setActiveFilter(filter)}
-              className={
+              className={`flex-shrink-0 ${
                 activeFilter === filter
                   ? "bg-[#1a3a2e] border-[#00c48c]/30 text-white hover:bg-[#1a3a2e]"
                   : "bg-[#0a0a0a] border-white/10 text-gray-400 hover:text-white hover:bg-white/5"
-              }
+              }`}
             >
               {filter}
             </Button>
@@ -151,11 +153,11 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
         {metricsLoading ? (
           // Loading state
           [...Array(4)].map((_, i) => (
-            <Card key={i} className="bg-[#070707] border-[#172020] rounded-3xl">
+            <Card key={i} className="bg-[#070707] border-white/20 rounded-3xl">
               <CardContent className="p-4 flex items-center justify-center h-32">
                 <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
               </CardContent>
@@ -164,22 +166,24 @@ export default function DashboardPage() {
         ) : (
           // Actual data
           <>
-            <Card className="bg-[#070707] border-[#172020] rounded-3xl">
-              <CardContent className="p-4">
-                <div className="text-sm text-gray-500 mb-2">
+            <Card className="bg-[#070707] border-white/20 rounded-2xl sm:rounded-3xl">
+              <CardContent className="p-4 sm:p-6">
+                <div className="text-xs sm:text-sm text-gray-500 mb-2">
                   Total Value Locked (TVL)
                 </div>
-                <div className="text-3xl font-bold text-white mb-1">
+                <div className="text-2xl sm:text-3xl font-bold text-white mb-1">
                   {metrics?.totalValueLockedFormatted || "$0"}
                 </div>
                 <div className="text-xs text-gray-600">Across all pools</div>
               </CardContent>
             </Card>
 
-            <Card className="bg-[#070707] border-[#172020] rounded-3xl">
-              <CardContent className="p-4">
-                <div className="text-sm text-gray-500 mb-2">24h Net Flows</div>
-                <div className="text-3xl font-bold text-white mb-1">
+            <Card className="bg-[#070707] border-white/20 rounded-2xl sm:rounded-3xl">
+              <CardContent className="p-4 sm:p-6">
+                <div className="text-xs sm:text-sm text-gray-500 mb-2">
+                  24h Net Flows
+                </div>
+                <div className="text-2xl sm:text-3xl font-bold text-white mb-1">
                   {metrics?.netFlows24h
                     ? `$${(parseFloat(metrics.netFlows24h) / 1000000).toFixed(1)}M`
                     : "$0"}
@@ -190,10 +194,12 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-[#070707] border-[#172020] rounded-3xl">
-              <CardContent className="p-4">
-                <div className="text-sm text-gray-500 mb-2">Average APY</div>
-                <div className="text-3xl font-bold text-white mb-1">
+            <Card className="bg-[#070707] border-white/20 rounded-2xl sm:rounded-3xl">
+              <CardContent className="p-4 sm:p-6">
+                <div className="text-xs sm:text-sm text-gray-500 mb-2">
+                  Average APY
+                </div>
+                <div className="text-2xl sm:text-3xl font-bold text-white mb-1">
                   {metrics?.averageAPY
                     ? `${Number(metrics.averageAPY).toFixed(1)}%`
                     : "0%"}
@@ -202,10 +208,12 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-[#070707] border-[#172020] rounded-3xl">
-              <CardContent className="p-4">
-                <div className="text-sm text-gray-500 mb-2">Active Pools</div>
-                <div className="text-3xl font-bold text-white mb-1">
+            <Card className="bg-[#070707] border-white/20 rounded-2xl sm:rounded-3xl">
+              <CardContent className="p-4 sm:p-6">
+                <div className="text-xs sm:text-sm text-gray-500 mb-2">
+                  Active Pools
+                </div>
+                <div className="text-2xl sm:text-3xl font-bold text-white mb-1">
                   {metrics?.activePools || 0}
                 </div>
                 <div className="text-xs text-gray-600">Open to deposit</div>
@@ -225,28 +233,30 @@ export default function DashboardPage() {
         />
       </div> */}
 
-      <div className="space-y-8">
-        <div className="flex items-center justify-between">
+      <div className="space-y-6 sm:space-y-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
           <div>
-            <h2 className="text-xl font-bold text-white">Stable Yield Pools</h2>
-            <p className="text-sm text-gray-500 mt-1">
+            <h2 className="text-lg sm:text-xl font-bold text-white">
+              Stable Yield Pools
+            </h2>
+            <p className="text-xs sm:text-sm text-gray-500 mt-1">
               Flexible liquidity pools with daily accrual and T+0/T+1 exits.
             </p>
           </div>
           <Button
             variant="ghost"
             size="sm"
-            className="text-[#00c48c] hover:text-[#00d49a] hover:bg-white/5"
+            className="text-[#00c48c] hover:text-[#00d49a] hover:bg-white/5 self-start sm:self-auto"
           >
             View all
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {poolsLoading
             ? // Loading state
               [...Array(3)].map((_, i) => (
-                <Card key={i} className="bg-[#050505] border-[#172020]">
+                <Card key={i} className="bg-[#050505] border-white/20">
                   <CardContent className="p-6 flex items-center justify-center h-64">
                     <Loader2 className="w-8 h-8 animate-spin text-gray-500" />
                   </CardContent>
@@ -255,8 +265,8 @@ export default function DashboardPage() {
             : poolsData?.data
                 ?.filter((pool) => pool.poolType === "STABLE_YIELD")
                 .map((pool) => (
-                  <Link key={pool.id} href={`/pools/${pool.id}`}>
-                    <Card className="bg-[#050505] hover:bg-[#080808] border-[#172020] hover:border-[#00c48c]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#00c48c]/10 hover:-translate-y-1 cursor-pointer">
+                  <Link key={pool.id} href={`/pools/${pool.poolAddress}`}>
+                    <Card className="bg-[#050505] hover:bg-[#080808] border-white/20 hover:border-[#00c48c]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#00c48c]/10 hover:-translate-y-1 cursor-pointer">
                       <CardContent className="p-6 space-y-5">
                         <div className="flex items-start justify-between">
                           <div className="flex items-center gap-3">
@@ -351,27 +361,29 @@ export default function DashboardPage() {
       </div>
 
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
           <div>
-            <h2 className="text-xl font-bold text-white">Locked Pools</h2>
-            <p className="text-sm text-gray-500 mt-1">
+            <h2 className="text-lg sm:text-xl font-bold text-white">
+              Locked Pools
+            </h2>
+            <p className="text-xs sm:text-sm text-gray-500 mt-1">
               Term-based exposures with redemptions at maturity.
             </p>
           </div>
           <Button
             variant="ghost"
             size="sm"
-            className="text-[#00c48c] hover:text-[#00d49a] hover:bg-white/5"
+            className="text-[#00c48c] hover:text-[#00d49a] hover:bg-white/5 self-start sm:self-auto"
           >
             View all
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {poolsLoading
             ? // Loading state
               [...Array(3)].map((_, i) => (
-                <Card key={i} className="bg-[#050505] border-[#172020]">
+                <Card key={i} className="bg-[#050505] border-white/20">
                   <CardContent className="p-6 flex items-center justify-center h-64">
                     <Loader2 className="w-8 h-8 animate-spin text-gray-500" />
                   </CardContent>
@@ -380,8 +392,8 @@ export default function DashboardPage() {
             : poolsData?.data
                 ?.filter((pool) => pool.poolType === "SINGLE_ASSET")
                 .map((pool) => (
-                  <Link key={pool.id} href={`/pools/${pool.id}`}>
-                    <Card className="bg-[#050505] hover:bg-[#080808] border-[#172020] hover:border-[#00c48c]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#00c48c]/10 hover:-translate-y-1 cursor-pointer">
+                  <Link key={pool.id} href={`/pools/${pool.poolAddress}`}>
+                    <Card className="bg-[#050505] hover:bg-[#080808] border-white/20 hover:border-[#00c48c]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#00c48c]/10 hover:-translate-y-1 cursor-pointer">
                       <CardContent className="p-6 space-y-5">
                         <div className="flex items-start justify-between">
                           <div className="flex items-center gap-3">
@@ -508,8 +520,8 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="flex items-center justify-center pt-12 pb-6">
-        <div className="flex items-center gap-8 text-sm text-gray-600">
+      <div className="flex items-center justify-center pt-8 sm:pt-12 pb-6">
+        <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-xs sm:text-sm text-gray-600">
           <span>© Piron Finance</span>
           <Link href="/terms" className="hover:text-white transition-colors">
             Terms

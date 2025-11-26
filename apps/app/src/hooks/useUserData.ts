@@ -45,13 +45,17 @@ export function useUserPositions(walletAddress?: string) {
 /**
  * Hook to fetch user position in specific pool
  */
-export function useUserPositionInPool(walletAddress?: string, poolId?: string) {
+export function useUserPositionInPool(
+  walletAddress?: string, 
+  poolId?: string,
+  options?: { enabled?: boolean }
+) {
   return useQuery({
     queryKey: ["user-position", walletAddress, poolId],
     queryFn: () => usersApi.getPositionInPool(walletAddress!, poolId!),
-    enabled: !!walletAddress && !!poolId,
+    enabled: !!walletAddress && !!poolId && (options?.enabled !== false),
     staleTime: 30000,
-    retry: 2,
+    retry: 1,
   });
 }
 

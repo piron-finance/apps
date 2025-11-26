@@ -38,6 +38,7 @@ export interface Pool {
   name: string;
   description: string | null;
 
+  assetAddress: string;
   assetSymbol: string;
   assetDecimals: number;
   minInvestment: string;

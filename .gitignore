@@ -55,3 +55,5 @@ next-env.d.ts
 .settings/
 *.sublime-*
 
+api-endpoints.md
+
