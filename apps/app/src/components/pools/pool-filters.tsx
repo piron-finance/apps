@@ -75,21 +75,23 @@ export function PoolFiltersComponent({
   };
 
   return (
-    <div className="space-y-4 p-4 bg-slate-900/50 rounded-lg border border-white/10">
+    <div className="space-y-3 sm:space-y-4 p-3 sm:p-4 bg-slate-900/50 rounded-lg border border-white/10">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center gap-2">
-          <Filter className="w-5 h-5 text-slate-400" />
-          <h3 className="font-medium text-white">Filters</h3>
+          <Filter className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400" />
+          <h3 className="text-sm sm:text-base font-medium text-white">
+            Filters
+          </h3>
           {hasActiveFilters && (
             <Badge variant="outline" className="text-xs">
               {getActiveFilterCount()} active
             </Badge>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between sm:justify-end gap-2">
           {totalPoolsCount && (
-            <span className="text-sm text-slate-400">
+            <span className="text-xs sm:text-sm text-slate-400">
               {activePoolsCount || 0} of {totalPoolsCount} pools
             </span>
           )}
@@ -98,9 +100,9 @@ export function PoolFiltersComponent({
               variant="ghost"
               size="sm"
               onClick={clearFilters}
-              className="text-slate-400 hover:text-white"
+              className="text-slate-400 hover:text-white text-xs sm:text-sm h-8"
             >
-              <X className="w-4 h-4 mr-1" />
+              <X className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
               Clear
             </Button>
           )}
@@ -111,17 +113,17 @@ export function PoolFiltersComponent({
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
         <Input
-          placeholder="Search pools by name, issuer, or description..."
+          placeholder="Search pools..."
           value={filters.search}
           onChange={(e) => updateFilter("search", e.target.value)}
-          className="pl-10 bg-slate-800 border-slate-700 text-white placeholder:text-slate-400"
+          className="pl-10 bg-slate-800 border-slate-700 text-white placeholder:text-slate-400 text-sm"
         />
       </div>
 
       {/* Quick Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
         <div>
-          <label className="text-sm font-medium text-slate-300 mb-2 block">
+          <label className="text-xs sm:text-sm font-medium text-slate-300 mb-1.5 sm:mb-2 block">
             Status
           </label>
           <Select
@@ -153,14 +155,14 @@ export function PoolFiltersComponent({
         </div>
 
         <div>
-          <label className="text-sm font-medium text-slate-300 mb-2 block">
+          <label className="text-xs sm:text-sm font-medium text-slate-300 mb-1.5 sm:mb-2 block">
             Instrument Type
           </label>
           <Select
             value={filters.instrumentType.toString()}
             onValueChange={(value) => updateFilter("instrumentType", value)}
           >
-            <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+            <SelectTrigger className="bg-slate-800 border-slate-700 text-white text-sm">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -176,7 +178,7 @@ export function PoolFiltersComponent({
         </div>
 
         <div>
-          <label className="text-sm font-medium text-slate-300 mb-2 block">
+          <label className="text-xs sm:text-sm font-medium text-slate-300 mb-1.5 sm:mb-2 block">
             Risk Level
           </label>
           <Select
@@ -201,16 +203,16 @@ export function PoolFiltersComponent({
         variant="ghost"
         size="sm"
         onClick={() => setShowAdvanced(!showAdvanced)}
-        className="text-slate-400 hover:text-white"
+        className="text-slate-400 hover:text-white text-xs sm:text-sm h-8"
       >
         {showAdvanced ? "Hide" : "Show"} Advanced Filters
       </Button>
 
       {/* Advanced Filters */}
       {showAdvanced && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-slate-700">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pt-3 sm:pt-4 border-t border-slate-700">
           <div>
-            <label className="text-sm font-medium text-slate-300 mb-2 block">
+            <label className="text-xs sm:text-sm font-medium text-slate-300 mb-1.5 sm:mb-2 block">
               Min APY (%)
             </label>
             <Input
@@ -218,11 +220,11 @@ export function PoolFiltersComponent({
               placeholder="0"
               value={filters.minAPY}
               onChange={(e) => updateFilter("minAPY", e.target.value)}
-              className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-400"
+              className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-400 text-sm"
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-slate-300 mb-2 block">
+            <label className="text-xs sm:text-sm font-medium text-slate-300 mb-1.5 sm:mb-2 block">
               Max APY (%)
             </label>
             <Input
@@ -230,7 +232,7 @@ export function PoolFiltersComponent({
               placeholder="100"
               value={filters.maxAPY}
               onChange={(e) => updateFilter("maxAPY", e.target.value)}
-              className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-400"
+              className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-400 text-sm"
             />
           </div>
         </div>
@@ -238,13 +240,14 @@ export function PoolFiltersComponent({
 
       {/* Active Filters Display */}
       {hasActiveFilters && (
-        <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-700">
+        <div className="flex flex-wrap gap-1.5 sm:gap-2 pt-2 border-t border-slate-700">
           {filters.search && (
             <Badge
               variant="secondary"
-              className="bg-purple-500/20 text-purple-300 border-purple-500/30"
+              className="bg-purple-500/20 text-purple-300 border-purple-500/30 text-xs"
             >
-              Search: {filters.search}
+              Search: {filters.search.slice(0, 20)}
+              {filters.search.length > 20 ? "..." : ""}
               <button
                 onClick={() => updateFilter("search", "")}
                 className="ml-1 hover:text-white"
@@ -256,7 +259,7 @@ export function PoolFiltersComponent({
           {filters.status !== "all" && (
             <Badge
               variant="secondary"
-              className="bg-blue-500/20 text-blue-300 border-blue-500/30"
+              className="bg-blue-500/20 text-blue-300 border-blue-500/30 text-xs"
             >
               Status: {getPoolStatusLabel(filters.status as PoolStatus)}
               <button
@@ -270,7 +273,7 @@ export function PoolFiltersComponent({
           {filters.instrumentType !== "all" && (
             <Badge
               variant="secondary"
-              className="bg-green-500/20 text-green-300 border-green-500/30"
+              className="bg-green-500/20 text-green-300 border-green-500/30 text-xs"
             >
               Type:{" "}
               {getInstrumentTypeLabel(filters.instrumentType as InstrumentType)}
@@ -285,7 +288,7 @@ export function PoolFiltersComponent({
           {filters.riskLevel !== "all" && (
             <Badge
               variant="secondary"
-              className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30"
+              className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30 text-xs"
             >
               Risk: {filters.riskLevel}
               <button
