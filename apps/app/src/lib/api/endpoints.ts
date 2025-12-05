@@ -6,7 +6,9 @@ import type {
   PoolFilters,
   PortfolioSummary,
   UserPosition,
+  Transaction,
   TransactionsResponse,
+  TransactionFilters,
   KYCStatus,
   NAVHistoryResponse,
   PoolPerformance,
@@ -248,4 +250,45 @@ export const buildDepositTransaction = async (depositData: {
 }) => {
   const { data } = await apiClient.post("/deposits", depositData);
   return data;
+};
+
+// ============================================================================
+// TRANSACTION APIs
+// ============================================================================
+
+export const transactionsApi = {
+  /**
+   * Get all transactions for a specific pool
+   */
+  getPoolTransactions: async (
+    poolAddress: string,
+    params?: { page?: number; limit?: number }
+  ): Promise<TransactionsResponse> => {
+    const { data } = await apiClient.get(`/pools/${poolAddress}/transactions`, {
+      params,
+    });
+    return data;
+  },
+
+  /**
+   * Get all transactions for a specific user/wallet
+   */
+  getUserTransactions: async (
+    walletAddress: string,
+    filters?: TransactionFilters
+  ): Promise<TransactionsResponse> => {
+    const { data } = await apiClient.get(
+      `/users/${walletAddress}/transactions`,
+      { params: filters }
+    );
+    return data;
+  },
+
+  /**
+   * Get details of a specific transaction by hash
+   */
+  getTransactionByHash: async (txHash: string): Promise<Transaction> => {
+    const { data } = await apiClient.get(`/transactions/${txHash}`);
+    return data;
+  },
 };

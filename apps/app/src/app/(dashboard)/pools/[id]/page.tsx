@@ -22,7 +22,10 @@ import {
 } from "@/hooks/usePoolsData";
 import { useUserPositionInPool } from "@/hooks/useUserData";
 import { useDeposit } from "@/hooks/useDeposit";
+import { usePoolTransactions } from "@/hooks/useTransactions";
 import { useAccount } from "wagmi";
+import NAVChart from "@/components/charts/NAVChart";
+import { getChainName, getTransactionUrl } from "@/lib/constants";
 
 export default function PoolDetailPage() {
   const params = useParams();
@@ -52,9 +55,13 @@ export default function PoolDetailPage() {
   //   "daily"
   // );
 
-  const [selectedTimeframe, setSelectedTimeframe] = useState("30d");
+  const [selectedTimeframe, setSelectedTimeframe] = useState("1M");
   const [depositAmount, setDepositAmount] = useState("");
   const [hasTriggeredAutoDeposit, setHasTriggeredAutoDeposit] = useState(false);
+
+  // Fetch transaction history for this pool
+  const { data: transactionsData, isLoading: transactionsLoading } =
+    usePoolTransactions(poolAddress, { page: 1, limit: 20 });
 
   // Initialize deposit hook
   const {
@@ -233,7 +240,7 @@ export default function PoolDetailPage() {
             {pool.status}
           </Badge>
         </div>
-        <div className="flex items-center gap-2 sm:gap-3 flex-wrap lg:flex-nowrap">
+        {/* <div className="flex items-center gap-2 sm:gap-3 flex-wrap lg:flex-nowrap">
           <Button
             variant="outline"
             size="sm"
@@ -267,7 +274,7 @@ export default function PoolDetailPage() {
                 ? "Depositing..."
                 : "Deposit"}
           </Button>
-        </div>
+        </div> */}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
@@ -282,10 +289,10 @@ export default function PoolDetailPage() {
                     <button
                       key={tf}
                       onClick={() => setSelectedTimeframe(tf)}
-                      className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm transition-colors flex-shrink-0 ${
+                      className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm transition-all duration-200 flex-shrink-0 ${
                         selectedTimeframe === tf
-                          ? "bg-[#1a3a2e] text-white"
-                          : "bg-transparent text-gray-400 hover:text-white"
+                          ? "bg-[#1a3a2e] text-white border border-[#00c48c]/30"
+                          : "bg-transparent text-gray-400 hover:text-white hover:bg-white/5"
                       }`}
                     >
                       {tf}
@@ -312,12 +319,12 @@ export default function PoolDetailPage() {
                 <Card className="bg-[#070707] border-white/20">
                   <CardContent className="p-3 sm:p-4">
                     <div className="text-xs sm:text-sm text-gray-500 mb-1">
-                      TVL
+                      NAV Price
                     </div>
                     <div className="text-lg sm:text-xl lg:text-2xl font-bold text-white">
-                      {pool.analytics?.totalValueLocked
-                        ? `$${(parseFloat(pool.analytics.totalValueLocked) / 1000000).toFixed(2)}M`
-                        : "$0"}
+                      {pool.analytics?.navPerShare
+                        ? `$${parseFloat(pool.analytics.navPerShare).toFixed(4)}`
+                        : "$1.0000"}
                     </div>
                   </CardContent>
                 </Card>
@@ -333,8 +340,8 @@ export default function PoolDetailPage() {
                 </Card>
               </div>
 
-              <div className="w-full h-48 sm:h-56 lg:h-64 bg-black/40 border border-white/20 rounded-lg flex items-center justify-center">
-                <span className="text-gray-600">Performance Chart</span>
+              <div className="w-full h-48 sm:h-56 lg:h-64 bg-black/40 border border-white/5 rounded-lg p-3 sm:p-4 overflow-hidden">
+                <NAVChart data={[]} timeframe={selectedTimeframe} />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm pt-4 border-t border-white/20">
@@ -407,35 +414,86 @@ export default function PoolDetailPage() {
                 <Card className="bg-[#070707] border-white/20">
                   <CardContent className="p-3 sm:p-4">
                     <div className="text-xs sm:text-sm text-gray-500 mb-1">
-                      Share Price (NAV)
+                      TVL
                     </div>
                     <div className="text-lg sm:text-xl font-bold text-white">
-                      {pool.analytics?.navPerShare
-                        ? `$${parseFloat(pool.analytics.navPerShare).toFixed(4)}`
-                        : "$1.0000"}
+                      {pool.analytics?.totalValueLocked
+                        ? `$${Number(pool.analytics.totalValueLocked).toLocaleString("en-US", { maximumFractionDigits: 0 })}`
+                        : "$0"}
                     </div>
                   </CardContent>
                 </Card>
               </div>
 
               <div className="space-y-4">
-                <div className="hidden sm:grid sm:grid-cols-4 gap-4 text-sm text-gray-500 pb-2 border-b border-white/20">
+                <div className="hidden sm:grid sm:grid-cols-5 gap-4 text-sm text-gray-500 pb-2 border-b border-white/20">
                   <div>Time</div>
                   <div>Type</div>
+                  <div>User</div>
                   <div>Amount</div>
-                  <div>Status</div>
+                  <div>Hash</div>
                 </div>
-                {userPosition ? (
+                {transactionsLoading ? (
                   <div className="text-center py-8 text-gray-500">
-                    <p className="text-sm sm:text-base">
-                      Transaction history coming soon
-                    </p>
+                    <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
+                    <p className="text-sm">Loading transactions...</p>
+                  </div>
+                ) : transactionsData && transactionsData.data.length > 0 ? (
+                  <div className="divide-y divide-white/10">
+                    {transactionsData.data.map((tx) => (
+                      <div
+                        key={tx.id}
+                        className="grid grid-cols-1 sm:grid-cols-5 gap-2 sm:gap-4 px-4 py-3 text-xs sm:text-sm hover:bg-white/5 transition-colors"
+                      >
+                        <div className="text-gray-400">
+                          {new Date(tx.timestamp).toLocaleString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </div>
+                        <div>
+                          <Badge
+                            variant={
+                              tx.type === "DEPOSIT"
+                                ? "default"
+                                : tx.type === "WITHDRAWAL"
+                                  ? "secondary"
+                                  : "outline"
+                            }
+                            className="text-xs"
+                          >
+                            {tx.type}
+                          </Badge>
+                        </div>
+                        <div className="font-mono text-gray-400 truncate text-xs">
+                          {tx.userWallet || tx.user?.walletAddress
+                            ? `${(tx.userWallet || tx.user?.walletAddress)!.slice(0, 6)}...${(tx.userWallet || tx.user?.walletAddress)!.slice(-4)}`
+                            : "N/A"}
+                        </div>
+                        <div className="font-semibold text-white">
+                          {Number(tx.amount).toLocaleString("en-US", {
+                            maximumFractionDigits: 2,
+                          })}{" "}
+                          {tx.pool?.assetSymbol || pool?.assetSymbol || ""}
+                        </div>
+                        <div>
+                          <a
+                            href={getTransactionUrl(pool.chainId, tx.txHash)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[#00c48c] hover:underline font-mono text-xs truncate block"
+                          >
+                            {tx.txHash.slice(0, 6)}...{tx.txHash.slice(-4)}
+                          </a>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 ) : (
                   <div className="text-center py-8 text-gray-500">
-                    <p className="text-sm sm:text-base">
-                      No position in this pool yet
-                    </p>
+                    <p className="text-sm sm:text-base">No transactions yet</p>
                   </div>
                 )}
               </div>
@@ -568,8 +626,10 @@ export default function PoolDetailPage() {
                 )}
 
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Chain ID</span>
-                  <span className="text-white">{pool.chainId}</span>
+                  <span className="text-gray-500">Network</span>
+                  <span className="text-white">
+                    {getChainName(pool.chainId)}
+                  </span>
                 </div>
 
                 <div className="flex justify-between text-sm">
@@ -617,13 +677,13 @@ export default function PoolDetailPage() {
                   </div>
                 ) : null}
 
-                {!isSuccess ? (
+                {/* {!isSuccess ? (
                   <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3">
                     <p className="text-sm text-yellow-500">
                       Ensure wallet is on Chain ID {pool.chainId}
                     </p>
                   </div>
-                ) : null}
+                ) : null} */}
 
                 <Button
                   onClick={handleDeposit}
