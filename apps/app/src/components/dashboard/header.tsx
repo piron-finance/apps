@@ -11,7 +11,11 @@ const navigation = [
   { name: "Markets", href: "/" },
   { name: "All Pools", href: "/pools" },
   { name: "Portfolio", href: "/portfolio" },
-  { name: "Documentation", href: "/docs" },
+  {
+    name: "Documentation",
+    href: "https://piron.gitbook.io/piron",
+    target: "_blank",
+  },
 ];
 
 export function DashboardHeader() {

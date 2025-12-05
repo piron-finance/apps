@@ -113,8 +113,14 @@ export interface UserPosition {
     id: string;
     name: string;
     poolType: string;
+    poolAddress: string;
     assetSymbol: string;
     status: string;
+    apy?: string;
+    navPerShare?: string;
+    maturityDate?: string;
+    country?: string;
+    issuer?: string;
   };
   totalShares: string;
   totalDeposited: string;
@@ -122,7 +128,7 @@ export interface UserPosition {
   currentValue: string;
   navPerShare?: string;
   totalReturn: string;
-  totalReturnPercentage: number;
+  totalReturnPercentage: string;
   unrealizedReturn: string;
   realizedReturn: string;
   couponsClaimed?: string;
@@ -130,40 +136,79 @@ export interface UserPosition {
   firstDepositTime?: string;
   lastDepositTime?: string;
   lastWithdrawalTime?: string;
+  daysHeld?: number;
+  lastActivityDate?: string;
+  lastActivityType?: "DEPOSIT" | "WITHDRAWAL";
   isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface PortfolioAnalytics {
+  totalValue: string;
+  totalValueFormatted: string;
+  totalDeposited: string;
+  totalReturn: string;
+  totalReturnPercentage: string;
+  unrealizedReturn: string;
+  realizedReturn: string;
+  activePositions: number;
+  averageAPY: string;
 }
 
 export interface PortfolioSummary {
-  totalValue: string;
-  totalDeposited: string;
-  totalReturn: string;
-  totalReturnPercentage: number;
-  unrealizedReturn: string;
-  realizedReturn: string;
+  analytics: PortfolioAnalytics;
   positions: UserPosition[];
 }
 
+export type TransactionType =
+  | "DEPOSIT"
+  | "WITHDRAWAL"
+  | "COUPON_CLAIM"
+  | "MATURITY_CLAIM"
+  | "REFUND"
+  | "EMERGENCY_WITHDRAWAL"
+  | "TRANSFER";
+
+export type TransactionStatus = "PENDING" | "CONFIRMED" | "FAILED";
+
 export interface Transaction {
   id: string;
-  type: string;
-  amount: string;
-  shares?: string;
-  fee?: string;
+  type: TransactionType;
   txHash: string;
-  status: string;
+  chainId?: number;
+  amount: string;
+  shares?: string | null;
+  fee?: string | null;
+  from?: string | null;
+  to?: string | null;
+  blockNumber?: string | null;
+  blockHash?: string | null;
+  gasUsed?: string | null;
+  gasPrice?: string | null;
+  status: TransactionStatus;
+  failureReason?: string | null;
+  timestamp: string;
+  createdAt?: string;
+  updatedAt?: string;
   poolId?: string;
+  userWallet?: string; // Pool transactions endpoint returns this
+  user?: {
+    walletAddress: string;
+  };
   pool?: {
     name: string;
+    poolAddress: string;
     assetSymbol: string;
   };
-  from?: string;
-  to?: string;
-  blockNumber: string;
-  gasUsed?: string;
-  timestamp: string;
-  createdAt: string;
+}
+
+export interface TransactionFilters {
+  poolId?: string;
+  type?: TransactionType;
+  status?: TransactionStatus;
+  page?: number;
+  limit?: number;
 }
 
 export interface TransactionsResponse {

@@ -55,12 +55,13 @@ export function CrossBorder() {
 
           {currencies.map((c, i) => {
             const angle = (i / currencies.length) * 2 * Math.PI;
-            const radius =
-              typeof window !== "undefined" && window.innerWidth < 640
-                ? 100
-                : window.innerWidth < 1024
-                  ? 130
-                  : 160;
+            const getRadius = () => {
+              if (typeof window === "undefined") return 160;
+              if (window.innerWidth < 640) return 100;
+              if (window.innerWidth < 1024) return 130;
+              return 160;
+            };
+            const radius = getRadius();
             const x = Math.cos(angle) * radius;
             const y = Math.sin(angle) * radius;
             return (

@@ -11,7 +11,7 @@ import Image from "next/image";
 const navItems = [
   { name: "Pools", href: "/" },
   { name: "Portfolio", href: "/portfolio" },
-  { name: "Docs", href: "/docs" },
+  { name: "Docs", href: "https://piron.gitbook.io/piron/", target: "_blank" },
 ];
 
 export default function DashboardLayout({
@@ -47,11 +47,16 @@ export default function DashboardLayout({
 
             <nav className="hidden md:flex items-center gap-1 lg:gap-2">
               {navItems.map((item) => {
-                const isActive = pathname === item.href;
+                // Check if current path matches or starts with the item href
+                // For pools, also match pool detail pages like /pools/[id]
+                const isActive =
+                  pathname === item.href ||
+                  (item.href === "/" && pathname.startsWith("/pools/"));
                 return (
                   <Link
                     key={item.name}
                     href={item.href}
+                    target={item.target}
                     className={`px-3 lg:px-4 py-1.5 lg:py-2 rounded-lg text-xs lg:text-sm font-medium transition-colors whitespace-nowrap ${
                       isActive
                         ? "bg-[#1a3a2e] text-white"
@@ -88,11 +93,16 @@ export default function DashboardLayout({
         <nav className="md:hidden border-t border-white/20 px-4 py-2 overflow-x-auto">
           <div className="flex items-center gap-2 min-w-max">
             {navItems.map((item) => {
-              const isActive = pathname === item.href;
+              // Check if current path matches or starts with the item href
+              // For pools, also match pool detail pages like /pools/[id]
+              const isActive =
+                pathname === item.href ||
+                (item.href === "/" && pathname.startsWith("/pools/"));
               return (
                 <Link
                   key={item.name}
                   href={item.href}
+                  target={item.target}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
                     isActive
                       ? "bg-[#1a3a2e] text-white"

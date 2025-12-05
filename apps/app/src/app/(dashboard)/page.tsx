@@ -10,117 +10,11 @@ import { usePlatformMetrics } from "@/hooks/usePlatformData";
 import { usePoolsData } from "@/hooks/usePoolsData";
 import { Loader2 } from "lucide-react";
 
-const PROTOCOL_STATS = [
-  {
-    label: "Total Value Locked (TVL)",
-    value: "$174.6M",
-    subtitle: "Across all pools",
-  },
-  {
-    label: "24h Net Flows",
-    value: "+$2.4M",
-    subtitle: "Deposits - Withdrawals",
-  },
-  {
-    label: "Average APY",
-    value: "5.2%",
-    subtitle: "Weighted by TVL",
-  },
-  {
-    label: "Active Pools",
-    value: "7",
-    subtitle: "Open to deposit",
-  },
-];
-
-const STABLE_YIELD_POOLS = [
-  {
-    id: "1",
-    name: "Piron Africa Markets Teasuries - CNGN",
-    subtitle: "Onchain tokenized fund of treasuries across Africa",
-    status: "Open",
-    currentAPY: "5.2%",
-    tvl: "$48.3M",
-    assetType: "Treasury Bills",
-    minimumInvestment: "$100",
-    investorType: "Retail",
-    tags: ["USDC", "SPV-managed", "Attestations"],
-  },
-  {
-    id: "2",
-    name: "Flexible Stable Yield - Ethereum",
-    subtitle: "USDT/USDC diversified",
-    status: "Open",
-    currentAPY: "4.9%",
-    tvl: "$63.7M",
-    assetType: "Money Market",
-    minimumInvestment: "$500",
-    investorType: "Retail",
-    tags: ["USDC", "USDT", "Multi-asset"],
-  },
-  {
-    id: "3",
-    name: "Stable Yield - Polygon",
-    subtitle: "USDC with fast exits",
-    status: "Open",
-    currentAPY: "4.7%",
-    tvl: "$18.9M",
-    assetType: "Commercial Paper",
-    minimumInvestment: "$250",
-    investorType: "Retail",
-    tags: ["USDC", "Polygon", "Fast"],
-  },
-];
-
-const LOCKED_POOLS = [
-  {
-    id: "4",
-    name: "Single-Asset T-Bill - Ethereum",
-    subtitle: "USTs via SPV • 30-90d",
-    status: "Open",
-    projectedAPY: "5.6%",
-    tvl: "$22.1M",
-    assetType: "Treasury Bills",
-    minimumInvestment: "$5,000",
-    investorType: "Retail",
-    lockDuration: "30-90d",
-    tags: ["Ethereum", "KYC route", "Audited"],
-  },
-  {
-    id: "5",
-    name: "Treasury Repo Pool",
-    subtitle: "Overnight repos • T+1",
-    status: "Restricted",
-    projectedAPY: "5.1%",
-    tvl: "$88.0M",
-    assetType: "Repo",
-    minimumInvestment: "$50,000",
-    investorType: "Institutional",
-    lockDuration: "Overnight",
-    tags: ["Repo", "T+1", "Institutional"],
-  },
-  {
-    id: "6",
-    name: "Short-Dated Credit Pool",
-    subtitle: "IG CP and CDs • T+2",
-    status: "Restricted",
-    projectedAPY: "6.0%",
-    tvl: "$41.5M",
-    assetType: "Commercial Paper",
-    minimumInvestment: "$100,000",
-    investorType: "Institutional",
-    lockDuration: "60-180d",
-    tags: ["Credit", "IG", "T+2"],
-  },
-];
-
 export default function DashboardPage() {
   const [activeFilter, setActiveFilter] = useState("All networks");
 
-  // Fetch platform metrics
   const { data: metrics, isLoading: metricsLoading } = usePlatformMetrics();
 
-  // Fetch all pools
   const { data: poolsData, isLoading: poolsLoading } = usePoolsData();
 
   return (
@@ -135,7 +29,7 @@ export default function DashboardPage() {
           </p>
         </div>
         <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0">
-          {["All networks", "Retail", "Institutional"].map((filter) => (
+          {["All networks"].map((filter) => (
             <Button
               key={filter}
               variant="outline"
@@ -155,18 +49,16 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
         {metricsLoading ? (
-          // Loading state
           [...Array(4)].map((_, i) => (
-            <Card key={i} className="bg-[#070707] border-white/20 rounded-3xl">
+            <Card key={i} className="bg-[#070707] border-[#1f2a2a] rounded-3xl">
               <CardContent className="p-4 flex items-center justify-center h-32">
                 <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
               </CardContent>
             </Card>
           ))
         ) : (
-          // Actual data
           <>
-            <Card className="bg-[#070707] border-white/20 rounded-2xl sm:rounded-3xl">
+            <Card className="bg-[#070707] border-[#1f2a2a] rounded-2xl sm:rounded-3xl">
               <CardContent className="p-4 sm:p-6">
                 <div className="text-xs sm:text-sm text-gray-500 mb-2">
                   Total Value Locked (TVL)
@@ -178,7 +70,7 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-[#070707] border-white/20 rounded-2xl sm:rounded-3xl">
+            <Card className="bg-[#070707] border-[#1f2a2a] rounded-2xl sm:rounded-3xl">
               <CardContent className="p-4 sm:p-6">
                 <div className="text-xs sm:text-sm text-gray-500 mb-2">
                   24h Net Flows
@@ -194,7 +86,7 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-[#070707] border-white/20 rounded-2xl sm:rounded-3xl">
+            <Card className="bg-[#070707] border-[#1f2a2a] rounded-2xl sm:rounded-3xl">
               <CardContent className="p-4 sm:p-6">
                 <div className="text-xs sm:text-sm text-gray-500 mb-2">
                   Average APY
@@ -208,7 +100,7 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-[#070707] border-white/20 rounded-2xl sm:rounded-3xl">
+            <Card className="bg-[#070707] border-[#1f2a2a] rounded-2xl sm:rounded-3xl">
               <CardContent className="p-4 sm:p-6">
                 <div className="text-xs sm:text-sm text-gray-500 mb-2">
                   Active Pools
@@ -256,7 +148,7 @@ export default function DashboardPage() {
           {poolsLoading
             ? // Loading state
               [...Array(3)].map((_, i) => (
-                <Card key={i} className="bg-[#050505] border-white/20">
+                <Card key={i} className="bg-[#050505] border-[#1f2a2a]">
                   <CardContent className="p-6 flex items-center justify-center h-64">
                     <Loader2 className="w-8 h-8 animate-spin text-gray-500" />
                   </CardContent>
@@ -266,7 +158,7 @@ export default function DashboardPage() {
                 ?.filter((pool) => pool.poolType === "STABLE_YIELD")
                 .map((pool) => (
                   <Link key={pool.id} href={`/pools/${pool.poolAddress}`}>
-                    <Card className="bg-[#050505] hover:bg-[#080808] border-white/20 hover:border-[#00c48c]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#00c48c]/10 hover:-translate-y-1 cursor-pointer">
+                    <Card className="bg-[#050505] hover:bg-[#080808] border-[#1f2a2a] hover:border-[#00c48c]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#00c48c]/10 hover:-translate-y-1 cursor-pointer">
                       <CardContent className="p-6 space-y-5">
                         <div className="flex items-start justify-between">
                           <div className="flex items-center gap-3">
@@ -310,7 +202,7 @@ export default function DashboardPage() {
                             </div>
                             <div className="text-xl font-bold text-white">
                               {pool.analytics?.totalValueLocked
-                                ? `$${(parseFloat(pool.analytics.totalValueLocked) / 1000000).toFixed(1)}M`
+                                ? `$${Number(pool.analytics.totalValueLocked).toLocaleString("en-US", { maximumFractionDigits: 0 })}`
                                 : "N/A"}
                             </div>
                           </div>
@@ -383,7 +275,7 @@ export default function DashboardPage() {
           {poolsLoading
             ? // Loading state
               [...Array(3)].map((_, i) => (
-                <Card key={i} className="bg-[#050505] border-white/20">
+                <Card key={i} className="bg-[#050505] border-[#1f2a2a]">
                   <CardContent className="p-6 flex items-center justify-center h-64">
                     <Loader2 className="w-8 h-8 animate-spin text-gray-500" />
                   </CardContent>
@@ -393,7 +285,7 @@ export default function DashboardPage() {
                 ?.filter((pool) => pool.poolType === "SINGLE_ASSET")
                 .map((pool) => (
                   <Link key={pool.id} href={`/pools/${pool.poolAddress}`}>
-                    <Card className="bg-[#050505] hover:bg-[#080808] border-white/20 hover:border-[#00c48c]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#00c48c]/10 hover:-translate-y-1 cursor-pointer">
+                    <Card className="bg-[#050505] hover:bg-[#080808] border-[#1f2a2a] hover:border-[#00c48c]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#00c48c]/10 hover:-translate-y-1 cursor-pointer">
                       <CardContent className="p-6 space-y-5">
                         <div className="flex items-start justify-between">
                           <div className="flex items-center gap-3">
@@ -445,7 +337,7 @@ export default function DashboardPage() {
                             </div>
                             <div className="text-xl font-bold text-white">
                               {pool.analytics?.totalValueLocked
-                                ? `$${(parseFloat(pool.analytics.totalValueLocked) / 1000000).toFixed(1)}M`
+                                ? `$${Number(pool.analytics.totalValueLocked).toLocaleString("en-US", { maximumFractionDigits: 0 })}`
                                 : "N/A"}
                             </div>
                           </div>
@@ -476,10 +368,8 @@ export default function DashboardPage() {
                               {pool.analytics?.totalValueLocked &&
                               pool.targetRaise
                                 ? `${Math.min(
-                                    (parseFloat(
-                                      pool.analytics.totalValueLocked
-                                    ) /
-                                      parseFloat(pool.targetRaise)) *
+                                    (Number(pool.analytics.totalValueLocked) /
+                                      Number(pool.targetRaise)) *
                                       100,
                                     100
                                   ).toFixed(0)}%`
