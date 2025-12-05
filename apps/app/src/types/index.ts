@@ -111,11 +111,10 @@ export interface Transaction {
 
 export interface User {
   _id: string;
-  clerkId: string;
-  email: string;
+  walletAddress: string;
+  email?: string;
   name?: string;
   image?: string;
-  walletAddress?: string;
   role: UserRole;
   permissions?: string[];
   isActive: boolean;
