@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Create axios instance with base configuration
 export const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3008/api/v1",
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "https://piron-backend-production.up.railway.app/api/v1",
   timeout: 30000,
   headers: {
     "Content-Type": "application/json",
@@ -43,11 +43,12 @@ apiClient.interceptors.response.use(
         console.error("Detailed message:", error.response.data.message);
       }
 
-      // Handle 401 Unauthorized - redirect to login
+      // Handle 401 Unauthorized
       if (error.response.status === 401) {
         if (typeof window !== "undefined") {
           localStorage.removeItem("auth_token");
-          window.location.href = "/sign-in";
+          // User needs to reconnect wallet
+          console.warn("Unauthorized - please reconnect your wallet");
         }
       }
     } else if (error.request) {
