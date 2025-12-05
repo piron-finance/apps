@@ -6,9 +6,9 @@ export function Hero() {
       className="relative bg-black py-20 sm:py-32 lg:py-40 pb-12 sm:pb-16 overflow-hidden"
       style={{
         backgroundImage: `
-          radial-gradient(circle at 1px 1px, rgba(255,255,255,0.09) 1px, transparent 0),
-          linear-gradient(45deg, transparent 48%, rgba(255,255,255,0.03) 49%, rgba(255,255,255,0.03) 51%, transparent 52%),
-          linear-gradient(-45deg, transparent 48%, rgba(255,255,255,0.03) 49%, rgba(255,255,255,0.03) 51%, transparent 52%)
+          radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0),
+          linear-gradient(45deg, transparent 48%, rgba(255,255,255,0.08) 49%, rgba(255,255,255,0.08) 51%, transparent 52%),
+          linear-gradient(-45deg, transparent 48%, rgba(255,255,255,0.08) 49%, rgba(255,255,255,0.08) 51%, transparent 52%)
         `,
         backgroundSize: "20px 20px, 40px 40px, 40px 40px",
       }}
