@@ -30,20 +30,26 @@ export interface PoolAnalytics {
   volume30d?: string;
 }
 
+export type PoolType = "SINGLE_ASSET" | "STABLE_YIELD" | "LOCKED";
+export type PoolStatus = "PENDING_DEPLOYMENT" | "FUNDING" | "INVESTED" | "MATURED" | "CLOSED" | "ACTIVE" | "INACTIVE";
+
 export interface Pool {
   id: string;
   chainId: number;
   poolAddress: string;
-  poolType: "SINGLE_ASSET" | "STABLE_YIELD";
+  poolType: PoolType;
   name: string;
   description: string | null;
 
-  assetAddress: string;
+  assetAddress?: string;
+  asset?: string;
   assetSymbol: string;
   assetDecimals: number;
-  minInvestment: string;
+  minInvestment?: string;
+  minDeposit?: string;
+  maxPoolSize?: string;
 
-  status: "ACTIVE" | "INACTIVE" | "CLOSED" | "MATURED";
+  status: PoolStatus;
   isActive: boolean;
   isFeatured: boolean;
 
@@ -61,14 +67,21 @@ export interface Pool {
   epochEndTime: Date | string | null;
   maturityDate: Date | string | null;
   discountRate: number | null;
+  fundingDeadline?: Date | string | null;
+
+  // Locked pool specific
+  projectedAPY?: string;
+  escrowAddress?: string;
 
   // Analytics (if included)
   analytics?: {
     totalValueLocked: string;
-    totalShares: string;
-    navPerShare: string | null;
-    uniqueInvestors: number;
+    totalShares?: string;
+    navPerShare?: string | null;
+    uniqueInvestors?: number;
+    totalInvestors?: number;
     apy: string | null;
+    utilizationRate?: string;
   } | null;
 
   // Live blockchain data (optional)
@@ -86,6 +99,126 @@ export interface Pool {
   updatedAt: Date | string;
 }
 
+// Lock Tier for LOCKED pools
+export interface LockTier {
+  index: number;
+  name: string;
+  lockDuration: number;
+  lockDurationDays: number;
+  interestRate: string;
+  interestRatePercent: string;
+  minDeposit: string;
+  minDepositFormatted: string;
+  isActive: boolean;
+  totalDeposits?: string;
+  depositCount?: number;
+}
+
+export interface PoolTiersResponse {
+  poolAddress: string;
+  tiers: LockTier[];
+}
+
+// Locked deposit preview
+export interface LockedDepositPreview {
+  amount: string;
+  amountFormatted: string;
+  tierIndex: number;
+  lockDuration: number;
+  lockDurationDays: number;
+  interestRate: string;
+  interestRatePercent: string;
+  expectedInterest: string;
+  expectedInterestFormatted: string;
+  maturityTimestamp: number;
+  maturityDate: string;
+  totalAtMaturity: string;
+  totalAtMaturityFormatted: string;
+}
+
+// Locked pool live metrics
+export interface LockedPoolMetrics {
+  poolAddress: string;
+  chainId: number;
+  totalDeposits: string;
+  totalDepositsFormatted: string;
+  activePositions: number;
+  totalPositionsCreated: number;
+  availableLiquidity: string;
+  availableLiquidityFormatted: string;
+  tiers: {
+    index: number;
+    lockDuration: number;
+    interestRate: number;
+    minDeposit: string;
+    isActive: boolean;
+  }[];
+}
+
+// Locked Position
+export type LockedPositionStatus = "ACTIVE" | "MATURED" | "REDEEMED" | "EXITED_EARLY";
+
+export interface LockedPosition {
+  id: string;
+  globalPositionId: number;
+  poolAddress: string;
+  poolName?: string;
+  owner?: string;
+  principal: string;
+  principalFormatted: string;
+  tierIndex: number;
+  tierName?: string;
+  interestRate: string;
+  interestRatePercent: string;
+  startTime: number | string;
+  startTimeFormatted?: string;
+  maturityTime: number | string;
+  maturityTimeFormatted?: string;
+  maturityDate?: string;
+  interestPaymentType: "UPFRONT" | "AT_MATURITY";
+  autoRollover: boolean;
+  status: LockedPositionStatus;
+  accruedInterest?: string;
+  accruedInterestFormatted?: string;
+  expectedInterest: string;
+  expectedInterestFormatted: string;
+  expectedTotalInterest?: string;
+  expectedTotalInterestFormatted?: string;
+  totalAtMaturity?: string;
+  totalAtMaturityFormatted?: string;
+  canRedeem?: boolean;
+  canEarlyExit?: boolean;
+  daysRemaining?: number;
+  progressPercent?: number;
+}
+
+export interface UserLockedPositionsResponse {
+  walletAddress: string;
+  positions: LockedPosition[];
+  summary: {
+    totalPrincipal: string;
+    totalExpectedInterest: string;
+    activePositions: number;
+    maturedPositions: number;
+  };
+}
+
+// Early exit preview
+export interface EarlyExitPreview {
+  positionId: number;
+  principal: string;
+  accruedInterest: string;
+  timeElapsed: number;
+  timeElapsedDays: number;
+  timeRemaining: number;
+  timeRemainingDays: number;
+  earlyExitPenalty: string;
+  penaltyPercent: string;
+  netReceived: string;
+  forfeitedInterest: string;
+  recommendation: string;
+}
+
 export interface PoolsResponse {
   data: Pool[];
   pagination: {
@@ -97,8 +230,11 @@ export interface PoolsResponse {
 }
 
 export interface PoolFilters {
-  type?: "SINGLE_ASSET" | "STABLE_YIELD";
-  status?: "ACTIVE" | "INACTIVE" | "CLOSED" | "MATURED";
+  poolType?: PoolType;
+  type?: PoolType; // alias
+  status?: PoolStatus;
+  asset?: string;
+  isActive?: boolean;
   featured?: boolean;
   page?: number;
   limit?: number;
@@ -164,6 +300,11 @@ export interface PortfolioSummary {
 export type TransactionType =
   | "DEPOSIT"
   | "WITHDRAWAL"
+  | "INTEREST"
+  | "FEE"
+  | "REDEEM"
+  | "EARLY_EXIT"
+  | "ROLLOVER"
   | "COUPON_CLAIM"
   | "MATURITY_CLAIM"
   | "REFUND"

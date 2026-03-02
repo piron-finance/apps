@@ -3,15 +3,7 @@
 import { useAccount } from "wagmi";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  PieChart,
-  Target,
-  TrendingUp,
-  DollarSign,
-  Clock,
-  ExternalLink,
-  Loader2,
-} from "lucide-react";
+import { Clock, ExternalLink, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usersApi } from "@/lib/api/endpoints";

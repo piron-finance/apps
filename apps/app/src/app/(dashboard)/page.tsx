@@ -222,7 +222,7 @@ export default function DashboardPage() {
                               Minimum
                             </div>
                             <div className="text-sm font-semibold text-white">
-                              ${parseFloat(pool.minInvestment).toFixed(0)}
+                              ${parseFloat(pool.minInvestment || "0").toFixed(0)}
                             </div>
                           </div>
                           <div className="bg-black/40 border border-white/5 rounded-lg p-3">
@@ -256,7 +256,7 @@ export default function DashboardPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
           <div>
             <h2 className="text-lg sm:text-xl font-bold text-white">
-              Locked Pools
+              Fixed-Term Pools
             </h2>
             <p className="text-xs sm:text-sm text-gray-500 mt-1">
               Term-based exposures with redemptions at maturity.
@@ -273,8 +273,7 @@ export default function DashboardPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {poolsLoading
-            ? // Loading state
-              [...Array(3)].map((_, i) => (
+            ? [...Array(3)].map((_, i) => (
                 <Card key={i} className="bg-[#050505] border-[#1f2a2a]">
                   <CardContent className="p-6 flex items-center justify-center h-64">
                     <Loader2 className="w-8 h-8 animate-spin text-gray-500" />
@@ -357,7 +356,7 @@ export default function DashboardPage() {
                               Minimum
                             </div>
                             <div className="text-sm font-semibold text-white">
-                              ${parseFloat(pool.minInvestment).toFixed(0)}
+                              ${parseFloat(pool.minInvestment || "0").toFixed(0)}
                             </div>
                           </div>
                           <div className="bg-black/40 border border-white/5 rounded-lg p-3">
@@ -407,6 +406,161 @@ export default function DashboardPage() {
                     </Card>
                   </Link>
                 ))}
+        </div>
+      </div>
+
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+          <div>
+            <h2 className="text-lg sm:text-xl font-bold text-white">
+              Time-Locked Pools
+            </h2>
+            <p className="text-xs sm:text-sm text-gray-500 mt-1">
+              Choose your lock duration for higher yields. Early exit available
+              with penalty.
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-[#00c48c] hover:text-[#00d49a] hover:bg-white/5 self-start sm:self-auto"
+          >
+            View all
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          {poolsLoading
+            ? [...Array(3)].map((_, i) => (
+                <Card key={i} className="bg-[#050505] border-[#1f2a2a]">
+                  <CardContent className="p-6 flex items-center justify-center h-64">
+                    <Loader2 className="w-8 h-8 animate-spin text-gray-500" />
+                  </CardContent>
+                </Card>
+              ))
+            : poolsData?.data
+                ?.filter((pool) => pool.poolType === "LOCKED")
+                .map((pool) => (
+                  <Link key={pool.id} href={`/pools/${pool.poolAddress}`}>
+                    <Card className="bg-[#050505] hover:bg-[#080808] border-[#1f2a2a] hover:border-[#00c48c]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#00c48c]/10 hover:-translate-y-1 cursor-pointer">
+                      <CardContent className="p-6 space-y-5">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-full bg-[#052317] flex-shrink-0 overflow-hidden">
+                              <Image
+                                src="/pironLogo.png"
+                                alt={pool.name}
+                                width={48}
+                                height={48}
+                                className="object-cover"
+                              />
+                            </div>
+                            <div>
+                              <h3 className="text-base font-semibold text-white leading-tight">
+                                {pool.name}
+                              </h3>
+                              <p className="text-sm text-gray-500 mt-0.5">
+                                {pool.description}
+                              </p>
+                            </div>
+                          </div>
+                          <Badge
+                            className={
+                              pool.status === "FUNDING"
+                                ? "bg-blue-500/20 text-blue-400 border-0 text-xs"
+                                : pool.isActive
+                                  ? "bg-[#00c48c]/20 text-[#00c48c] border-0 text-xs"
+                                  : "bg-gray-800/50 text-gray-500 border-0 text-xs"
+                            }
+                          >
+                            {pool.status}
+                          </Badge>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="bg-black/40 border border-white/5 rounded-lg p-3">
+                            <div className="text-xs text-gray-500 mb-1">
+                              Up to APY
+                            </div>
+                            <div className="text-xl font-bold text-white">
+                              {pool.projectedAPY
+                                ? `${Number(pool.projectedAPY).toFixed(1)}%`
+                                : pool.analytics?.apy
+                                  ? `${Number(pool.analytics.apy).toFixed(1)}%`
+                                  : "N/A"}
+                            </div>
+                          </div>
+                          <div className="bg-black/40 border border-white/5 rounded-lg p-3">
+                            <div className="text-xs text-gray-500 mb-1">
+                              TVL
+                            </div>
+                            <div className="text-xl font-bold text-white">
+                              {pool.analytics?.totalValueLocked
+                                ? `$${Number(pool.analytics.totalValueLocked).toLocaleString("en-US", { maximumFractionDigits: 0 })}`
+                                : "N/A"}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-3">
+                          <div className="bg-black/40 border border-white/5 rounded-lg p-3">
+                            <div className="text-xs text-gray-500 mb-1">
+                              Asset
+                            </div>
+                            <div className="text-sm font-semibold text-white">
+                              {pool.assetSymbol}
+                            </div>
+                          </div>
+                          <div className="bg-black/40 border border-white/5 rounded-lg p-3">
+                            <div className="text-xs text-gray-500 mb-1">
+                              Min Deposit
+                            </div>
+                            <div className="text-sm font-semibold text-white">
+                              $
+                              {parseFloat(
+                                pool.minDeposit || pool.minInvestment || "100"
+                              ).toFixed(0)}
+                            </div>
+                          </div>
+                          <div className="bg-black/40 border border-white/5 rounded-lg p-3">
+                            <div className="text-xs text-gray-500 mb-1">
+                              Investors
+                            </div>
+                            <div className="text-sm font-semibold text-white">
+                              {pool.analytics?.totalInvestors ||
+                                pool.analytics?.uniqueInvestors ||
+                                0}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs text-[#00c48c] px-2 py-1 bg-[#00c48c]/10 rounded">
+                            Multiple Lock Tiers
+                          </span>
+                          <span className="text-xs text-gray-500 px-2 py-1 bg-white/5 rounded">
+                            Early Exit Available
+                          </span>
+                          {pool.tags?.map((tag: string) => (
+                            <span
+                              key={tag}
+                              className="text-xs text-gray-500 px-2 py-1 bg-white/5 rounded"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))}
+          {!poolsLoading &&
+            poolsData?.data?.filter((pool) => pool.poolType === "LOCKED")
+              .length === 0 && (
+              <div className="col-span-full text-center py-8 text-gray-500">
+                No time-locked pools available yet.
+              </div>
+            )}
         </div>
       </div>
 
