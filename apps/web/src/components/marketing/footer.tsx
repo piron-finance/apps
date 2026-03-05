@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { motion } from "framer-motion";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
 
@@ -24,27 +25,33 @@ const footerLinks = {
 
 export function Footer() {
   return (
-    <footer className="border-t border-white/5 py-12 sm:py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 lg:gap-12">
-          <div className="col-span-2 md:col-span-2">
-            <h3 className="text-white text-lg font-semibold mb-3">
+    <footer className="border-t border-white/10 py-12">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ duration: 0.5 }}
+        className="mx-auto w-full max-w-7xl px-6"
+      >
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
+          <div className="max-w-sm">
+            <h3 className="text-xl font-semibold tracking-tight text-white">
               Piron Finance
             </h3>
-            <p className="text-gray-500 text-sm leading-relaxed max-w-xs">
-              Piron turns global fixed income into simple on-chain pools — built
-              for emerging markets and serious treasuries.
+            <p className="mt-2 text-sm leading-relaxed text-white/50">
+              Global fixed income made accessible. Simple on-chain pools for 
+              emerging markets and serious treasuries.
             </p>
           </div>
 
           <div>
-            <h4 className="text-white text-sm font-semibold mb-4">Product</h4>
-            <ul className="space-y-3">
+            <h4 className="mb-3 text-sm font-semibold text-white">Product</h4>
+            <ul className="space-y-2">
               {footerLinks.product.map((link) => (
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-gray-500 hover:text-white text-sm transition-colors"
+                    className="text-sm text-white/50 transition-colors hover:text-white"
                   >
                     {link.label}
                   </Link>
@@ -54,13 +61,13 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="text-white text-sm font-semibold mb-4">Company</h4>
-            <ul className="space-y-3">
+            <h4 className="mb-3 text-sm font-semibold text-white">Company</h4>
+            <ul className="space-y-2">
               {footerLinks.company.map((link) => (
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-gray-500 hover:text-white text-sm transition-colors"
+                    className="text-sm text-white/50 transition-colors hover:text-white"
                   >
                     {link.label}
                   </Link>
@@ -70,13 +77,13 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="text-white text-sm font-semibold mb-4">Legal</h4>
-            <ul className="space-y-3">
+            <h4 className="mb-3 text-sm font-semibold text-white">Legal</h4>
+            <ul className="space-y-2">
               {footerLinks.legal.map((link) => (
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-gray-500 hover:text-white text-sm transition-colors"
+                    className="text-sm text-white/50 transition-colors hover:text-white"
                   >
                     {link.label}
                   </Link>
@@ -86,13 +93,13 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-white/5">
-          <p className="text-gray-600 text-xs text-center">
+        <div className="mt-10 border-t border-white/10 pt-6">
+          <p className="text-center text-xs text-white/40">
             © 2025 Piron Finance. Not a bank. Returns are not guaranteed and may
             involve risk of loss.
           </p>
         </div>
-      </div>
+      </motion.div>
     </footer>
   );
 }
