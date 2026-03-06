@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
 
 export function Hero() {
   return (
     <section className="relative overflow-hidden">
-      <div className="mx-auto w-full max-w-7xl px-6 pt-16 pb-24 md:pt-20 md:pb-32">
+      <div className="mx-auto w-full max-w-7xl px-6 pt-16 pb-24 md:pt-22 md:pb-40">
         <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
           <motion.div
             initial={{ opacity: 0, y: 14 }}
@@ -16,7 +17,7 @@ export function Hero() {
             transition={{ duration: 0.6 }}
             className="inline-flex items-center gap-2 text-[11px] tracking-[0.2em] text-white/50"
           >
-            <span className="h-2 w-2 rounded-full bg-[#00C48C]" />
+            <Image src="/heroIcon.svg" alt="TOKENIZED" width={28} height={28} />
             TOKENIZED FIXED INCOME FOR HUMANS, NOT HEDGE FUNDS
           </motion.div>
 
@@ -37,8 +38,8 @@ export function Hero() {
             transition={{ duration: 0.7, delay: 0.2 }}
             className="mt-6 max-w-md text-base leading-relaxed text-white/50"
           >
-            Access institutional-grade fixed income through simple on-chain pools. 
-            No minimums, no paperwork, no middlemen.
+            Access institutional-grade fixed income through simple on-chain
+            pools. No minimums, no paperwork, no middlemen.
           </motion.p>
 
           <motion.div
@@ -57,7 +58,7 @@ export function Hero() {
               href={APP_URL}
               className="text-sm font-medium text-white/70 transition-colors hover:text-white"
             >
-              Browse pools
+              Browse docs
             </Link>
           </motion.div>
         </div>

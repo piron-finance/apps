@@ -260,36 +260,6 @@ export const notificationsApi = {
 };
 
 // ============================================================================
-// WITHDRAWALS APIs
-// ============================================================================
-
-export const withdrawalsApi = {
-  /**
-   * Get pool withdrawal requests
-   */
-  getPoolRequests: async (poolId: string) => {
-    const { data } = await apiClient.get(
-      `/pools/${poolId}/withdrawal-requests`
-    );
-    return data;
-  },
-
-  /**
-   * Get user withdrawal requests
-   */
-  getUserRequests: async (walletAddress: string) => {
-    const { data } = await apiClient.get(
-      `/users/${walletAddress}/withdrawal-requests`
-    );
-    return data;
-  },
-};
-
-// ============================================================================
-// FIAT APIs
-// ============================================================================
-
-// ============================================================================
 // FEES APIs
 // ============================================================================
 
@@ -408,10 +378,30 @@ export const lockedPositionsApi = {
 };
 
 // ============================================================================
-// WITHDRAWALS APIs (Extended)
+// WITHDRAWALS APIs
 // ============================================================================
 
 export const withdrawalsApi = {
+  /**
+   * Get pool withdrawal requests
+   */
+  getPoolRequests: async (poolId: string) => {
+    const { data } = await apiClient.get(
+      `/pools/${poolId}/withdrawal-requests`
+    );
+    return data;
+  },
+
+  /**
+   * Get user withdrawal requests
+   */
+  getUserRequests: async (walletAddress: string) => {
+    const { data } = await apiClient.get(
+      `/users/${walletAddress}/withdrawal-requests`
+    );
+    return data;
+  },
+
   /**
    * Build withdrawal transaction
    */

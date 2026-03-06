@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell } from "lucide-react";
 import { useAccount } from "wagmi";
 import { useWeb3Modal } from "@web3modal/wagmi/react";
 import { Button } from "@/components/ui/button";
@@ -11,7 +10,6 @@ import Image from "next/image";
 const navItems = [
   { name: "Pools", href: "/" },
   { name: "Portfolio", href: "/portfolio" },
-  { name: "Docs", href: "https://piron.gitbook.io/piron/", target: "_blank" },
 ];
 
 export default function DashboardLayout({
@@ -22,99 +20,50 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const { address, isConnected } = useAccount();
   const { open } = useWeb3Modal();
-  // const { user } = useUser();
-  // const { address } = useAccount();
 
   return (
     <div className="min-h-screen bg-black">
-      <header className="sticky top-0 z-50 bg-black border-b border-white/20">
-        <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 h-14 sm:h-16">
-          <div className="flex items-center gap-4 sm:gap-6 lg:gap-8 flex-1 min-w-0">
-            <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded flex items-center justify-center">
-                <Image
-                  src="/pironLogo.png"
-                  alt="Piron"
-                  width={100}
-                  height={100}
-                  className="object-contain"
-                />
-              </div>
-              <span className="text-base sm:text-lg font-bold text-white hidden sm:inline">
+      <header className="sticky top-0 z-50 backdrop-blur-xl bg-gradient-to-b from-black/20 to-transparent border-b border-white/10">
+        <div className=" flex h-16 items-center justify-between  px-6">
+          <div className="flex items-center gap-16">
+            <Link href="/" className="flex items-center">
+              <Image src="/pironLogo.png" alt="PIRON" width={38} height={38} />
+              <span className="text-sm font-medium tracking-wide text-white">
                 Piron Finance
               </span>
             </Link>
 
-            <nav className="hidden md:flex items-center gap-1 lg:gap-2">
-              {navItems.map((item) => {
-                // Check if current path matches or starts with the item href
-                // For pools, also match pool detail pages like /pools/[id]
-                const isActive =
-                  pathname === item.href ||
-                  (item.href === "/" && pathname.startsWith("/pools/"));
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    target={item.target}
-                    className={`px-3 lg:px-4 py-1.5 lg:py-2 rounded-lg text-xs lg:text-sm font-medium transition-colors whitespace-nowrap ${
-                      isActive
-                        ? "bg-[#1a3a2e] text-white"
-                        : "text-gray-400 hover:text-white hover:bg-white/5"
-                    }`}
-                  >
-                    {item.name}
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
-
-          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-gray-400 hover:text-white hover:bg-white/5 hidden sm:flex"
-            >
-              <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
-            </Button>
-            <Button
-              onClick={() => open()}
-              className="bg-[#00c48c] hover:bg-[#00d49a] text-black font-semibold px-3 sm:px-4 lg:px-6 text-xs sm:text-sm"
-            >
-              {isConnected && address
-                ? `${address.slice(0, 6)}...${address.slice(-4)}`
-                : "Connect Wallet"}
-            </Button>
-          </div>
-        </div>
-
-        {/* Mobile Navigation */}
-        <nav className="md:hidden border-t border-white/20 px-4 py-2 overflow-x-auto">
-          <div className="flex items-center gap-2 min-w-max">
-            {navItems.map((item) => {
-              // Check if current path matches or starts with the item href
-              // For pools, also match pool detail pages like /pools/[id]
-              const isActive =
-                pathname === item.href ||
-                (item.href === "/" && pathname.startsWith("/pools/"));
-              return (
+            <nav className="hidden gap-8 md:flex">
+              {navItems.map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}
-                  target={item.target}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
-                    isActive
-                      ? "bg-[#1a3a2e] text-white"
-                      : "text-gray-400 hover:text-white hover:bg-white/5"
-                  }`}
+                  className="text-sm text-white/60 transition-colors hover:text-white"
                 >
                   {item.name}
                 </Link>
-              );
-            })}
+              ))}
+            </nav>
           </div>
-        </nav>
+
+          <div className="flex items-center gap-4">
+            <Link
+              href="https://piron.gitbook.io/piron/"
+              target="_blank"
+              className="text-[11px] text-[#666]"
+            >
+              Docs
+            </Link>
+            <Button
+              onClick={() => open()}
+              className="bg-[#00c853] hover:bg-[#00c853]/90 text-black font-medium px-4 h-7 text-[11px] rounded"
+            >
+              {isConnected && address
+                ? `${address.slice(0, 6)}...${address.slice(-4)}`
+                : "Connect"}
+            </Button>
+          </div>
+        </div>
       </header>
 
       <main>{children}</main>
