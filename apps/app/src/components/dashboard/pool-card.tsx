@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 interface PoolCardProps {
   type: string;
   asset: string;
@@ -12,6 +14,7 @@ interface PoolCardProps {
   link: string;
   minInvestment?: string;
   currency?: string;
+  poolId?: string;
 }
 
 export function PoolCard({
@@ -26,9 +29,13 @@ export function PoolCard({
   link,
   minInvestment,
   currency,
+  poolId = "demo",
 }: PoolCardProps) {
   return (
-    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4">
+    <Link
+      href={`/pool/${poolId}`}
+      className="group block rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 transition-colors duration-200 hover:bg-[#0a0a0a] hover:border-[#00c853]/20"
+    >
       <div className="flex items-start justify-between mb-3">
         <div className="flex gap-2">
           <span className="px-2 py-1 text-[11px] text-[#888] border border-[#1a1a1a] rounded-lg">
@@ -65,8 +72,8 @@ export function PoolCard({
             </span>
           ))}
         </div>
-        <span className="text-[11px] text-[#888]">{link}</span>
+        <span className="text-[11px] text-[#888] group-hover:text-[#00c853]">{link}</span>
       </div>
-    </div>
+    </Link>
   );
 }

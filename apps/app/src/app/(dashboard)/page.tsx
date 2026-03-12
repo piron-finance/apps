@@ -62,6 +62,7 @@ export default function DashboardPage() {
           >
             <div className="grid grid-cols-2 gap-4 mt-5">
               <PoolCard
+                poolId="global-tbill-usdc"
                 type="Stable Yield"
                 asset="USDC"
                 name="Global T-Bill Basket"
@@ -75,6 +76,7 @@ export default function DashboardPage() {
                 currency="USDC"
               />
               <PoolCard
+                poolId="em-cash-usdt"
                 type="Stable Yield"
                 asset="USDT"
                 name="EM Cash Composite"
@@ -88,6 +90,7 @@ export default function DashboardPage() {
                 currency="USDT"
               />
               <PoolCard
+                poolId="defi-treasury-dai"
                 type="Stable Yield"
                 asset="DAI"
                 name="DeFi Treasury Blend"
@@ -101,6 +104,7 @@ export default function DashboardPage() {
                 currency="DAI"
               />
               <PoolCard
+                poolId="nigeria-mm-cngn"
                 type="Stable Yield"
                 asset="CNGN"
                 name="Nigeria Money Market"
@@ -141,6 +145,7 @@ export default function DashboardPage() {
           >
             <div className="grid grid-cols-2 gap-4 mt-5">
               <PoolCard
+                poolId="q1-note-usdc-90d"
                 type="Locked"
                 asset="USDC · 90d"
                 name="Q1 Structured Note"
@@ -154,6 +159,7 @@ export default function DashboardPage() {
                 currency="USDC"
               />
               <PoolCard
+                poolId="h1-strip-usdt-180d"
                 type="Locked"
                 asset="USDT · 180d"
                 name="H1 Fixed Income Strip"
@@ -177,6 +183,7 @@ export default function DashboardPage() {
           >
             <div className="grid grid-cols-2 gap-4 mt-5">
               <PoolCard
+                poolId="lagos-receivables-i"
                 type="Single Asset"
                 asset="DAI"
                 name="Lagos Receivables I"
