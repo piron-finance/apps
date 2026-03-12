@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
+
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Piron Finance",
@@ -14,8 +17,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-black text-white relative overflow-x-hidden antialiased">
-        {/* <BackgroundEffects /> */}
+      <body className={`${inter.className} min-h-screen bg-black text-white relative overflow-x-hidden antialiased`}>
         <div className="relative z-10">
           <main>{children}</main>
         </div>

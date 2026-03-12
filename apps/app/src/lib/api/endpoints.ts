@@ -12,6 +12,12 @@ import type {
   KYCStatus,
   NAVHistoryResponse,
   PoolPerformance,
+  PoolTiersResponse,
+  LockedDepositPreview,
+  LockedPoolMetrics,
+  LockedPosition,
+  UserLockedPositionsResponse,
+  EarlyExitPreview,
 } from "./types";
 
 // ============================================================================
@@ -42,10 +48,26 @@ export const poolsApi = {
   },
 
   /**
-   * Get pool by ID
+   * Get featured pools
+   */
+  getFeatured: async (): Promise<PoolsResponse> => {
+    const { data } = await apiClient.get("/pools/featured");
+    return data;
+  },
+
+  /**
+   * Get pool by ID/address
    */
   getById: async (id: string): Promise<Pool> => {
     const { data } = await apiClient.get(`/pools/${id}`);
+    return data;
+  },
+
+  /**
+   * Get pool stats
+   */
+  getStats: async (poolAddress: string) => {
+    const { data } = await apiClient.get(`/pools/${poolAddress}/stats`);
     return data;
   },
 
@@ -91,6 +113,43 @@ export const poolsApi = {
     const { data } = await apiClient.get(`/pools/${id}/instruments`);
     return data;
   },
+
+  /**
+   * Get lock tiers for a locked pool
+   */
+  getTiers: async (poolAddress: string): Promise<PoolTiersResponse> => {
+    const { data } = await apiClient.get(`/pools/${poolAddress}/tiers`);
+    return data;
+  },
+
+  /**
+   * Get locked pool live metrics from blockchain
+   */
+  getLockedMetrics: async (
+    chainId: number,
+    poolAddress: string
+  ): Promise<LockedPoolMetrics> => {
+    const { data } = await apiClient.get(
+      `/pools/${chainId}/${poolAddress}/locked-metrics`
+    );
+    return data;
+  },
+
+  /**
+   * Preview a locked deposit
+   */
+  previewLockedDeposit: async (
+    chainId: number,
+    poolAddress: string,
+    amount: string,
+    tierIndex: number
+  ): Promise<LockedDepositPreview> => {
+    const { data } = await apiClient.get(
+      `/pools/${chainId}/${poolAddress}/preview-locked`,
+      { params: { amount, tierIndex } }
+    );
+    return data;
+  },
 };
 
 // ============================================================================
@@ -126,7 +185,7 @@ export const usersApi = {
   },
 
   /**
-   * Get all user positions
+   * Get all user positions (regular + locked)
    */
   getPositions: async (walletAddress: string): Promise<PortfolioSummary> => {
     const { data } = await apiClient.get(`/users/${walletAddress}/positions`);
@@ -142,6 +201,18 @@ export const usersApi = {
   ): Promise<UserPosition> => {
     const { data } = await apiClient.get(
       `/users/${walletAddress}/positions/${poolId}`
+    );
+    return data;
+  },
+
+  /**
+   * Get user's locked positions
+   */
+  getLockedPositions: async (
+    walletAddress: string
+  ): Promise<UserLockedPositionsResponse> => {
+    const { data } = await apiClient.get(
+      `/users/${walletAddress}/locked-positions`
     );
     return data;
   },
@@ -189,27 +260,43 @@ export const notificationsApi = {
 };
 
 // ============================================================================
-// WITHDRAWALS APIs
+// FEES APIs
 // ============================================================================
 
-export const withdrawalsApi = {
+export const feesApi = {
   /**
-   * Get pool withdrawal requests
+   * Get pool deposit fee
    */
-  getPoolRequests: async (poolId: string) => {
-    const { data } = await apiClient.get(
-      `/pools/${poolId}/withdrawal-requests`
-    );
+  getPoolFee: async (poolAddress: string) => {
+    const { data } = await apiClient.get(`/fees/pool/${poolAddress}`);
     return data;
   },
 
   /**
-   * Get user withdrawal requests
+   * Get all pool fee rates
    */
-  getUserRequests: async (walletAddress: string) => {
-    const { data } = await apiClient.get(
-      `/users/${walletAddress}/withdrawal-requests`
-    );
+  getPoolRates: async (poolAddress: string) => {
+    const { data } = await apiClient.get(`/fees/pool/${poolAddress}/rates`);
+    return data;
+  },
+
+  /**
+   * Calculate deposit fee for amount
+   */
+  calculate: async (poolAddress: string, amount: string) => {
+    const { data } = await apiClient.get("/fees/calculate", {
+      params: { poolAddress, amount },
+    });
+    return data;
+  },
+
+  /**
+   * Get fee splits configuration
+   */
+  getSplits: async (chainId?: number) => {
+    const { data } = await apiClient.get("/fees/splits", {
+      params: chainId ? { chainId } : undefined,
+    });
     return data;
   },
 };
@@ -246,10 +333,155 @@ export const fiatApi = {
 export const buildDepositTransaction = async (depositData: {
   poolAddress: string;
   amount: string;
-  receiver: string;
+  depositor: string;
 }) => {
   const { data } = await apiClient.post("/deposits", depositData);
   return data;
+};
+
+/**
+ * Build locked deposit transaction
+ */
+export const buildLockedDepositTransaction = async (depositData: {
+  poolAddress: string;
+  amount: string;
+  depositor: string;
+  tierIndex: number;
+  interestPayment?: "UPFRONT" | "AT_MATURITY";
+}) => {
+  const { data } = await apiClient.post("/deposits/locked", depositData);
+  return data;
+};
+
+// ============================================================================
+// LOCKED POSITIONS APIs
+// ============================================================================
+
+export const lockedPositionsApi = {
+  /**
+   * Get locked position by ID
+   */
+  getById: async (positionId: number): Promise<LockedPosition> => {
+    const { data } = await apiClient.get(`/locked-positions/${positionId}`);
+    return data;
+  },
+
+  /**
+   * Preview early exit from locked position
+   */
+  previewEarlyExit: async (positionId: number): Promise<EarlyExitPreview> => {
+    const { data } = await apiClient.get(
+      `/locked-positions/${positionId}/preview-early-exit`
+    );
+    return data;
+  },
+};
+
+// ============================================================================
+// WITHDRAWALS APIs
+// ============================================================================
+
+export const withdrawalsApi = {
+  /**
+   * Get pool withdrawal requests
+   */
+  getPoolRequests: async (poolId: string) => {
+    const { data } = await apiClient.get(
+      `/pools/${poolId}/withdrawal-requests`
+    );
+    return data;
+  },
+
+  /**
+   * Get user withdrawal requests
+   */
+  getUserRequests: async (walletAddress: string) => {
+    const { data } = await apiClient.get(
+      `/users/${walletAddress}/withdrawal-requests`
+    );
+    return data;
+  },
+
+  /**
+   * Build withdrawal transaction
+   */
+  buildWithdrawal: async (withdrawalData: {
+    poolAddress: string;
+    amount: string;
+    receiver: string;
+  }) => {
+    const { data } = await apiClient.post("/withdrawals", withdrawalData);
+    return data;
+  },
+
+  /**
+   * Redeem matured locked position
+   */
+  redeemMatured: async (redeemData: {
+    positionId: number;
+    poolAddress: string;
+  }) => {
+    const { data } = await apiClient.post("/withdrawals/redeem", redeemData);
+    return data;
+  },
+
+  /**
+   * Early exit from locked position
+   */
+  earlyExit: async (exitData: { positionId: number; poolAddress: string }) => {
+    const { data } = await apiClient.post("/withdrawals/early-exit", exitData);
+    return data;
+  },
+
+  /**
+   * Set auto-rollover for locked position
+   */
+  setAutoRollover: async (rolloverData: {
+    positionId: number;
+    poolAddress: string;
+    newTierIndex?: number;
+  }) => {
+    const { data } = await apiClient.post(
+      "/withdrawals/auto-rollover",
+      rolloverData
+    );
+    return data;
+  },
+
+  /**
+   * Transfer locked position to another address
+   */
+  transferPosition: async (transferData: {
+    positionId: number;
+    poolAddress: string;
+    toAddress: string;
+  }) => {
+    const { data } = await apiClient.post(
+      "/withdrawals/transfer-position",
+      transferData
+    );
+    return data;
+  },
+
+  /**
+   * Get withdrawal queue status
+   */
+  getQueueStatus: async (poolAddress: string, userAddress: string) => {
+    const { data } = await apiClient.get("/withdrawals/queue-status", {
+      params: { poolAddress, userAddress },
+    });
+    return data;
+  },
+
+  /**
+   * Preview withdrawal
+   */
+  preview: async (poolAddress: string, amount: string, userAddress: string) => {
+    const { data } = await apiClient.get("/withdrawals/preview", {
+      params: { poolAddress, amount, userAddress },
+    });
+    return data;
+  },
 };
 
 // ============================================================================

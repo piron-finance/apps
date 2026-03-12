@@ -1,55 +1,105 @@
 "use client";
 
+import Link from "next/link";
+import { motion } from "framer-motion";
+
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
+
+const footerLinks = {
+  product: [
+    { label: "Pools", href: APP_URL },
+    { label: "How it works", href: "/how-it-works" },
+    { label: "Institutions", href: "#" },
+  ],
+  company: [
+    { label: "About", href: "#" },
+    { label: "Careers", href: "#" },
+    { label: "Press", href: "#" },
+  ],
+  legal: [
+    { label: "Risk disclosure", href: "#" },
+    { label: "Terms", href: "/terms" },
+    { label: "Privacy", href: "/privacy" },
+  ],
+};
+
 export function Footer() {
   return (
-    <footer className="bg-black border-t border-gray-800 py-10 sm:py-12 lg:py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
-          <div className="col-span-2 sm:col-span-1">
-            <h3 className="text-white text-sm sm:text-base font-semibold mb-3 sm:mb-4">
-              PIRON Finance
+    <footer className="border-t border-white/10 py-12">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ duration: 0.5 }}
+        className="mx-auto w-full max-w-7xl px-6"
+      >
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
+          <div className="max-w-sm">
+            <h3 className="text-xl font-semibold tracking-tight text-white">
+              Piron Finance
             </h3>
-            <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-400">
-              <div>Global money markets onchain.</div>
-              <div className="text-[10px] sm:text-xs text-gray-500 mt-3 sm:mt-4">
-                © 2025 Piron
-              </div>
-            </div>
+            <p className="mt-2 text-sm leading-relaxed text-white/50">
+              Global fixed income made accessible. Simple on-chain pools for 
+              emerging markets and serious treasuries.
+            </p>
           </div>
 
           <div>
-            <h3 className="text-white text-sm sm:text-base font-semibold mb-3 sm:mb-4">
-              Product
-            </h3>
-            <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-400">
-              <div>Institutional</div>
-              <div>SPV</div>
-            </div>
+            <h4 className="mb-3 text-sm font-semibold text-white">Product</h4>
+            <ul className="space-y-2">
+              {footerLinks.product.map((link) => (
+                <li key={link.label}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-white/50 transition-colors hover:text-white"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
 
           <div>
-            <h3 className="text-white text-sm sm:text-base font-semibold mb-3 sm:mb-4">
-              Company
-            </h3>
-            <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-400">
-              <div>About</div>
-              <div>Careers</div>
-              <div>Blog</div>
-            </div>
+            <h4 className="mb-3 text-sm font-semibold text-white">Company</h4>
+            <ul className="space-y-2">
+              {footerLinks.company.map((link) => (
+                <li key={link.label}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-white/50 transition-colors hover:text-white"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
 
           <div>
-            <h3 className="text-white text-sm sm:text-base font-semibold mb-3 sm:mb-4">
-              Resources
-            </h3>
-            <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-400">
-              <div>Docs</div>
-              <div>Security</div>
-              <div>Legal</div>
-            </div>
+            <h4 className="mb-3 text-sm font-semibold text-white">Legal</h4>
+            <ul className="space-y-2">
+              {footerLinks.legal.map((link) => (
+                <li key={link.label}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-white/50 transition-colors hover:text-white"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
-      </div>
+
+        <div className="mt-10 border-t border-white/10 pt-6">
+          <p className="text-center text-xs text-white/40">
+            © 2025 Piron Finance. Not a bank. Returns are not guaranteed and may
+            involve risk of loss.
+          </p>
+        </div>
+      </motion.div>
     </footer>
   );
 }

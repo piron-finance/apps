@@ -1,125 +1,58 @@
 "use client";
-import React from "react";
-import { useState } from "react";
-import { ComingSoonModal } from "./coming-soon-modal";
+
 import Image from "next/image";
 import Link from "next/link";
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
+
 const navItems = [
-  {
-    name: "How it works",
-    href: "/how-it-works",
-  },
-  {
-    name: "Blog",
-    href: "https://mirror.xyz/0x6b202588c79A5cA7D49B09f0Df55dc368bEE777e",
-  },
-  {
-    name: "Docs",
-    href: "https://piron.gitbook.io/piron",
-  },
+  { name: "Overview", href: "#" },
+  { name: "Pools", href: APP_URL },
+  { name: "How it works", href: "/how-it-works" },
+  { name: "Institutions", href: "#" },
 ];
 
 const Header = () => {
-  const [showComingSoon, setShowComingSoon] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
   return (
-    <nav className="sticky top-0 mx-4 sm:mx-8 lg:mx-36 py-3 sm:py-4 z-50 bg-black/98 backdrop-blur-sm border-b border-gray-900/50">
-      <div className="flex justify-between items-center">
-        <Link href="/" className="flex items-center space-x-1 sm:space-x-2">
-          <Image
-            src="/pironLogo.png"
-            alt="Piron"
-            width={120}
-            height={100}
-            className="w-8 h-8 sm:w-10 sm:h-10"
-          />
-          <span className="text-base sm:text-lg font-modern text-white">
+    <header className="sticky top-0 z-50 backdrop-blur-xl bg-gradient-to-b from-black/20 to-transparent border-b border-white/10">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+        <Link href="/" className="flex items-center gap-2">
+          <Image src="/pironLogo.png" alt="PIRON" width={38} height={38} />
+          <span className="text-sm font-medium tracking-wide text-white">
             Piron Finance
           </span>
         </Link>
 
-        <div className="hidden md:flex items-center space-x-6 lg:space-x-8">
+        <nav className="hidden items-center gap-10 md:flex">
           {navItems.map((item) => (
             <Link
               key={item.name}
               href={item.href}
-              target="_blank"
-              className="text-gray-400 hover:text-white transition-colors text-sm font-medium"
+              className="text-sm text-white/60 transition-colors hover:text-white"
             >
               {item.name}
             </Link>
           ))}
-        </div>
+        </nav>
 
-        <div className="hidden md:flex items-center space-x-4 lg:space-x-6">
-          <button
-            onClick={() => setShowComingSoon(true)}
-            className="bg-[#00c48c] text-black px-3 sm:px-4 py-2 rounded-lg font-semibold text-xs sm:text-sm"
+        <div className="hidden items-center gap-6 md:flex">
+          <span className="text-xs text-white/40">Real yield, real simple</span>
+          <Link
+            href={APP_URL}
+            className="rounded-full bg-[#00C48C] px-5 py-2 text-sm font-medium text-black transition-colors hover:bg-[#00D99A]"
           >
-            Launch App
-          </button>
+            Launch app
+          </Link>
         </div>
 
-        {/* Mobile Menu Button */}
-        <button
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="md:hidden text-white p-2"
+        <Link
+          href={APP_URL}
+          className="rounded-full bg-[#00C48C] px-5 py-2 text-sm font-medium text-black transition-colors hover:bg-[#00D99A] md:hidden"
         >
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            {mobileMenuOpen ? (
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            ) : (
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            )}
-          </svg>
-        </button>
+          Launch app
+        </Link>
       </div>
-
-      {/* Mobile Menu */}
-      {mobileMenuOpen && (
-        <div className="md:hidden mt-4 pb-4 space-y-3">
-          {navItems.map((item) => (
-            <Link
-              key={item.name}
-              href={item.href}
-              target="_blank"
-              className="block text-gray-400 hover:text-white transition-colors text-sm font-medium py-2"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              {item.name}
-            </Link>
-          ))}
-          <button
-            onClick={() => {
-              setShowComingSoon(true);
-              setMobileMenuOpen(false);
-            }}
-            className="w-full bg-[#00c48c] text-black px-4 py-2 rounded-lg font-semibold text-sm"
-          >
-            Launch App
-          </button>
-        </div>
-      )}
-
-      <ComingSoonModal open={showComingSoon} onOpenChange={setShowComingSoon} />
-    </nav>
+    </header>
   );
 };
 

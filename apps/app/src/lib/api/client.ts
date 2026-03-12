@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Create axios instance with base configuration
 export const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "https://piron-backend-production.up.railway.app/api/v1",
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3008/api/v1",
   timeout: 30000,
   headers: {
     "Content-Type": "application/json",

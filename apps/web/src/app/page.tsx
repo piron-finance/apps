@@ -1,23 +1,34 @@
 import { Hero } from "@/components/marketing/hero";
-import { WhyPironPools } from "@/components/marketing/why-piron-pools";
-import PironScrollSections from "@/components/marketing/PironScrollSections";
-import InvestmentNetwork from "@/components/marketing/investment-network";
-import { CrossBorder } from "@/components/marketing/cross-border";
-import { GetStarted } from "@/components/marketing/get-started";
+import { PoolTypes } from "@/components/marketing/pool-types";
+import { StrategySection } from "@/components/marketing/strategy-section";
+import { SecuritySection } from "@/components/marketing/security-section";
+import { HowItWorks } from "@/components/marketing/how-it-works";
+import { CTASection } from "@/components/marketing/cta-section";
 import { Footer } from "@/components/marketing/footer";
 import Header from "@/components/marketing/Header";
 
 export default function MarketingPage() {
   return (
-    <div className="bg-black min-h-screen w-full">
+    <div
+      className="relative min-h-screen w-full"
+      style={{
+        background: `
+          radial-gradient(ellipse 80% 50% at 50% 0%, rgba(0, 90, 90, 0.35) 0%, transparent 50%),
+          radial-gradient(ellipse 80% 50% at 50% 100%, rgba(0, 90, 90, 0.35) 0%, transparent 50%),
+          black
+        `,
+      }}
+    >
       <Header />
-      <Hero />
-      <WhyPironPools />
-      <PironScrollSections />
-      <InvestmentNetwork />
-      <CrossBorder />
-      <GetStarted />
-      <Footer />
+      <div className="relative overflow-x-hidden">
+        <Hero />
+        <PoolTypes />
+        <StrategySection />
+        <SecuritySection />
+        <HowItWorks />
+        <CTASection />
+        <Footer />
+      </div>
     </div>
   );
 }
