@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { usersApi } from "@/lib/api/endpoints";
 
 /**
@@ -26,6 +26,22 @@ export function useUserKYCStatus(walletAddress?: string) {
     enabled: !!walletAddress,
     staleTime: 60000, // 1 minute
     retry: 2,
+  });
+}
+
+/**
+ * Hook to submit KYC
+ */
+export function useSubmitKYC() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ walletAddress, kycData }: { walletAddress: string; kycData: any }) =>
+      usersApi.submitKYC(walletAddress, kycData),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["user-kyc-status", variables.walletAddress] });
+      queryClient.invalidateQueries({ queryKey: ["user-profile", variables.walletAddress] });
+    },
   });
 }
 

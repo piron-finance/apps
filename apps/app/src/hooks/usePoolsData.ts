@@ -73,3 +73,54 @@ export function usePoolPerformance(poolId: string, period: string = "30d") {
     retry: 2,
   });
 }
+
+/**
+ * Hook to fetch featured pools
+ */
+export function useFeaturedPools() {
+  return useQuery({
+    queryKey: ["featured-pools"],
+    queryFn: () => poolsApi.getFeatured(),
+    staleTime: 60000, // 1 minute
+    retry: 2,
+  });
+}
+
+/**
+ * Hook to fetch pool stats
+ */
+export function usePoolStats(poolAddress?: string) {
+  return useQuery({
+    queryKey: ["pool-stats", poolAddress],
+    queryFn: () => poolsApi.getStats(poolAddress!),
+    enabled: !!poolAddress,
+    staleTime: 30000,
+    retry: 2,
+  });
+}
+
+/**
+ * Hook to fetch pool analytics
+ */
+export function usePoolAnalyticsData(poolId?: string) {
+  return useQuery({
+    queryKey: ["pool-analytics-data", poolId],
+    queryFn: () => poolsApi.getAnalytics(poolId!),
+    enabled: !!poolId,
+    staleTime: 60000,
+    retry: 2,
+  });
+}
+
+/**
+ * Hook to fetch pool instruments/allocation
+ */
+export function usePoolInstruments(poolId?: string) {
+  return useQuery({
+    queryKey: ["pool-instruments", poolId],
+    queryFn: () => poolsApi.getInstruments(poolId!),
+    enabled: !!poolId,
+    staleTime: 300000, // 5 minutes
+    retry: 2,
+  });
+}
