@@ -25,6 +25,7 @@ export function useLockedPoolMetrics(chainId?: number, poolAddress?: string) {
     queryFn: () => poolsApi.getLockedMetrics(chainId!, poolAddress!),
     enabled: !!chainId && !!poolAddress,
     staleTime: 30000,
+    refetchInterval: 60000,
     retry: 2,
   });
 }
@@ -82,6 +83,7 @@ export function useUserLockedPositions(walletAddress?: string) {
     queryFn: () => usersApi.getLockedPositions(walletAddress!),
     enabled: !!walletAddress,
     staleTime: 30000,
+    refetchInterval: 30000,
     retry: 2,
   });
 }
@@ -96,12 +98,12 @@ export function useLockedDeposit() {
     mutationFn: (data: {
       poolAddress: string;
       amount: string;
-      depositor: string;
+      receiver: string;
       tierIndex: number;
       interestPayment?: "UPFRONT" | "AT_MATURITY";
     }) => buildLockedDepositTransaction(data),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["user-locked-positions", variables.depositor] });
+      queryClient.invalidateQueries({ queryKey: ["user-locked-positions", variables.receiver] });
       queryClient.invalidateQueries({ queryKey: ["locked-pool-metrics"] });
     },
   });

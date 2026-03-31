@@ -72,6 +72,7 @@ export interface Pool {
   // Locked pool specific
   projectedAPY?: string;
   escrowAddress?: string;
+  lockTiers?: LockTier[];
 
   // Analytics (if included)
   analytics?: {

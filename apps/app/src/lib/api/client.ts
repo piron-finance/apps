@@ -32,19 +32,30 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response) {
-      // Server responded with error status
-      console.error("API Error:", {
-        url: error.config?.url,
-        method: error.config?.method,
-        status: error.response.status,
-        data: error.response.data,
-      });
-      if (error.response.data.message) {
-        console.error("Detailed message:", error.response.data.message);
+      const url = error.config?.url || "";
+      const status = error.response.status;
+
+      // Silently pass through 404s on user position/profile routes
+      // These are expected when a user hasn't deposited yet
+      const isSilent404 =
+        status === 404 &&
+        (url.includes("/users/") && (url.includes("/positions") || url.includes("/locked-positions")));
+
+      if (!isSilent404) {
+        // Server responded with error status
+        console.error("API Error:", {
+          url,
+          method: error.config?.method,
+          status,
+          data: error.response.data,
+        });
+        if (error.response.data?.message) {
+          console.error("Detailed message:", error.response.data.message);
+        }
       }
 
       // Handle 401 Unauthorized
-      if (error.response.status === 401) {
+      if (status === 401) {
         if (typeof window !== "undefined") {
           localStorage.removeItem("auth_token");
           // User needs to reconnect wallet

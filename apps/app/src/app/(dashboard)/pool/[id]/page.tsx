@@ -93,7 +93,8 @@ function PoolDetailContent({ pool }: { pool: Pool }) {
   );
   const { data: tiersData } = usePoolTiers(isLockedPool ? pool.poolAddress : undefined);
 
-  const tiers = tiersData?.tiers || [];
+  // Use pool.lockTiers from the detail response as an immediate source; fall back to tiers API
+  const tiers = (tiersData?.tiers?.length ? tiersData.tiers : pool.lockTiers) || [];
   const minLockDays = tiers.length > 0 ? Math.min(...tiers.map(t => t.lockDurationDays)) : undefined;
   const maxLockDays = tiers.length > 0 ? Math.max(...tiers.map(t => t.lockDurationDays)) : undefined;
   const minAPY = tiers.length > 0 ? Math.min(...tiers.map(t => parseFloat(t.interestRatePercent))) : undefined;
@@ -117,7 +118,7 @@ function PoolDetailContent({ pool }: { pool: Pool }) {
             <>
               <div>
                 <span className="text-[11px] text-[#666]">Active Positions</span>
-                <p className="text-white font-medium">{lockedMetrics?.activePositions || "—"}</p>
+                <p className="text-white font-medium">{lockedMetrics?.activePositions ?? "—"}</p>
               </div>
               <div className="w-px h-8 bg-[#1a1a1a]" />
               <div>
@@ -172,7 +173,7 @@ function PoolDetailContent({ pool }: { pool: Pool }) {
         {/* Left Column - Main Content */}
         <div className="w-[65%] space-y-4">
           {!isLockedPool && <NAVYieldHistory pool={pool} />}
-          <DepositFlow pool={pool} />
+          <div id="deposit-section"><DepositFlow pool={pool} tiers={tiers} /></div>
           {isLockedPool ? (
             <LockedPositions pool={pool} />
           ) : (
@@ -189,9 +190,9 @@ function PoolDetailContent({ pool }: { pool: Pool }) {
           ) : (
             <APYCard pool={pool} />
           )}
-          <PoolStatsCard pool={pool} isLockedPool={isLockedPool} lockedMetrics={lockedMetrics} />
+          <PoolStatsCard pool={pool} isLockedPool={isLockedPool} lockedMetrics={lockedMetrics} tiers={tiers} />
           {!isLockedPool && <AllocationCard pool={pool} />}
-          <HoldingExitsCard pool={pool} isLockedPool={isLockedPool} />
+          <HoldingExitsCard pool={pool} isLockedPool={isLockedPool} tiers={tiers} />
           <RiskCard pool={pool} />
         </div>
       </div>
@@ -385,7 +386,7 @@ function NAVYieldHistory({ pool }: { pool: Pool }) {
   );
 }
 
-function DepositFlow({ pool }: { pool: Pool }) {
+function DepositFlow({ pool, tiers: tiersProp }: { pool: Pool; tiers?: any[] }) {
   const { address, isConnected } = useAccount();
   const { open } = useWeb3Modal();
   const [amount, setAmount] = useState("");
@@ -409,8 +410,7 @@ function DepositFlow({ pool }: { pool: Pool }) {
   const { data: feeRates } = usePoolFeeRates(pool.poolAddress);
   const { data: feeCalc } = useFeeCalculation(pool.poolAddress, amount);
   
-  // Locked pool specific data
-  const { data: tiersData } = usePoolTiers(isLockedPool ? pool.poolAddress : undefined);
+  // Locked pool specific data — use tiers passed from parent (avoids extra fetch)
   const { data: lockedPreview } = useLockedDepositPreview(
     isLockedPool ? pool.chainId : undefined,
     isLockedPool ? pool.poolAddress : undefined,
@@ -418,7 +418,7 @@ function DepositFlow({ pool }: { pool: Pool }) {
     selectedTier
   );
 
-  const tiers = tiersData?.tiers || [];
+  const tiers = tiersProp || [];
 
   const sharePrice = pool.analytics?.navPerShare ? parseFloat(pool.analytics.navPerShare) : 1;
   const depositFeeRate = feeRates?.depositFee ? parseFloat(feeRates.depositFee) : 0.001;
@@ -453,7 +453,7 @@ function DepositFlow({ pool }: { pool: Pool }) {
       if (requiresApproval) {
         await approve(amount);
       } else {
-        await deposit(amount);
+        await deposit(amount, isLockedPool ? selectedTier : undefined, isLockedPool ? interestPayment : undefined);
       }
     } catch (error) {
       console.error("Action failed:", error);
@@ -483,7 +483,8 @@ function DepositFlow({ pool }: { pool: Pool }) {
         </div>
         <div className="flex gap-2">
           <span className="px-3 py-1 text-[11px] text-[#888] border border-[#1a1a1a] rounded-lg">{pool.assetSymbol} only</span>
-          <span className="px-3 py-1 text-[11px] text-[#888] border border-[#1a1a1a] rounded-lg">7 day hold</span>
+          {!isLockedPool && <span className="px-3 py-1 text-[11px] text-[#888] border border-[#1a1a1a] rounded-lg">7 day hold</span>}
+          {isLockedPool && <span className="px-3 py-1 text-[11px] text-[#888] border border-[#1a1a1a] rounded-lg">Fixed APY</span>}
         </div>
       </div>
       <p className="text-[12px] text-[#666] mb-5">
@@ -571,29 +572,54 @@ function DepositFlow({ pool }: { pool: Pool }) {
         )}
 
         <div className="mt-4 space-y-2">
-          {isLockedPool && lockedPreview ? (
-            <>
-              <div className="flex justify-between text-[12px]">
-                <span className="text-[#888]">Lock duration</span>
-                <span className="text-white">{lockedPreview.lockDurationDays} days</span>
-              </div>
-              <div className="flex justify-between text-[12px]">
-                <span className="text-[#888]">Interest rate</span>
-                <span className="text-[#00c853]">{lockedPreview.interestRatePercent}%</span>
-              </div>
-              <div className="flex justify-between text-[12px]">
-                <span className="text-[#888]">Expected interest</span>
-                <span className="text-white">{lockedPreview.expectedInterestFormatted}</span>
-              </div>
-              <div className="flex justify-between text-[12px]">
-                <span className="text-[#888]">Maturity date</span>
-                <span className="text-white">{lockedPreview.maturityDate}</span>
-              </div>
-              <div className="flex justify-between text-[12px]">
-                <span className="text-[#888]">Total at maturity</span>
-                <span className="text-white font-medium">{lockedPreview.totalAtMaturityFormatted}</span>
-              </div>
-            </>
+          {isLockedPool ? (
+            lockedPreview ? (
+              <>
+                <div className="flex justify-between text-[12px]">
+                  <span className="text-[#888]">Lock duration</span>
+                  <span className="text-white">{lockedPreview.lockDurationDays} days</span>
+                </div>
+                <div className="flex justify-between text-[12px]">
+                  <span className="text-[#888]">Interest rate</span>
+                  <span className="text-[#00c853]">{lockedPreview.interestRatePercent}%</span>
+                </div>
+                <div className="flex justify-between text-[12px]">
+                  <span className="text-[#888]">Expected interest</span>
+                  <span className="text-white">{lockedPreview.expectedInterestFormatted}</span>
+                </div>
+                <div className="flex justify-between text-[12px]">
+                  <span className="text-[#888]">Maturity date</span>
+                  <span className="text-white">{lockedPreview.maturityDate}</span>
+                </div>
+                <div className="flex justify-between text-[12px]">
+                  <span className="text-[#888]">Total at maturity</span>
+                  <span className="text-white font-medium">{lockedPreview.totalAtMaturityFormatted}</span>
+                </div>
+              </>
+            ) : tiers.find(t => t.index === selectedTier) ? (
+              <>
+                <div className="flex justify-between text-[12px]">
+                  <span className="text-[#888]">Lock duration</span>
+                  <span className="text-white">{tiers.find(t => t.index === selectedTier)?.lockDurationDays} days</span>
+                </div>
+                <div className="flex justify-between text-[12px]">
+                  <span className="text-[#888]">Interest rate</span>
+                  <span className="text-[#00c853]">{tiers.find(t => t.index === selectedTier)?.interestRatePercent}%</span>
+                </div>
+                <div className="flex justify-between text-[12px]">
+                  <span className="text-[#888]">Expected interest</span>
+                  <span className="text-white">{parsedAmount > 0 ? "calculating..." : "—"}</span>
+                </div>
+                <div className="flex justify-between text-[12px]">
+                  <span className="text-[#888]">Maturity date</span>
+                  <span className="text-white">—</span>
+                </div>
+                <div className="flex justify-between text-[12px]">
+                  <span className="text-[#888]">Total at maturity</span>
+                  <span className="text-white font-medium">—</span>
+                </div>
+              </>
+            ) : null
           ) : (
             <>
               <div className="flex justify-between text-[12px]">
@@ -1103,7 +1129,10 @@ function LockedAPYCard({ pool, tiers, lockedMetrics }: { pool: Pool; tiers: any[
       <div className="flex gap-3 mb-4">
         {isConnected ? (
           <>
-            <button className="flex-1 px-4 py-2.5 bg-[#00c853] text-black text-[12px] font-medium rounded-full hover:bg-[#00b84a] transition-colors">
+            <button
+              onClick={() => document.getElementById("deposit-section")?.scrollIntoView({ behavior: "smooth" })}
+              className="flex-1 px-4 py-2.5 bg-[#00c853] text-black text-[12px] font-medium rounded-full hover:bg-[#00b84a] transition-colors"
+            >
               {hasPositions ? "Lock more" : "Lock deposit"}
             </button>
             {maturedCount > 0 && (
@@ -1221,7 +1250,7 @@ function APYCard({ pool }: { pool: Pool }) {
   );
 }
 
-function PoolStatsCard({ pool, isLockedPool, lockedMetrics }: { pool: Pool; isLockedPool?: boolean; lockedMetrics?: any }) {
+function PoolStatsCard({ pool, isLockedPool, lockedMetrics, tiers }: { pool: Pool; isLockedPool?: boolean; lockedMetrics?: any; tiers?: any[] }) {
   // Use pool stats endpoint for detailed analytics
   const { data: stats, isLoading } = usePoolStats(pool.poolAddress);
 
@@ -1237,7 +1266,7 @@ function PoolStatsCard({ pool, isLockedPool, lockedMetrics }: { pool: Pool; isLo
       <h3 className="text-[13px] font-medium text-white mb-0.5">Pool stats</h3>
       <p className="text-[11px] text-[#666] mb-4">Key numbers for {pool.name}.</p>
 
-      {isLoading ? (
+      {isLoading || (isLockedPool && !lockedMetrics) ? (
         <div className="py-4 text-center text-[#666] text-[12px]">Loading stats...</div>
       ) : isLockedPool && lockedMetrics ? (
         <div className="space-y-2.5">
@@ -1247,11 +1276,11 @@ function PoolStatsCard({ pool, isLockedPool, lockedMetrics }: { pool: Pool; isLo
           </div>
           <div className="flex justify-between text-[12px]">
             <span className="text-[#888]">Active Positions</span>
-            <span className="text-white">{lockedMetrics.activePositions || "—"}</span>
+            <span className="text-white">{lockedMetrics.activePositions ?? "—"}</span>
           </div>
           <div className="flex justify-between text-[12px]">
             <span className="text-[#888]">Total Positions</span>
-            <span className="text-white">{lockedMetrics.totalPositionsCreated || "—"}</span>
+            <span className="text-white">{lockedMetrics.totalPositionsCreated ?? "—"}</span>
           </div>
           <div className="flex justify-between text-[12px]">
             <span className="text-[#888]">Available Liquidity</span>
@@ -1259,7 +1288,7 @@ function PoolStatsCard({ pool, isLockedPool, lockedMetrics }: { pool: Pool; isLo
           </div>
           <div className="flex justify-between text-[12px]">
             <span className="text-[#888]">Lock Tiers</span>
-            <span className="text-white">{lockedMetrics.tiers?.length || "—"}</span>
+            <span className="text-white">{tiers?.length ?? "—"}</span>
           </div>
         </div>
       ) : (
@@ -1346,10 +1375,14 @@ function AllocationCard({ pool }: { pool: Pool }) {
   );
 }
 
-function HoldingExitsCard({ pool, isLockedPool }: { pool: Pool; isLockedPool?: boolean }) {
+function HoldingExitsCard({ pool, isLockedPool, tiers: tiersProp }: { pool: Pool; isLockedPool?: boolean; tiers?: any[] }) {
+  const { address } = useAccount();
   const { data: feeRates } = usePoolFeeRates(pool.poolAddress);
-  const { data: withdrawalQueue } = usePoolWithdrawalRequests(pool.poolAddress);
-  const { data: tiersData } = usePoolTiers(isLockedPool ? pool.poolAddress : undefined);
+  // Withdrawal queue only exists on StableYield pools — locked pools have no queue
+  const { data: withdrawalQueue } = usePoolWithdrawalRequests(
+    isLockedPool ? undefined : pool.poolAddress,
+    address
+  );
 
   const withdrawalFee = feeRates?.withdrawalFee
     ? `${(parseFloat(feeRates.withdrawalFee) * 100).toFixed(2)}%`
@@ -1360,8 +1393,8 @@ function HoldingExitsCard({ pool, isLockedPool }: { pool: Pool; isLockedPool?: b
     ? formatValue(withdrawalQueue.totalQueued)
     : "$0";
 
-  // For locked pools, calculate lock duration range
-  const tiers = tiersData?.tiers || [];
+  // Use tiers passed from parent
+  const tiers = tiersProp || [];
   const minLockDays = tiers.length > 0 ? Math.min(...tiers.map(t => t.lockDurationDays)) : undefined;
   const maxLockDays = tiers.length > 0 ? Math.max(...tiers.map(t => t.lockDurationDays)) : undefined;
 

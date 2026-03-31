@@ -94,13 +94,13 @@ export const poolsApi = {
   },
 
   /**
-   * Get pool performance metrics
+   * Get pool performance metrics (uses stats endpoint)
    */
   getPerformance: async (
     id: string,
     period: string = "30d"
   ): Promise<PoolPerformance> => {
-    const { data } = await apiClient.get(`/pools/${id}/performance`, {
+    const { data } = await apiClient.get(`/pools/${id}/stats`, {
       params: { period },
     });
     return data;
@@ -110,7 +110,7 @@ export const poolsApi = {
    * Get pool instruments
    */
   getInstruments: async (id: string) => {
-    const { data } = await apiClient.get(`/pools/${id}/instruments`);
+    const { data } = await apiClient.get(`/spv/pools/${id}/instruments`);
     return data;
   },
 
@@ -333,7 +333,7 @@ export const fiatApi = {
 export const buildDepositTransaction = async (depositData: {
   poolAddress: string;
   amount: string;
-  depositor: string;
+  receiver: string;
 }) => {
   const { data } = await apiClient.post("/deposits", depositData);
   return data;
@@ -345,7 +345,7 @@ export const buildDepositTransaction = async (depositData: {
 export const buildLockedDepositTransaction = async (depositData: {
   poolAddress: string;
   amount: string;
-  depositor: string;
+  receiver: string;
   tierIndex: number;
   interestPayment?: "UPFRONT" | "AT_MATURITY";
 }) => {
@@ -383,11 +383,11 @@ export const lockedPositionsApi = {
 
 export const withdrawalsApi = {
   /**
-   * Get pool withdrawal requests
+   * Get pool withdrawal requests for a user
    */
-  getPoolRequests: async (poolId: string) => {
+  getPoolRequests: async (poolId: string, userAddress: string) => {
     const { data } = await apiClient.get(
-      `/pools/${poolId}/withdrawal-requests`
+      `/spv/pools/${poolId}/withdrawal-requests/${userAddress}`
     );
     return data;
   },

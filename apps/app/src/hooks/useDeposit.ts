@@ -1,20 +1,21 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   useAccount,
   useWriteContract,
   useWaitForTransactionReceipt,
   useReadContract,
 } from "wagmi";
+import { useQueryClient } from "@tanstack/react-query";
 import { parseUnits, formatUnits } from "viem";
 import ERC20_ABI from "@/contracts/abis/IERC20.json";
 import LIQUIDITY_POOL_ABI from "@/contracts/abis/LiquidityPool.json";
 import STABLE_YIELD_POOL_ABI from "@/contracts/abis/StableYieldPool.json";
+import LOCKED_POOL_ABI from "@/contracts/abis/LockedPool.json";
 import { Pool } from "@/lib/api/types";
 import { buildDepositTransaction } from "@/lib/api/endpoints";
 
 interface UseDepositReturn {
-  // Functions
-  deposit: (amount: string) => Promise<`0x${string}`>;
+  deposit: (amount: string, tierIndex?: number, interestPayment?: "UPFRONT" | "AT_MATURITY") => Promise<`0x${string}`>;
   approve: (amount: string) => Promise<`0x${string}`>;
   approveAndDeposit: (amount: string) => Promise<void>;
   needsApproval: (amount: string) => boolean;
@@ -24,7 +25,7 @@ interface UseDepositReturn {
   reset: () => void;
   refetchAllowance: () => void;
 
-  // States
+
   isApproving: boolean;
   isApprovalSuccess: boolean;
   isConfirming: boolean;
@@ -33,7 +34,7 @@ interface UseDepositReturn {
   isSuccess: boolean;
   isLoading: boolean;
 
-  // Data
+
   error: null;
   shares: string | null;
   transactionHash: `0x${string}` | undefined;
@@ -44,6 +45,7 @@ interface UseDepositReturn {
 
 export function useDeposit(pool?: Pool): UseDepositReturn {
   const { address } = useAccount();
+  const queryClient = useQueryClient();
   const [depositTxHash, setDepositTxHash] = useState<
     `0x${string}` | undefined
   >();
@@ -51,16 +53,17 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
     `0x${string}` | undefined
   >();
 
-  // Select the correct ABI based on pool type
+
   const poolABI =
     pool?.poolType === "STABLE_YIELD"
       ? STABLE_YIELD_POOL_ABI
+      : pool?.poolType === "LOCKED"
+      ? LOCKED_POOL_ABI
       : LIQUIDITY_POOL_ABI;
 
-  // Wagmi hooks for contract interactions
+
   const { writeContractAsync } = useWriteContract();
 
-  // Get user's token balance (only query the chain the pool is on)
   const { data: balance } = useReadContract({
     address: pool?.assetAddress as `0x${string}`,
     abi: ERC20_ABI,
@@ -72,7 +75,7 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
     },
   });
 
-  // Get current allowance (only query the chain the pool is on)
+
   const { data: allowance, refetch: refetchAllowance } = useReadContract({
     address: pool?.assetAddress as `0x${string}`,
     abi: ERC20_ABI,
@@ -89,13 +92,12 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
     },
   });
 
-  // Wait for approval transaction
+
   const { isLoading: isApproving, isSuccess: isApprovalSuccess } =
     useWaitForTransactionReceipt({
       hash: approvalTxHash,
     });
 
-  // Wait for deposit transaction
   const {
     isLoading: isConfirming,
     isSuccess: isDepositSuccess,
@@ -103,6 +105,17 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
   } = useWaitForTransactionReceipt({
     hash: depositTxHash,
   });
+
+  // Invalidate all user/pool data once deposit is confirmed on-chain
+  useEffect(() => {
+    if (isDepositSuccess && address) {
+      queryClient.invalidateQueries({ queryKey: ["user-positions"] });
+      queryClient.invalidateQueries({ queryKey: ["user-position", address] });
+      queryClient.invalidateQueries({ queryKey: ["user-transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["pool-stats", pool?.poolAddress] });
+      queryClient.invalidateQueries({ queryKey: ["pool", pool?.poolAddress] });
+    }
+  }, [isDepositSuccess]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const needsApproval = (amount: string): boolean => {
     if (!pool || !allowance) return true;
@@ -159,30 +172,41 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
     }
   };
 
-  const deposit = async (amount: string) => {
+  const deposit = async (amount: string, tierIndex?: number, interestPayment?: "UPFRONT" | "AT_MATURITY") => {
     if (!pool || !address) {
       throw new Error("Pool or wallet not connected");
     }
 
     try {
-      // Call backend to build deposit transaction
-      const { transaction } = await buildDepositTransaction({
-        poolAddress: pool.poolAddress,
-        amount,
-        receiver: address,
-      });
+      const amountBigInt = parseUnits(amount, pool.assetDecimals);
 
-      // Send the transaction using wagmi
-      const hash = await writeContractAsync({
-        address: transaction.to as `0x${string}`,
-        chainId: pool.chainId as any,
-        abi: poolABI as any,
-        functionName: "deposit",
-        args: [
-          parseUnits(amount, pool.assetDecimals),
-          address as `0x${string}`,
-        ],
-      });
+      let hash: `0x${string}`;
+
+      if (pool.poolType === "LOCKED") {
+        // UPFRONT = 0, AT_MATURITY = 1
+        const paymentChoice = interestPayment === "UPFRONT" ? 0 : 1;
+        hash = await writeContractAsync({
+          address: pool.poolAddress as `0x${string}`,
+          chainId: pool.chainId as any,
+          abi: LOCKED_POOL_ABI as any,
+          functionName: "depositLocked",
+          args: [amountBigInt, tierIndex ?? 0, paymentChoice],
+        });
+      } else {
+        await buildDepositTransaction({
+          poolAddress: pool.poolAddress,
+          amount,
+          receiver: address,
+        });
+
+        hash = await writeContractAsync({
+          address: pool.poolAddress as `0x${string}`,
+          chainId: pool.chainId as any,
+          abi: poolABI as any,
+          functionName: "deposit",
+          args: [amountBigInt, address as `0x${string}`],
+        });
+      }
 
       setDepositTxHash(hash);
       return hash;

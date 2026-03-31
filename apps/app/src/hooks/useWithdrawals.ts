@@ -4,13 +4,13 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { withdrawalsApi } from "@/lib/api/endpoints";
 
 /**
- * Hook to fetch pool withdrawal requests/queue
+ * Hook to fetch pool withdrawal requests/queue for a user
  */
-export function usePoolWithdrawalRequests(poolId?: string) {
+export function usePoolWithdrawalRequests(poolId?: string, userAddress?: string) {
   return useQuery({
-    queryKey: ["pool-withdrawal-requests", poolId],
-    queryFn: () => withdrawalsApi.getPoolRequests(poolId!),
-    enabled: !!poolId,
+    queryKey: ["pool-withdrawal-requests", poolId, userAddress],
+    queryFn: () => withdrawalsApi.getPoolRequests(poolId!, userAddress!),
+    enabled: !!poolId && !!userAddress,
     staleTime: 30000, // 30 seconds
     retry: 2,
   });

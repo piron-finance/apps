@@ -26,6 +26,7 @@ export function usePoolData(poolAddress: string) {
     queryFn: () => poolsApi.getById(poolAddress),
     enabled: !!poolAddress,
     staleTime: 30000,
+    refetchInterval: 60000, // NAV and pool state can change
     retry: 2,
     // Don't use initialData - listing doesn't have all fields (e.g. assetAddress)
   });
@@ -95,6 +96,7 @@ export function usePoolStats(poolAddress?: string) {
     queryFn: () => poolsApi.getStats(poolAddress!),
     enabled: !!poolAddress,
     staleTime: 30000,
+    refetchInterval: 60000,
     retry: 2,
   });
 }
