@@ -413,11 +413,9 @@ function DepositFlow({ pool, tiers: tiersProp }: { pool: Pool; tiers?: any[] }) 
     balance,
   } = useDeposit(pool);
 
-  // Fetch fee rates and calculate fees from API
   const { data: feeRates } = usePoolFeeRates(pool.poolAddress);
   const { data: feeCalc } = useFeeCalculation(pool.poolAddress, amount);
   
-  // Locked pool specific data — use tiers passed from parent (avoids extra fetch)
   const { data: lockedPreview } = useLockedDepositPreview(
     isLockedPool ? pool.chainId : undefined,
     isLockedPool ? pool.poolAddress : undefined,
@@ -434,7 +432,7 @@ function DepositFlow({ pool, tiers: tiersProp }: { pool: Pool; tiers?: any[] }) 
 
   const parsedAmount = parseFloat(amount) || 0;
   
-  // Use API fee calculation if available, otherwise fallback
+
   const feeAmount = feeCalc?.fee ? parseFloat(feeCalc.fee) : parsedAmount * depositFeeRate;
   const netAmount = feeCalc?.netAmount ? parseFloat(feeCalc.netAmount) : parsedAmount - feeAmount;
   const shares = parsedAmount > 0 ? netAmount / sharePrice : 0;
