@@ -1,11 +1,10 @@
 "use client";
 
 import { useAccount } from "wagmi";
-import { useWeb3Modal } from "@web3modal/wagmi/react";
 import { usePlatformMetrics } from "@/hooks/usePlatformData";
-import { useUserPositions, useUserKYCStatus } from "@/hooks/useUserData";
+import { useUserPositions } from "@/hooks/useUserData";
 import { useUserLockedPositions } from "@/hooks/useLockedPools";
-import { useNotifications } from "@/hooks/useNotifications";
+
 
 function formatValue(value: string | number | null | undefined): string {
   if (value === null || value === undefined) return "—";
@@ -26,7 +25,6 @@ export function Sidebar() {
       <LiquiditySection />
       <MaturitiesSection />
       <ProtocolHealthSection />
-      {isConnected && <NotificationsSection walletAddress={address!} />}
     </div>
   );
 }
@@ -42,7 +40,6 @@ function SidebarCard({ children }: { children: React.ReactNode }) {
 function PortfolioSection({ walletAddress }: { walletAddress: string }) {
   const { data: positions, isLoading } = useUserPositions(walletAddress);
   const { data: lockedPositions } = useUserLockedPositions(walletAddress);
-  const { data: kycStatus } = useUserKYCStatus(walletAddress);
 
   const totalValue = positions?.analytics?.totalValue 
     ? parseFloat(positions.analytics.totalValue) 
@@ -60,15 +57,6 @@ function PortfolioSection({ walletAddress }: { walletAddress: string }) {
     <SidebarCard>
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-[14px] font-medium text-white">Your portfolio</h3>
-        {kycStatus && (
-          <span className={`px-2 py-0.5 text-[10px] rounded ${
-            kycStatus.canInvest 
-              ? "bg-[#00c853]/10 text-[#00c853]" 
-              : "bg-yellow-500/10 text-yellow-500"
-          }`}>
-            {kycStatus.kycStatus || "Pending"}
-          </span>
-        )}
       </div>
 
       {isLoading ? (
@@ -218,47 +206,6 @@ function ProtocolHealthSection() {
   );
 }
 
-function NotificationsSection({ walletAddress }: { walletAddress: string }) {
-  const { data: notifications, isLoading } = useNotifications(walletAddress, { limit: 5 });
-
-  const notificationList = notifications?.data || [];
-  const unreadCount = notificationList.filter((n: any) => !n.read).length;
-
-  if (isLoading || notificationList.length === 0) {
-    return null;
-  }
-
-  return (
-    <SidebarCard>
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-[14px] font-medium text-white">Notifications</h3>
-        {unreadCount > 0 && (
-          <span className="px-2 py-0.5 text-[10px] bg-[#00c853] text-black rounded-full">
-            {unreadCount} new
-          </span>
-        )}
-      </div>
-
-      <div className="space-y-3">
-        {notificationList.slice(0, 3).map((notification: any) => (
-          <div 
-            key={notification.id} 
-            className={`p-3 rounded-lg ${notification.read ? "bg-[#0a0a0a]" : "bg-[#0a0a0a] border border-[#00c853]/20"}`}
-          >
-            <p className="text-[12px] text-white">{notification.title || notification.message}</p>
-            <p className="text-[11px] text-[#666] mt-1">
-              {new Date(notification.createdAt).toLocaleDateString()}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      <button className="w-full mt-4 py-2 text-[11px] text-[#666] hover:text-[#888] transition-colors">
-        View all notifications
-      </button>
-    </SidebarCard>
-  );
-}
 
 function SidebarRow({
   label,
