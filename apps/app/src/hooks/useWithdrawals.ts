@@ -1,7 +1,9 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { useAccount } from "wagmi";
 import { withdrawalsApi } from "@/lib/api/endpoints";
+import { useInvalidateAfterMutation } from "@/hooks/useQueryInvalidation";
 
 /**
  * Hook to fetch pool withdrawal requests/queue for a user
@@ -63,15 +65,15 @@ export function useWithdrawalQueueStatus(poolAddress?: string, userAddress?: str
  * Hook to build and execute withdrawal
  */
 export function useWithdraw() {
-  const queryClient = useQueryClient();
+  const { address } = useAccount();
+  const invalidateAfterMutation = useInvalidateAfterMutation();
 
   return useMutation({
     mutationFn: (data: { poolAddress: string; amount: string; receiver: string }) =>
       withdrawalsApi.buildWithdrawal(data),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["user-positions"] });
-      queryClient.invalidateQueries({ queryKey: ["user-position", variables.receiver] });
-      queryClient.invalidateQueries({ queryKey: ["pool-transactions", variables.poolAddress] });
+      const addr = variables.receiver || address || "";
+      invalidateAfterMutation(addr, variables.poolAddress);
     },
   });
 }
@@ -80,14 +82,14 @@ export function useWithdraw() {
  * Hook to redeem matured locked position
  */
 export function useRedeemMatured() {
-  const queryClient = useQueryClient();
+  const { address } = useAccount();
+  const invalidateAfterMutation = useInvalidateAfterMutation();
 
   return useMutation({
     mutationFn: (data: { positionId: number; poolAddress: string }) =>
       withdrawalsApi.redeemMatured(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["user-locked-positions"] });
-      queryClient.invalidateQueries({ queryKey: ["locked-position"] });
+    onSuccess: (_, variables) => {
+      invalidateAfterMutation(address || "", variables.poolAddress);
     },
   });
 }
@@ -96,14 +98,14 @@ export function useRedeemMatured() {
  * Hook for early exit from locked position
  */
 export function useEarlyExit() {
-  const queryClient = useQueryClient();
+  const { address } = useAccount();
+  const invalidateAfterMutation = useInvalidateAfterMutation();
 
   return useMutation({
     mutationFn: (data: { positionId: number; poolAddress: string }) =>
       withdrawalsApi.earlyExit(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["user-locked-positions"] });
-      queryClient.invalidateQueries({ queryKey: ["locked-position"] });
+    onSuccess: (_, variables) => {
+      invalidateAfterMutation(address || "", variables.poolAddress);
     },
   });
 }
@@ -112,14 +114,14 @@ export function useEarlyExit() {
  * Hook to set auto-rollover
  */
 export function useSetAutoRollover() {
-  const queryClient = useQueryClient();
+  const { address } = useAccount();
+  const invalidateAfterMutation = useInvalidateAfterMutation();
 
   return useMutation({
     mutationFn: (data: { positionId: number; poolAddress: string; newTierIndex?: number }) =>
       withdrawalsApi.setAutoRollover(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["user-locked-positions"] });
-      queryClient.invalidateQueries({ queryKey: ["locked-position"] });
+    onSuccess: (_, variables) => {
+      invalidateAfterMutation(address || "", variables.poolAddress);
     },
   });
 }
@@ -128,13 +130,14 @@ export function useSetAutoRollover() {
  * Hook to transfer locked position
  */
 export function useTransferPosition() {
-  const queryClient = useQueryClient();
+  const { address } = useAccount();
+  const invalidateAfterMutation = useInvalidateAfterMutation();
 
   return useMutation({
     mutationFn: (data: { positionId: number; poolAddress: string; toAddress: string }) =>
       withdrawalsApi.transferPosition(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["user-locked-positions"] });
+    onSuccess: (_, variables) => {
+      invalidateAfterMutation(address || "", variables.poolAddress);
     },
   });
 }

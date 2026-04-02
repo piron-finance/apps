@@ -4,7 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import Image from "next/image";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === "production" ? "" : "http://localhost:3001");
 
 export function Hero() {
   return (

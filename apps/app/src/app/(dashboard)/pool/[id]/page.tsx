@@ -38,6 +38,13 @@ function formatAPY(value: string | number | null | undefined): string {
   return `${num.toFixed(1)}%`;
 }
 
+function formatMinDeposit(formatted: string | undefined): string {
+  // formatted is already token-denominated (e.g. "100", "0.0000000000000001")
+  const n = parseFloat((formatted || "0").replace(/,/g, ""));
+  if (!n || isNaN(n) || n < 0.01) return "—";
+  return n.toLocaleString("en-US", { maximumFractionDigits: 2 });
+}
+
 function truncateAddress(address: string): string {
   if (!address) return "";
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
@@ -109,7 +116,7 @@ function PoolDetailContent({ pool }: { pool: Pool }) {
             <span className="text-[11px] text-[#666]">{isLockedPool ? "Total Deposits" : "TVL"}</span>
             <p className="text-white font-medium">
               {isLockedPool && lockedMetrics
-                ? lockedMetrics.totalDepositsFormatted || formatValue(lockedMetrics.totalDeposits)
+                ? parseFloat((lockedMetrics.totalDepositsFormatted || "0").replace(/,/g, "")).toLocaleString("en-US", { maximumFractionDigits: 2 })
                 : formatValue(tvl)}
             </p>
           </div>
@@ -537,7 +544,7 @@ function DepositFlow({ pool, tiers: tiersProp }: { pool: Pool; tiers?: any[] }) 
                 >
                   <p className="text-[14px] font-medium text-white">{tier.lockDurationDays}d</p>
                   <p className="text-[12px] text-[#00c853]">{tier.interestRatePercent}% APY</p>
-                  <p className="text-[10px] text-[#666]">Min: {tier.minDepositFormatted}</p>
+                  <p className="text-[10px] text-[#666]">Min: {formatMinDeposit(tier.minDepositFormatted)} {pool.assetSymbol}</p>
                 </button>
               ))}
             </div>
@@ -1272,7 +1279,7 @@ function PoolStatsCard({ pool, isLockedPool, lockedMetrics, tiers }: { pool: Poo
         <div className="space-y-2.5">
           <div className="flex justify-between text-[12px]">
             <span className="text-[#888]">Total Deposits</span>
-            <span className="text-white">{lockedMetrics.totalDepositsFormatted || formatValue(lockedMetrics.totalDeposits)}</span>
+            <span className="text-white">{parseFloat((lockedMetrics.totalDepositsFormatted || "0").replace(/,/g, "")).toLocaleString("en-US", { maximumFractionDigits: 2 })}</span>
           </div>
           <div className="flex justify-between text-[12px]">
             <span className="text-[#888]">Active Positions</span>
@@ -1284,7 +1291,7 @@ function PoolStatsCard({ pool, isLockedPool, lockedMetrics, tiers }: { pool: Poo
           </div>
           <div className="flex justify-between text-[12px]">
             <span className="text-[#888]">Available Liquidity</span>
-            <span className="text-white">{lockedMetrics.availableLiquidityFormatted || formatValue(lockedMetrics.availableLiquidity)}</span>
+            <span className="text-white">{parseFloat((lockedMetrics.availableLiquidityFormatted || "0").replace(/,/g, "")).toLocaleString("en-US", { maximumFractionDigits: 2 })}</span>
           </div>
           <div className="flex justify-between text-[12px]">
             <span className="text-[#888]">Lock Tiers</span>
@@ -1565,12 +1572,22 @@ function PoolTransactionsTable({ poolAddress, assetSymbol }: { poolAddress: stri
 
   const transactions = txResponse?.data || [];
   
+  const isDepositType = (type: string) => type === "DEPOSIT" || type === "POSITION_CREATED";
+  const isWithdrawalType = (type: string) => type === "WITHDRAWAL" || type === "POSITION_REDEEMED" || type === "EARLY_EXIT";
+
   const filteredTransactions = transactions.filter((tx) => {
     if (filter === "all") return true;
-    if (filter === "deposits") return tx.type === "DEPOSIT";
-    if (filter === "withdrawals") return tx.type === "WITHDRAWAL";
+    if (filter === "deposits") return isDepositType(tx.type);
+    if (filter === "withdrawals") return isWithdrawalType(tx.type);
     return true;
   });
+
+  const txTypeLabel = (type: string): string => {
+    if (type === "POSITION_CREATED") return "DEPOSIT";
+    if (type === "POSITION_REDEEMED") return "REDEEM";
+    if (type === "INTEREST_PAYMENT") return "INTEREST";
+    return type;
+  };
 
   return (
     <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-5">
@@ -1613,12 +1630,14 @@ function PoolTransactionsTable({ poolAddress, assetSymbol }: { poolAddress: stri
                 <td className="py-3">
                   <span
                     className={`px-2 py-1 text-[10px] font-medium rounded ${
-                      tx.type === "DEPOSIT"
+                      isDepositType(tx.type)
                         ? "bg-[#1a1a1a] text-white"
-                        : "bg-red-500/10 text-red-400"
+                        : isWithdrawalType(tx.type)
+                        ? "bg-red-500/10 text-red-400"
+                        : "bg-blue-500/10 text-blue-400"
                     }`}
                   >
-                    {tx.type}
+                    {txTypeLabel(tx.type)}
                   </span>
                 </td>
                 <td className="py-3 text-[12px] text-[#999] font-mono">

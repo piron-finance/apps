@@ -5,7 +5,6 @@ import {
   useWaitForTransactionReceipt,
   useReadContract,
 } from "wagmi";
-import { useQueryClient } from "@tanstack/react-query";
 import { parseUnits, formatUnits } from "viem";
 import ERC20_ABI from "@/contracts/abis/IERC20.json";
 import LIQUIDITY_POOL_ABI from "@/contracts/abis/LiquidityPool.json";
@@ -13,6 +12,7 @@ import STABLE_YIELD_POOL_ABI from "@/contracts/abis/StableYieldPool.json";
 import LOCKED_POOL_ABI from "@/contracts/abis/LockedPool.json";
 import { Pool } from "@/lib/api/types";
 import { buildDepositTransaction } from "@/lib/api/endpoints";
+import { useInvalidateAfterMutation } from "@/hooks/useQueryInvalidation";
 
 interface UseDepositReturn {
   deposit: (amount: string, tierIndex?: number, interestPayment?: "UPFRONT" | "AT_MATURITY") => Promise<`0x${string}`>;
@@ -45,7 +45,7 @@ interface UseDepositReturn {
 
 export function useDeposit(pool?: Pool): UseDepositReturn {
   const { address } = useAccount();
-  const queryClient = useQueryClient();
+  const invalidateAfterMutation = useInvalidateAfterMutation();
   const [depositTxHash, setDepositTxHash] = useState<
     `0x${string}` | undefined
   >();
@@ -106,14 +106,9 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
     hash: depositTxHash,
   });
 
-  // Invalidate all user/pool data once deposit is confirmed on-chain
   useEffect(() => {
-    if (isDepositSuccess && address) {
-      queryClient.invalidateQueries({ queryKey: ["user-positions"] });
-      queryClient.invalidateQueries({ queryKey: ["user-position", address] });
-      queryClient.invalidateQueries({ queryKey: ["user-transactions"] });
-      queryClient.invalidateQueries({ queryKey: ["pool-stats", pool?.poolAddress] });
-      queryClient.invalidateQueries({ queryKey: ["pool", pool?.poolAddress] });
+    if (isDepositSuccess && address && pool?.poolAddress) {
+      invalidateAfterMutation(address, pool.poolAddress);
     }
   }, [isDepositSuccess]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -217,11 +212,7 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
   };
 
   const approveAndDeposit = async (amount: string) => {
-    // First approve
     await approve(amount);
-
-    // Wait for approval to be confirmed
-    // The deposit will be handled separately after approval
   };
 
   const reset = () => {
@@ -238,7 +229,6 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
     : null;
 
   return {
-    // Functions
     deposit,
     approve,
     approveAndDeposit,
@@ -249,7 +239,6 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
     reset,
     refetchAllowance,
 
-    // States
     isApproving,
     isApprovalSuccess,
     isConfirming,
@@ -258,7 +247,6 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
     isSuccess: isDepositSuccess,
     isLoading: isApproving || isConfirming,
 
-    // Data
     error: null,
     shares,
     transactionHash: depositTxHash,

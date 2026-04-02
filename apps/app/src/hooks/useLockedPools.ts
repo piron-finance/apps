@@ -1,7 +1,9 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { useAccount } from "wagmi";
 import { poolsApi, lockedPositionsApi, usersApi, buildLockedDepositTransaction } from "@/lib/api/endpoints";
+import { useInvalidateAfterMutation } from "@/hooks/useQueryInvalidation";
 
 /**
  * Hook to fetch lock tiers for a pool
@@ -92,7 +94,8 @@ export function useUserLockedPositions(walletAddress?: string) {
  * Hook to build locked deposit transaction
  */
 export function useLockedDeposit() {
-  const queryClient = useQueryClient();
+  const { address } = useAccount();
+  const invalidateAfterMutation = useInvalidateAfterMutation();
 
   return useMutation({
     mutationFn: (data: {
@@ -103,8 +106,8 @@ export function useLockedDeposit() {
       interestPayment?: "UPFRONT" | "AT_MATURITY";
     }) => buildLockedDepositTransaction(data),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["user-locked-positions", variables.receiver] });
-      queryClient.invalidateQueries({ queryKey: ["locked-pool-metrics"] });
+      const addr = variables.receiver || address || "";
+      invalidateAfterMutation(addr, variables.poolAddress);
     },
   });
 }
