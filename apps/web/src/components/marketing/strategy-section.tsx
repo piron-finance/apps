@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === "production" ? "" : "http://localhost:3001");
 
 const strategies = [
   {

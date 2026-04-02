@@ -354,7 +354,9 @@ export default function PoolDetailPage() {
                 <div className="flex justify-between">
                   <span className="text-gray-500">Min Investment</span>
                   <span className="text-white font-medium">
-                    ${parseFloat(pool.minInvestment).toFixed(0)}
+                    {pool && pool.minInvestment !== undefined
+                      ? `$${parseFloat(pool.minInvestment).toFixed(0)}`
+                      : "N/A"}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -635,7 +637,9 @@ export default function PoolDetailPage() {
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Min deposit</span>
                   <span className="text-white">
-                    ${parseFloat(pool.minInvestment).toFixed(0)}
+                    {pool && pool.minInvestment !== undefined
+                      ? `$${parseFloat(pool.minInvestment).toFixed(0)}`
+                      : "N/A"}
                   </span>
                 </div>
 

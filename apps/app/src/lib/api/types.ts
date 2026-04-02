@@ -72,6 +72,7 @@ export interface Pool {
   // Locked pool specific
   projectedAPY?: string;
   escrowAddress?: string;
+  lockTiers?: LockTier[];
 
   // Analytics (if included)
   analytics?: {
@@ -309,7 +310,10 @@ export type TransactionType =
   | "MATURITY_CLAIM"
   | "REFUND"
   | "EMERGENCY_WITHDRAWAL"
-  | "TRANSFER";
+  | "TRANSFER"
+  | "POSITION_CREATED"
+  | "POSITION_REDEEMED"
+  | "INTEREST_PAYMENT";
 
 export type TransactionStatus = "PENDING" | "CONFIRMED" | "FAILED";
 

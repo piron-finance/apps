@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === "production" ? "" : "http://localhost:3001");
 
 const navItems = [
   { name: "Overview", href: "#" },
