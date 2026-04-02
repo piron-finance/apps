@@ -1,9 +1,7 @@
 "use client";
 
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { useAccount } from "wagmi";
-import { poolsApi, lockedPositionsApi, usersApi, buildLockedDepositTransaction } from "@/lib/api/endpoints";
-import { useInvalidateAfterMutation } from "@/hooks/useQueryInvalidation";
+import { useQuery } from "@tanstack/react-query";
+import { poolsApi, lockedPositionsApi, usersApi } from "@/lib/api/endpoints";
 
 /**
  * Hook to fetch lock tiers for a pool
@@ -51,19 +49,6 @@ export function useLockedDepositPreview(
 }
 
 /**
- * Hook to get locked position by ID
- */
-export function useLockedPosition(positionId?: number) {
-  return useQuery({
-    queryKey: ["locked-position", positionId],
-    queryFn: () => lockedPositionsApi.getById(positionId!),
-    enabled: positionId !== undefined,
-    staleTime: 30000,
-    retry: 2,
-  });
-}
-
-/**
  * Hook to preview early exit from locked position
  */
 export function useEarlyExitPreview(positionId?: number) {
@@ -90,24 +75,3 @@ export function useUserLockedPositions(walletAddress?: string) {
   });
 }
 
-/**
- * Hook to build locked deposit transaction
- */
-export function useLockedDeposit() {
-  const { address } = useAccount();
-  const invalidateAfterMutation = useInvalidateAfterMutation();
-
-  return useMutation({
-    mutationFn: (data: {
-      poolAddress: string;
-      amount: string;
-      receiver: string;
-      tierIndex: number;
-      interestPayment?: "UPFRONT" | "AT_MATURITY";
-    }) => buildLockedDepositTransaction(data),
-    onSuccess: (_, variables) => {
-      const addr = variables.receiver || address || "";
-      invalidateAfterMutation(addr, variables.poolAddress);
-    },
-  });
-}

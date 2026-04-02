@@ -6,16 +6,12 @@ import type {
   PoolFilters,
   PortfolioSummary,
   UserPosition,
-  Transaction,
   TransactionsResponse,
-  TransactionFilters,
-  KYCStatus,
   NAVHistoryResponse,
   PoolPerformance,
   PoolTiersResponse,
   LockedDepositPreview,
   LockedPoolMetrics,
-  LockedPosition,
   UserLockedPositionsResponse,
   EarlyExitPreview,
 } from "./types";
@@ -157,32 +153,6 @@ export const poolsApi = {
 // ============================================================================
 
 export const usersApi = {
-  /**
-   * Get user profile
-   */
-  getProfile: async (walletAddress: string) => {
-    const { data } = await apiClient.get(`/users/${walletAddress}`);
-    return data;
-  },
-
-  /**
-   * Get KYC status
-   */
-  getKYCStatus: async (walletAddress: string): Promise<KYCStatus> => {
-    const { data } = await apiClient.get(`/users/${walletAddress}/kyc-status`);
-    return data;
-  },
-
-  /**
-   * Submit KYC document
-   */
-  submitKYC: async (walletAddress: string, kycData: any) => {
-    const { data } = await apiClient.post(
-      `/users/${walletAddress}/kyc`,
-      kycData
-    );
-    return data;
-  },
 
   /**
    * Get all user positions (regular + locked)
@@ -217,19 +187,6 @@ export const usersApi = {
     return data;
   },
 
-  /**
-   * Get user transactions
-   */
-  getTransactions: async (
-    walletAddress: string,
-    params?: any
-  ): Promise<TransactionsResponse> => {
-    const { data } = await apiClient.get(
-      `/users/${walletAddress}/transactions`,
-      { params }
-    );
-    return data;
-  },
 };
 
 // ============================================================================
@@ -248,15 +205,6 @@ export const notificationsApi = {
     return data;
   },
 
-  /**
-   * Mark notification as read
-   */
-  markAsRead: async (walletAddress: string, notificationId: string) => {
-    const { data } = await apiClient.patch(
-      `/users/${walletAddress}/notifications/${notificationId}/read`
-    );
-    return data;
-  },
 };
 
 // ============================================================================
@@ -264,14 +212,6 @@ export const notificationsApi = {
 // ============================================================================
 
 export const feesApi = {
-  /**
-   * Get pool deposit fee
-   */
-  getPoolFee: async (poolAddress: string) => {
-    const { data } = await apiClient.get(`/fees/pool/${poolAddress}`);
-    return data;
-  },
-
   /**
    * Get all pool fee rates
    */
@@ -290,41 +230,6 @@ export const feesApi = {
     return data;
   },
 
-  /**
-   * Get fee splits configuration
-   */
-  getSplits: async (chainId?: number) => {
-    const { data } = await apiClient.get("/fees/splits", {
-      params: chainId ? { chainId } : undefined,
-    });
-    return data;
-  },
-};
-
-// ============================================================================
-// FIAT APIs
-// ============================================================================
-
-export const fiatApi = {
-  /**
-   * Initiate fiat deposit
-   */
-  deposit: async (depositData: {
-    fiatAmount: number;
-    fiatCurrency: string;
-    cryptoAsset: string;
-  }) => {
-    const { data } = await apiClient.post("/fiat/deposit", depositData);
-    return data;
-  },
-
-  /**
-   * Get fiat transaction status
-   */
-  getTransaction: async (reference: string) => {
-    const { data } = await apiClient.get(`/fiat/transactions/${reference}`);
-    return data;
-  },
 };
 
 /**
@@ -339,33 +244,11 @@ export const buildDepositTransaction = async (depositData: {
   return data;
 };
 
-/**
- * Build locked deposit transaction
- */
-export const buildLockedDepositTransaction = async (depositData: {
-  poolAddress: string;
-  amount: string;
-  receiver: string;
-  tierIndex: number;
-  interestPayment?: "UPFRONT" | "AT_MATURITY";
-}) => {
-  const { data } = await apiClient.post("/deposits/locked", depositData);
-  return data;
-};
-
 // ============================================================================
 // LOCKED POSITIONS APIs
 // ============================================================================
 
 export const lockedPositionsApi = {
-  /**
-   * Get locked position by ID
-   */
-  getById: async (positionId: number): Promise<LockedPosition> => {
-    const { data } = await apiClient.get(`/locked-positions/${positionId}`);
-    return data;
-  },
-
   /**
    * Preview early exit from locked position
    */
@@ -388,77 +271,6 @@ export const withdrawalsApi = {
   getPoolRequests: async (poolId: string, userAddress: string) => {
     const { data } = await apiClient.get(
       `/spv/pools/${poolId}/withdrawal-requests/${userAddress}`
-    );
-    return data;
-  },
-
-  /**
-   * Get user withdrawal requests
-   */
-  getUserRequests: async (walletAddress: string) => {
-    const { data } = await apiClient.get(
-      `/users/${walletAddress}/withdrawal-requests`
-    );
-    return data;
-  },
-
-  /**
-   * Build withdrawal transaction
-   */
-  buildWithdrawal: async (withdrawalData: {
-    poolAddress: string;
-    amount: string;
-    receiver: string;
-  }) => {
-    const { data } = await apiClient.post("/withdrawals", withdrawalData);
-    return data;
-  },
-
-  /**
-   * Redeem matured locked position
-   */
-  redeemMatured: async (redeemData: {
-    positionId: number;
-    poolAddress: string;
-  }) => {
-    const { data } = await apiClient.post("/withdrawals/redeem", redeemData);
-    return data;
-  },
-
-  /**
-   * Early exit from locked position
-   */
-  earlyExit: async (exitData: { positionId: number; poolAddress: string }) => {
-    const { data } = await apiClient.post("/withdrawals/early-exit", exitData);
-    return data;
-  },
-
-  /**
-   * Set auto-rollover for locked position
-   */
-  setAutoRollover: async (rolloverData: {
-    positionId: number;
-    poolAddress: string;
-    newTierIndex?: number;
-  }) => {
-    const { data } = await apiClient.post(
-      "/withdrawals/auto-rollover",
-      rolloverData
-    );
-    return data;
-  },
-
-  /**
-   * Transfer locked position to another address
-   */
-  transferPosition: async (transferData: {
-    positionId: number;
-    poolAddress: string;
-    toAddress: string;
-  }) => {
-    const { data } = await apiClient.post(
-      "/withdrawals/transfer-position",
-      transferData
     );
     return data;
   },
@@ -502,25 +314,4 @@ export const transactionsApi = {
     return data;
   },
 
-  /**
-   * Get all transactions for a specific user/wallet
-   */
-  getUserTransactions: async (
-    walletAddress: string,
-    filters?: TransactionFilters
-  ): Promise<TransactionsResponse> => {
-    const { data } = await apiClient.get(
-      `/users/${walletAddress}/transactions`,
-      { params: filters }
-    );
-    return data;
-  },
-
-  /**
-   * Get details of a specific transaction by hash
-   */
-  getTransactionByHash: async (txHash: string): Promise<Transaction> => {
-    const { data } = await apiClient.get(`/transactions/${txHash}`);
-    return data;
-  },
 };

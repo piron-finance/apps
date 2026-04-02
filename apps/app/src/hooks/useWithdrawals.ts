@@ -1,9 +1,7 @@
 "use client";
 
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { useAccount } from "wagmi";
+import { useQuery } from "@tanstack/react-query";
 import { withdrawalsApi } from "@/lib/api/endpoints";
-import { useInvalidateAfterMutation } from "@/hooks/useQueryInvalidation";
 
 /**
  * Hook to fetch pool withdrawal requests/queue for a user
@@ -13,19 +11,6 @@ export function usePoolWithdrawalRequests(poolId?: string, userAddress?: string)
     queryKey: ["pool-withdrawal-requests", poolId, userAddress],
     queryFn: () => withdrawalsApi.getPoolRequests(poolId!, userAddress!),
     enabled: !!poolId && !!userAddress,
-    staleTime: 30000, // 30 seconds
-    retry: 2,
-  });
-}
-
-/**
- * Hook to fetch user's withdrawal requests
- */
-export function useUserWithdrawalRequests(walletAddress?: string) {
-  return useQuery({
-    queryKey: ["user-withdrawal-requests", walletAddress],
-    queryFn: () => withdrawalsApi.getUserRequests(walletAddress!),
-    enabled: !!walletAddress,
     staleTime: 30000,
     retry: 2,
   });
@@ -58,86 +43,5 @@ export function useWithdrawalQueueStatus(poolAddress?: string, userAddress?: str
     enabled: !!poolAddress && !!userAddress,
     staleTime: 30000,
     retry: 2,
-  });
-}
-
-/**
- * Hook to build and execute withdrawal
- */
-export function useWithdraw() {
-  const { address } = useAccount();
-  const invalidateAfterMutation = useInvalidateAfterMutation();
-
-  return useMutation({
-    mutationFn: (data: { poolAddress: string; amount: string; receiver: string }) =>
-      withdrawalsApi.buildWithdrawal(data),
-    onSuccess: (_, variables) => {
-      const addr = variables.receiver || address || "";
-      invalidateAfterMutation(addr, variables.poolAddress);
-    },
-  });
-}
-
-/**
- * Hook to redeem matured locked position
- */
-export function useRedeemMatured() {
-  const { address } = useAccount();
-  const invalidateAfterMutation = useInvalidateAfterMutation();
-
-  return useMutation({
-    mutationFn: (data: { positionId: number; poolAddress: string }) =>
-      withdrawalsApi.redeemMatured(data),
-    onSuccess: (_, variables) => {
-      invalidateAfterMutation(address || "", variables.poolAddress);
-    },
-  });
-}
-
-/**
- * Hook for early exit from locked position
- */
-export function useEarlyExit() {
-  const { address } = useAccount();
-  const invalidateAfterMutation = useInvalidateAfterMutation();
-
-  return useMutation({
-    mutationFn: (data: { positionId: number; poolAddress: string }) =>
-      withdrawalsApi.earlyExit(data),
-    onSuccess: (_, variables) => {
-      invalidateAfterMutation(address || "", variables.poolAddress);
-    },
-  });
-}
-
-/**
- * Hook to set auto-rollover
- */
-export function useSetAutoRollover() {
-  const { address } = useAccount();
-  const invalidateAfterMutation = useInvalidateAfterMutation();
-
-  return useMutation({
-    mutationFn: (data: { positionId: number; poolAddress: string; newTierIndex?: number }) =>
-      withdrawalsApi.setAutoRollover(data),
-    onSuccess: (_, variables) => {
-      invalidateAfterMutation(address || "", variables.poolAddress);
-    },
-  });
-}
-
-/**
- * Hook to transfer locked position
- */
-export function useTransferPosition() {
-  const { address } = useAccount();
-  const invalidateAfterMutation = useInvalidateAfterMutation();
-
-  return useMutation({
-    mutationFn: (data: { positionId: number; poolAddress: string; toAddress: string }) =>
-      withdrawalsApi.transferPosition(data),
-    onSuccess: (_, variables) => {
-      invalidateAfterMutation(address || "", variables.poolAddress);
-    },
   });
 }

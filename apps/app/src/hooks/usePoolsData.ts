@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { poolsApi } from "@/lib/api/endpoints";
 import type { PoolFilters } from "@/lib/api/types";
 
@@ -97,19 +97,6 @@ export function usePoolStats(poolAddress?: string) {
     enabled: !!poolAddress,
     staleTime: 30000,
     refetchInterval: 60000,
-    retry: 2,
-  });
-}
-
-/**
- * Hook to fetch pool analytics
- */
-export function usePoolAnalyticsData(poolId?: string) {
-  return useQuery({
-    queryKey: ["pool-analytics-data", poolId],
-    queryFn: () => poolsApi.getAnalytics(poolId!),
-    enabled: !!poolId,
-    staleTime: 60000,
     retry: 2,
   });
 }

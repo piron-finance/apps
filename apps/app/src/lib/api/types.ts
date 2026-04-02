@@ -366,18 +366,6 @@ export interface TransactionsResponse {
   };
 }
 
-export interface KYCStatus {
-  kycStatus: string;
-  kycLevel?: string;
-  documentsRequired: string[];
-  documentsSubmitted: any[];
-  canInvest: boolean;
-  investmentLimits?: {
-    daily?: string;
-    monthly?: string;
-    total?: string;
-  };
-}
 
 export interface NAVHistoryPoint {
   timestamp: string;

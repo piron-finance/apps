@@ -7,9 +7,8 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === "pr
 
 const navItems = [
   { name: "Overview", href: "#" },
-  { name: "Pools", href: APP_URL },
   { name: "How it works", href: "/how-it-works" },
-  { name: "Institutions", href: "#" },
+  { name: "Docs", href: "https://piron.gitbook.io/piron-finance/"}, 
 ];
 
 const Header = () => {
