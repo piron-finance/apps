@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useAccount } from "wagmi";
 import {
   AreaChart,
@@ -407,19 +407,38 @@ function DepositFlow({ pool, tiers: tiersProp }: { pool: Pool; tiers?: any[] }) 
     approve,
     needsApproval,
     hasInsufficientBalance,
+    refetchAllowance,
     isApproving,
+    isApprovalSuccess,
     isConfirming,
     isDepositing,
     balance,
   } = useDeposit(pool);
 
+  // After approval succeeds, refetch allowance so button switches to "Deposit"
+  useEffect(() => {
+    if (isApprovalSuccess) {
+      refetchAllowance();
+    }
+  }, [isApprovalSuccess, refetchAllowance]);
+
   const { data: feeRates } = usePoolFeeRates(pool.poolAddress);
-  const { data: feeCalc } = useFeeCalculation(pool.poolAddress, amount);
-  
-  const { data: lockedPreview } = useLockedDepositPreview(
+
+  // Debounce amount for API queries so they don't fire on every keystroke
+  const [debouncedAmount, setDebouncedAmount] = useState("");
+  const debounceTimer = useRef<NodeJS.Timeout>();
+  useEffect(() => {
+    clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => setDebouncedAmount(amount), 500);
+    return () => clearTimeout(debounceTimer.current);
+  }, [amount]);
+
+  const { data: feeCalc } = useFeeCalculation(pool.poolAddress, debouncedAmount);
+
+  const { data: lockedPreview, isFetching: isPreviewFetching, isError: isPreviewError } = useLockedDepositPreview(
     isLockedPool ? pool.chainId : undefined,
     isLockedPool ? pool.poolAddress : undefined,
-    amount,
+    debouncedAmount,
     selectedTier
   );
 
@@ -613,7 +632,11 @@ function DepositFlow({ pool, tiers: tiersProp }: { pool: Pool; tiers?: any[] }) 
                 </div>
                 <div className="flex justify-between text-[12px]">
                   <span className="text-[#888]">Expected interest</span>
-                  <span className="text-white">{parsedAmount > 0 ? "calculating..." : "—"}</span>
+                  <span className="text-white">
+                    {parsedAmount > 0
+                      ? isPreviewFetching ? "calculating..." : isPreviewError ? "unavailable" : "—"
+                      : "—"}
+                  </span>
                 </div>
                 <div className="flex justify-between text-[12px]">
                   <span className="text-[#888]">Maturity date</span>
@@ -670,13 +693,17 @@ function YourPositions({ pool }: { pool: Pool }) {
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
 
-  // Withdrawal preview and queue status
+  // Withdrawal preview and queue status — only relevant for stable yield pools
+  const isStableYield = pool.poolType === "STABLE_YIELD";
   const { data: withdrawPreview } = useWithdrawalPreview(
-    pool.poolAddress,
+    isStableYield ? pool.poolAddress : undefined,
     withdrawAmount,
     address
   );
-  const { data: queueStatus } = useWithdrawalQueueStatus(pool.poolAddress, address);
+  const { data: queueStatus } = useWithdrawalQueueStatus(
+    isStableYield ? pool.poolAddress : undefined,
+    address
+  );
 
   if (!isConnected) {
     return (
