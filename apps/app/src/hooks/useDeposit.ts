@@ -20,10 +20,12 @@ interface UseDepositReturn {
   approveAndDeposit: (amount: string) => Promise<void>;
   needsApproval: (amount: string) => boolean;
   hasInsufficientBalance: (amount: string) => boolean;
+  exceedsMaxDeposit: (amount: string) => boolean;
+  poolNotAcceptingDeposits: () => boolean;
   getUserBalance: () => string;
   getMaxDepositAmount: () => string;
   reset: () => void;
-  refetchAllowance: () => void;
+  refetchAllowance: () => Promise<any>;
 
 
   isApproving: boolean;
@@ -92,6 +94,18 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
     },
   });
 
+  // Check on-chain max deposit capacity (ERC-4626)
+  const { data: maxDepositOnChain } = useReadContract({
+    address: pool?.poolAddress as `0x${string}`,
+    abi: poolABI,
+    functionName: "maxDeposit",
+    args: address ? [address] : undefined,
+    chainId: pool?.chainId as any,
+    query: {
+      enabled: Boolean(address && pool?.poolAddress && pool?.chainId && pool?.poolType !== "LOCKED"),
+    },
+  });
+
 
   const { isLoading: isApproving, isSuccess: isApprovalSuccess } =
     useWaitForTransactionReceipt({
@@ -134,12 +148,33 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
     }
   };
 
+  const exceedsMaxDeposit = (amount: string): boolean => {
+    if (!pool || maxDepositOnChain === undefined || pool.poolType === "LOCKED") return false;
+    try {
+      const amountBigInt = parseUnits(amount, pool.assetDecimals);
+      return amountBigInt > (maxDepositOnChain as bigint);
+    } catch {
+      return false;
+    }
+  };
+
+  const poolNotAcceptingDeposits = (): boolean => {
+    if (!pool || maxDepositOnChain === undefined || pool.poolType === "LOCKED") return false;
+    return (maxDepositOnChain as bigint) === BigInt(0);
+  };
+
   const getUserBalance = (): string => {
     if (!pool || !balance) return "0";
     return formatUnits(balance as bigint, pool.assetDecimals);
   };
 
   const getMaxDepositAmount = (): string => {
+    if (pool?.poolType !== "LOCKED" && maxDepositOnChain !== undefined && balance !== undefined) {
+      const maxOnChain = maxDepositOnChain as bigint;
+      const bal = balance as bigint;
+      const effective = maxOnChain < bal ? maxOnChain : bal;
+      return formatUnits(effective, pool!.assetDecimals);
+    }
     return getUserBalance();
   };
 
@@ -234,6 +269,8 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
     approveAndDeposit,
     needsApproval,
     hasInsufficientBalance,
+    exceedsMaxDeposit,
+    poolNotAcceptingDeposits,
     getUserBalance,
     getMaxDepositAmount,
     reset,

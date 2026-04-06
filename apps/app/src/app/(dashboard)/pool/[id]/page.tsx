@@ -179,7 +179,11 @@ function PoolDetailContent({ pool }: { pool: Pool }) {
       <div className="flex gap-4">
         {/* Left Column - Main Content */}
         <div className="w-[65%] space-y-4">
-          {!isLockedPool && <NAVYieldHistory pool={pool} />}
+          {!isLockedPool && (
+            pool.poolType === "STABLE_YIELD"
+              ? <NAVYieldHistory pool={pool} />
+              : <FundingProgress pool={pool} />
+          )}
           <div id="deposit-section"><DepositFlow pool={pool} tiers={tiers} /></div>
           {isLockedPool ? (
             <LockedPositions pool={pool} />
@@ -393,6 +397,138 @@ function NAVYieldHistory({ pool }: { pool: Pool }) {
   );
 }
 
+function FundingProgress({ pool }: { pool: Pool }) {
+  const { data: stats } = usePoolStats(pool.poolAddress);
+
+  const tvlRaw = stats?.totalValueLocked || pool.analytics?.totalValueLocked || "0";
+  const raised = parseFloat(tvlRaw);
+  const target = pool.targetRaise ? parseFloat(pool.targetRaise) : 0;
+  const percent = target > 0 ? Math.min((raised / target) * 100, 100) : 0;
+
+  const epochEnd = pool.epochEndTime ? new Date(pool.epochEndTime) : null;
+  const now = new Date();
+  const daysLeft = epochEnd ? Math.max(0, Math.ceil((epochEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))) : null;
+  const fundingOpen = epochEnd ? now < epochEnd : true;
+
+  const investors = stats?.totalInvestors || pool.analytics?.totalInvestors || pool.analytics?.uniqueInvestors || 0;
+
+  const milestones = [25, 50, 75, 100];
+
+  return (
+    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-5">
+      <div className="flex items-center justify-between mb-1">
+        <div>
+          <h3 className="text-[14px] font-medium text-white">Funding progress</h3>
+          <p className="text-[11px] text-[#666] mt-0.5">
+            {fundingOpen
+              ? daysLeft !== null
+                ? `${daysLeft} day${daysLeft !== 1 ? "s" : ""} remaining in funding period`
+                : "Funding period open"
+              : "Funding period ended"}
+          </p>
+        </div>
+        <div className="text-right">
+          <span className={`px-2.5 py-1 text-[10px] font-medium rounded-full ${
+            fundingOpen
+              ? "bg-[#00c853]/10 text-[#00c853]"
+              : "bg-[#1a1a1a] text-[#666]"
+          }`}>
+            {fundingOpen ? "Open" : "Closed"}
+          </span>
+        </div>
+      </div>
+
+      {/* Big number */}
+      <div className="mt-4 mb-1">
+        <div className="flex items-baseline gap-2">
+          <span className="text-2xl font-semibold text-white">
+            {raised.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+          </span>
+          {target > 0 && (
+            <span className="text-[13px] text-[#666]">
+              / {target.toLocaleString(undefined, { maximumFractionDigits: 0 })} {pool.assetSymbol}
+            </span>
+          )}
+        </div>
+        {target > 0 && (
+          <span className="text-[12px] text-[#00c853] font-medium">{percent.toFixed(1)}% funded</span>
+        )}
+      </div>
+
+      {/* Progress bar */}
+      {target > 0 && (
+        <div className="mt-3 mb-2">
+          <div className="relative h-3 bg-[#1a1a1a] rounded-full overflow-hidden">
+            <div
+              className="absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out"
+              style={{
+                width: `${percent}%`,
+                background: percent >= 100
+                  ? "linear-gradient(90deg, #00c853, #00e676)"
+                  : "linear-gradient(90deg, #00c853, #00c853cc)",
+              }}
+            />
+            {/* Milestone markers */}
+            {milestones.map((m) => (
+              <div
+                key={m}
+                className="absolute top-0 bottom-0 w-px bg-[#333]"
+                style={{ left: `${m}%` }}
+              />
+            ))}
+          </div>
+          <div className="flex justify-between mt-1.5">
+            {milestones.map((m) => (
+              <span key={m} className={`text-[9px] ${percent >= m ? "text-[#00c853]" : "text-[#444]"}`}>
+                {m}%
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Stats row */}
+      <div className="flex items-center gap-6 text-[11px] mt-4 pt-4 border-t border-[#1a1a1a]">
+        <div>
+          <span className="text-[#666]">Investors</span>
+          <p className="text-white font-medium">{investors}</p>
+        </div>
+        <div className="w-px h-6 bg-[#1a1a1a]" />
+        <div>
+          <span className="text-[#666]">Min deposit</span>
+          <p className="text-white font-medium">
+            {pool.minInvestment
+              ? `${parseFloat(pool.minInvestment).toLocaleString()} ${pool.assetSymbol}`
+              : "—"}
+          </p>
+        </div>
+        {epochEnd && (
+          <>
+            <div className="w-px h-6 bg-[#1a1a1a]" />
+            <div>
+              <span className="text-[#666]">Epoch ends</span>
+              <p className="text-white font-medium">
+                {epochEnd.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+              </p>
+            </div>
+          </>
+        )}
+        {target > 0 && (
+          <>
+            <div className="w-px h-6 bg-[#1a1a1a]" />
+            <div>
+              <span className="text-[#666]">Remaining</span>
+              <p className="text-white font-medium">
+                {Math.max(0, target - raised).toLocaleString(undefined, { maximumFractionDigits: 0 })} {pool.assetSymbol}
+              </p>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function DepositFlow({ pool, tiers: tiersProp }: { pool: Pool; tiers?: any[] }) {
   const { address, isConnected } = useAccount();
   const { open } = useWeb3Modal();
@@ -401,12 +537,16 @@ function DepositFlow({ pool, tiers: tiersProp }: { pool: Pool; tiers?: any[] }) 
   const [interestPayment, setInterestPayment] = useState<"UPFRONT" | "AT_MATURITY">("AT_MATURITY");
 
   const isLockedPool = pool.poolType === "LOCKED";
-  
+  const [pendingDepositAfterApproval, setPendingDepositAfterApproval] = useState(false);
+  const [depositError, setDepositError] = useState<string | null>(null);
+
   const {
     deposit,
     approve,
     needsApproval,
     hasInsufficientBalance,
+    exceedsMaxDeposit,
+    poolNotAcceptingDeposits,
     refetchAllowance,
     isApproving,
     isApprovalSuccess,
@@ -415,12 +555,19 @@ function DepositFlow({ pool, tiers: tiersProp }: { pool: Pool; tiers?: any[] }) 
     balance,
   } = useDeposit(pool);
 
-  // After approval succeeds, refetch allowance so button switches to "Deposit"
+  // After approval succeeds, refetch allowance then auto-trigger deposit
   useEffect(() => {
-    if (isApprovalSuccess) {
-      refetchAllowance();
+    if (isApprovalSuccess && pendingDepositAfterApproval) {
+      refetchAllowance().then(() => {
+        deposit(amount, isLockedPool ? selectedTier : undefined, isLockedPool ? interestPayment : undefined)
+          .catch((err: any) => {
+            const msg = err?.response?.data?.message || err?.shortMessage || err?.message || "Deposit failed";
+            setDepositError(msg);
+          })
+          .finally(() => setPendingDepositAfterApproval(false));
+      });
     }
-  }, [isApprovalSuccess, refetchAllowance]);
+  }, [isApprovalSuccess]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const { data: feeRates } = usePoolFeeRates(pool.poolAddress);
 
@@ -447,7 +594,7 @@ function DepositFlow({ pool, tiers: tiersProp }: { pool: Pool; tiers?: any[] }) 
   const sharePrice = pool.analytics?.navPerShare ? parseFloat(pool.analytics.navPerShare) : 1;
   const depositFeeRate = feeRates?.depositFee ? parseFloat(feeRates.depositFee) : 0.001;
   const apy = pool.analytics?.apy ? parseFloat(pool.analytics.apy) : 6.0;
-  const minDeposit = pool.minDeposit ? parseFloat(pool.minDeposit) : 50;
+  const minDeposit = pool.minInvestment ? parseFloat(pool.minInvestment) : pool.minDeposit ? parseFloat(pool.minDeposit) : 50;
 
   const parsedAmount = parseFloat(amount) || 0;
   
@@ -460,6 +607,8 @@ function DepositFlow({ pool, tiers: tiersProp }: { pool: Pool; tiers?: any[] }) 
   const userBalance = balance ? parseFloat(balance) : 0;
   const requiresApproval = isConnected && parsedAmount > 0 && needsApproval(amount);
   const insufficientBalance = isConnected && parsedAmount > 0 && hasInsufficientBalance(amount);
+  const depositsDisabled = isConnected && poolNotAcceptingDeposits();
+  const overMaxDeposit = isConnected && parsedAmount > 0 && exceedsMaxDeposit(amount);
 
   const handleMaxClick = () => {
     if (isConnected && balance) {
@@ -473,29 +622,37 @@ function DepositFlow({ pool, tiers: tiersProp }: { pool: Pool; tiers?: any[] }) 
       return;
     }
 
+    setDepositError(null);
     try {
       if (requiresApproval) {
+        setPendingDepositAfterApproval(true);
         await approve(amount);
+        // Deposit will auto-trigger via the useEffect when approval succeeds
       } else {
         await deposit(amount, isLockedPool ? selectedTier : undefined, isLockedPool ? interestPayment : undefined);
       }
-    } catch (error) {
-      console.error("Action failed:", error);
+    } catch (error: any) {
+      setPendingDepositAfterApproval(false);
+      const msg = error?.response?.data?.message || error?.shortMessage || error?.message || "Deposit failed";
+      setDepositError(msg);
     }
   };
 
   const getButtonText = () => {
     if (!isConnected) return "Connect wallet to continue";
-    if (isApproving) return "Approving...";
+    if (depositsDisabled) return "Pool not accepting deposits";
+    if (isApproving) return pendingDepositAfterApproval ? "Approving (1/2)..." : "Approving...";
+    if (pendingDepositAfterApproval && isApprovalSuccess) return "Depositing (2/2)...";
     if (isConfirming) return "Confirming deposit...";
     if (parsedAmount === 0) return "Enter amount";
-    if (parsedAmount < minDeposit) return `Minimum ${minDeposit} ${pool.assetSymbol}`;
+    if (parsedAmount < minDeposit) return `Minimum ${minDeposit.toLocaleString()} ${pool.assetSymbol}`;
     if (insufficientBalance) return "Insufficient balance";
-    if (requiresApproval) return `Approve ${pool.assetSymbol}`;
+    if (overMaxDeposit) return "Exceeds pool capacity";
+    if (requiresApproval) return `Approve & Deposit`;
     return "Deposit";
   };
 
-  const isButtonDisabled = isDepositing || (isConnected && (parsedAmount === 0 || parsedAmount < minDeposit || insufficientBalance));
+  const isButtonDisabled = isDepositing || depositsDisabled || (isConnected && (parsedAmount === 0 || parsedAmount < minDeposit || insufficientBalance || overMaxDeposit));
   const feePercent = (depositFeeRate * 100).toFixed(2);
 
   return (
@@ -529,7 +686,7 @@ function DepositFlow({ pool, tiers: tiersProp }: { pool: Pool; tiers?: any[] }) 
           <input
             type="text"
             value={amount}
-            onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))}
+            onChange={(e) => { setAmount(e.target.value.replace(/[^0-9.]/g, "")); setDepositError(null); }}
             placeholder="0.00"
             className="flex-1 bg-transparent text-2xl text-white outline-none"
           />
@@ -542,7 +699,7 @@ function DepositFlow({ pool, tiers: tiersProp }: { pool: Pool; tiers?: any[] }) 
           </button>
         </div>
         <p className="text-[11px] text-[#666] mt-1">≈ ${parsedAmount.toLocaleString()}</p>
-        <p className="text-[11px] text-[#666] mt-3">Min deposit {minDeposit} {pool.assetSymbol}</p>
+        <p className="text-[11px] text-[#666] mt-3">Min deposit {minDeposit.toLocaleString()} {pool.assetSymbol}</p>
 
         {/* Locked Pool Tier Selection */}
         {isLockedPool && tiers.length > 0 && (
@@ -665,6 +822,10 @@ function DepositFlow({ pool, tiers: tiersProp }: { pool: Pool; tiers?: any[] }) 
             </>
           )}
         </div>
+
+        {depositError && (
+          <p className="text-[11px] text-red-400 mt-3">{depositError}</p>
+        )}
 
         <div className="flex gap-3 mt-5">
           <button
@@ -1410,9 +1571,10 @@ function AllocationCard({ pool }: { pool: Pool }) {
 function HoldingExitsCard({ pool, isLockedPool, tiers: tiersProp }: { pool: Pool; isLockedPool?: boolean; tiers?: any[] }) {
   const { address } = useAccount();
   const { data: feeRates } = usePoolFeeRates(pool.poolAddress);
-  // Withdrawal queue only exists on StableYield pools — locked pools have no queue
+  // Withdrawal queue only exists on StableYield pools
+  const isStableYield = pool.poolType === "STABLE_YIELD";
   const { data: withdrawalQueue } = usePoolWithdrawalRequests(
-    isLockedPool ? undefined : pool.poolAddress,
+    isStableYield ? pool.poolAddress : undefined,
     address
   );
 
