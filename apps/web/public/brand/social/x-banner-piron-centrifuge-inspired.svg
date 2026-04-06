@@ -1,0 +1,80 @@
+<svg width="1500" height="500" viewBox="0 0 1500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="43" y1="42" x2="1472" y2="458" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FCFAF3"/>
+      <stop offset="0.52" stop-color="#F6F3EA"/>
+      <stop offset="1" stop-color="#EEE8DA"/>
+    </linearGradient>
+    <radialGradient id="warmGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(396 338) rotate(90) scale(255 420)">
+      <stop stop-color="#DDEACF" stop-opacity="0.75"/>
+      <stop offset="0.6" stop-color="#E6E6C8" stop-opacity="0.38"/>
+      <stop offset="1" stop-color="#E6E6C8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="rightGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1326 266) rotate(90) scale(246 246)">
+      <stop stop-color="#F6EFD8" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#F6EFD8" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="dotTone" x1="53" y1="251" x2="1118" y2="251" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6A946C"/>
+      <stop offset="0.48" stop-color="#88B889"/>
+      <stop offset="1" stop-color="#CEDAB7"/>
+    </linearGradient>
+    <pattern id="squareDots" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse">
+      <rect x="4" y="4" width="4" height="4" rx="0.8" fill="url(#dotTone)"/>
+    </pattern>
+    <radialGradient id="dotFieldMask" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(431 260) rotate(0) scale(640 290)">
+      <stop offset="0" stop-color="white"/>
+      <stop offset="0.53" stop-color="white" stop-opacity="0.92"/>
+      <stop offset="0.78" stop-color="white" stop-opacity="0.34"/>
+      <stop offset="1" stop-color="white" stop-opacity="0"/>
+    </radialGradient>
+    <mask id="dotMask">
+      <rect width="1500" height="500" fill="black"/>
+      <rect x="0" y="18" width="1120" height="430" fill="url(#dotFieldMask)"/>
+      <circle cx="241" cy="342" r="210" fill="white" fill-opacity="0.72"/>
+      <circle cx="661" cy="112" r="186" fill="white" fill-opacity="0.5"/>
+    </mask>
+    <filter id="soften" x="-50" y="-50" width="1600" height="600" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="24"/>
+    </filter>
+  </defs>
+
+  <rect width="1500" height="500" fill="url(#bg)"/>
+  <ellipse cx="396" cy="338" rx="420" ry="255" fill="url(#warmGlow)"/>
+  <circle cx="1326" cy="266" r="246" fill="url(#rightGlow)"/>
+
+  <g mask="url(#dotMask)" opacity="0.95">
+    <rect x="0" y="0" width="1180" height="500" fill="url(#squareDots)"/>
+  </g>
+
+  <g opacity="0.9">
+    <circle cx="230" cy="350" r="352" fill="#FBF8F0"/>
+    <circle cx="230" cy="350" r="180" fill="#F8F4EA"/>
+    <circle cx="690" cy="110" r="352" fill="#FBF8F0" fill-opacity="0.94"/>
+  </g>
+
+  <g opacity="0.22" filter="url(#soften)">
+    <path d="M84 276C184 213 278 200 378 208C472 215 562 255 652 267C762 282 865 263 969 229" stroke="#85A97C" stroke-width="24" stroke-linecap="round"/>
+    <path d="M394 96C476 70 564 71 650 99C726 124 786 166 865 182C965 202 1060 178 1147 141" stroke="#A6C29A" stroke-width="18" stroke-linecap="round"/>
+  </g>
+
+  <g opacity="0.14">
+    <path d="M0 123H1500" stroke="#B4C3A4"/>
+    <path d="M0 378H1500" stroke="#B4C3A4"/>
+  </g>
+
+  <g transform="translate(1092 230)">
+    <path d="M25 67C25 34 50 8 84 8C108 8 127 20 141 39" stroke="#173E31" stroke-width="8" stroke-linecap="round"/>
+    <path d="M25 67C25 90 38 110 58 121" stroke="#173E31" stroke-width="8" stroke-linecap="round"/>
+    <path d="M52 68C52 50 66 36 84 36C97 36 107 42 115 51" stroke="#173E31" stroke-width="8" stroke-linecap="round"/>
+    <path d="M52 68C52 83 61 96 73 103" stroke="#173E31" stroke-width="8" stroke-linecap="round"/>
+    <rect x="70" y="43" width="9" height="63" rx="4.5" fill="#173E31"/>
+    <rect x="95" y="43" width="9" height="63" rx="4.5" fill="#173E31"/>
+    <path d="M90 14L104 19" stroke="#173E31" stroke-width="7" stroke-linecap="round"/>
+  </g>
+
+  <g>
+    <text x="1210" y="272" text-anchor="start" fill="#173E31" font-family="Satoshi, Inter, Arial, sans-serif" font-size="44" font-weight="600" letter-spacing="-1.1">Piron Finance</text>
+    <text x="1210" y="305" text-anchor="start" fill="#4B6758" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="600" letter-spacing="3.6">GLOBAL MONEY MARKET PROTOCOL</text>
+  </g>
+</svg>

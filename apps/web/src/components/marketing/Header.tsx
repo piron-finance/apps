@@ -7,6 +7,7 @@ import { APP_URL, DOCS_URL } from "@/components/marketing/links";
 const navItems = [
   { name: "Overview", href: "/" },
   { name: "How it works", href: "/how-it-works" },
+  { name: "Blog", href: "/blog" },
   { name: "Docs", href: DOCS_URL },
 ];
 

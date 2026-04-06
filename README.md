@@ -8,6 +8,7 @@ This is a **Turborepo** monorepo containing:
 
 - **`apps/web`** - Marketing site ([piron.finance](https://piron.finance))
 - **`apps/app`** - Main application ([app.piron.finance](https://app.piron.finance))
+- **`apps/cms`** - Sanity Studio for the blog CMS
 - **`packages/*`** - Shared packages and utilities
 
 ## 🚀 Getting Started
@@ -49,6 +50,9 @@ npm run dev --filter=@piron/web
 
 # Main app only
 npm run dev --filter=@piron/app
+
+# Sanity Studio
+npm run studio --workspace=@piron/cms
 ```
 
 ## 📦 Apps
@@ -63,6 +67,7 @@ Public-facing marketing website built with Next.js 14.
 - Investment network showcase
 - Cross-border payment features
 - Coming soon modal
+- CMS-backed blog
 
 **Tech Stack:**
 
@@ -70,6 +75,24 @@ Public-facing marketing website built with Next.js 14.
 - TailwindCSS
 - Framer Motion
 - Radix UI components
+- Sanity content integration
+
+### CMS Studio (`apps/cms`)
+
+Sanity Studio used by marketing and editorial teams to manage blog content.
+
+**Features:**
+
+- Blog publishing without code changes
+- Authors, categories, and blog settings
+- SEO and social metadata fields
+- Hero and featured post controls
+
+**Tech Stack:**
+
+- Sanity Studio
+- React 18
+- Structured content schemas
 
 ### Main Application (`apps/app`)
 
@@ -128,7 +151,19 @@ Domain: app.piron.finance
 #### Marketing Site (`apps/web`)
 
 ```env
-# Add any marketing site env vars here
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+SANITY_PROJECT_ID=
+SANITY_DATASET=production
+SANITY_API_VERSION=2026-04-06
+SANITY_API_READ_TOKEN=
+SANITY_REVALIDATE_SECRET=
+```
+
+#### CMS Studio (`apps/cms`)
+
+```env
+SANITY_STUDIO_PROJECT_ID=
+SANITY_STUDIO_DATASET=production
 ```
 
 #### Main App (`apps/app`)
@@ -172,6 +207,12 @@ piron/
 │       │   └── components/    # React components
 │       └── package.json
 │
+│   └── cms/          # Sanity Studio
+│       ├── src/
+│       │   └── schemaTypes/   # Blog content model
+│       ├── sanity.config.ts
+│       └── package.json
+│
 ├── packages/         # Shared packages
 │   ├── config/
 │   ├── ui/
@@ -191,7 +232,21 @@ npm install -D <package>
 # Install to specific app
 npm install -w @piron/web <package>
 npm install -w @piron/app <package>
+npm install -w @piron/cms <package>
 ```
+
+## ✍️ Blog CMS Setup
+
+To make the `/blog` route editable by non-engineering teams:
+
+1. Create a Sanity project and dataset.
+2. Set `SANITY_STUDIO_PROJECT_ID` and `SANITY_STUDIO_DATASET` when running `apps/cms`.
+3. Set `SANITY_PROJECT_ID`, `SANITY_DATASET`, and `NEXT_PUBLIC_SITE_URL` in the marketing site environment.
+4. Optionally set `SANITY_API_READ_TOKEN` if your dataset is private.
+5. Create a Sanity webhook that points to `/api/revalidate` on the marketing site and use the same `SANITY_REVALIDATE_SECRET` value in both places.
+6. In Studio, create at least one author, one category, the singleton `Blog settings` document, and your posts.
+
+Until Sanity is configured, the blog renders seeded sample content so the route stays usable during setup.
 
 ## 📝 License
 

@@ -1,0 +1,81 @@
+<svg width="1500" height="500" viewBox="0 0 1500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="48" y1="40" x2="1458" y2="470" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#020403"/>
+      <stop offset="0.48" stop-color="#04100B"/>
+      <stop offset="1" stop-color="#07140F"/>
+    </linearGradient>
+    <radialGradient id="leftGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(286 246) rotate(90) scale(294 398)">
+      <stop stop-color="#0D3D2D" stop-opacity="0.36"/>
+      <stop offset="0.55" stop-color="#0D3D2D" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#0D3D2D" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="centerGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(770 226) rotate(90) scale(186 286)">
+      <stop stop-color="#1D7A57" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#1D7A57" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ringStroke" x1="20" y1="470" x2="1060" y2="110" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#153B2E"/>
+      <stop offset="0.4" stop-color="#29644D"/>
+      <stop offset="0.78" stop-color="#4FA97D"/>
+      <stop offset="1" stop-color="#7BE2B6"/>
+    </linearGradient>
+    <linearGradient id="flow" x1="165" y1="154" x2="1496" y2="337" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#123A2C" stop-opacity="0"/>
+      <stop offset="0.3" stop-color="#245845" stop-opacity="0.54"/>
+      <stop offset="0.68" stop-color="#4FA97D" stop-opacity="0.38"/>
+      <stop offset="1" stop-color="#79E0B4" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="outerRibbonFill" x1="74" y1="418" x2="1188" y2="94" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#184433"/>
+      <stop offset="0.42" stop-color="#3C8A69"/>
+      <stop offset="0.76" stop-color="#63C59B"/>
+      <stop offset="1" stop-color="#79E0B4"/>
+    </linearGradient>
+    <linearGradient id="innerRibbonFill" x1="342" y1="338" x2="1096" y2="256" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#255A46"/>
+      <stop offset="0.55" stop-color="#56B487"/>
+      <stop offset="1" stop-color="#6ED4A7"/>
+    </linearGradient>
+    <radialGradient id="ribbonBloom" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(774 212) rotate(90) scale(236 410)">
+      <stop stop-color="#2C7558" stop-opacity="0.2"/>
+      <stop offset="1" stop-color="#2C7558" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="microGrid" x="0" y="0" width="14" height="14" patternUnits="userSpaceOnUse">
+      <rect x="5" y="5" width="3" height="3" rx="0.8" fill="#6FC8A0"/>
+    </pattern>
+    <radialGradient id="gridMask" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(474 254) rotate(0) scale(560 240)">
+      <stop offset="0" stop-color="white"/>
+      <stop offset="0.55" stop-color="white" stop-opacity="0.92"/>
+      <stop offset="0.86" stop-color="white" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="white" stop-opacity="0"/>
+    </radialGradient>
+    <mask id="gridReveal">
+      <rect width="1500" height="500" fill="black"/>
+      <rect x="50" y="60" width="980" height="360" fill="url(#gridMask)"/>
+      <circle cx="274" cy="308" r="166" fill="white" fill-opacity="0.64"/>
+      <circle cx="560" cy="154" r="132" fill="white" fill-opacity="0.42"/>
+    </mask>
+    <filter id="softBlur" x="-80" y="-80" width="1660" height="660" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="30"/>
+    </filter>
+  </defs>
+
+  <rect width="1500" height="500" fill="#010302"/>
+  <rect width="1500" height="500" fill="url(#bg)"/>
+  <ellipse cx="286" cy="246" rx="398" ry="294" fill="url(#leftGlow)"/>
+  <ellipse cx="770" cy="226" rx="286" ry="186" fill="url(#centerGlow)"/>
+
+  <g mask="url(#gridReveal)" opacity="0.18">
+    <rect x="0" y="0" width="1080" height="500" fill="url(#microGrid)"/>
+  </g>
+
+  <ellipse cx="774" cy="212" rx="410" ry="236" fill="url(#ribbonBloom)"/>
+
+  <g opacity="0.92">
+    <path d="M62 420C257 264 450 135 646 90C817 51 973 77 1086 170C1177 245 1217 340 1200 444C1147 333 1089 258 996 197C892 128 763 109 620 143C451 182 288 292 92 434L62 420Z" fill="url(#outerRibbonFill)"/>
+    <path d="M330 298C468 353 614 378 757 373C869 369 970 337 1064 286C1004 349 920 393 816 412C670 439 519 413 354 320L330 298Z" fill="url(#innerRibbonFill)" fill-opacity="0.88"/>
+  </g>
+
+  <text x="1360" y="274" text-anchor="end" fill="#F3FFF9" font-family="Satoshi, Inter, Arial, sans-serif" font-size="42" font-weight="600" letter-spacing="-0.9">Piron Finance</text>
+</svg>

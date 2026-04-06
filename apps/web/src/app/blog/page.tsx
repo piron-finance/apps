@@ -1,113 +1,200 @@
 import type { Metadata } from "next";
-import {
-  MarketingCard,
-  MarketingPageShell,
-  MarketingSection,
-} from "@/components/marketing/page-shell";
-import { APP_URL } from "@/components/marketing/links";
+import Link from "next/link";
+import Header from "@/components/marketing/Header";
+import { Footer } from "@/components/marketing/footer";
+import { CategoryTabs } from "@/components/blog/category-tabs";
+import { SearchForm } from "@/components/blog/search-form";
+import { PostCard } from "@/components/blog/post-card";
+import { BlogCTA } from "@/components/blog/blog-cta";
+import { getBlogIndexData } from "@/lib/blog/data";
 
 export const metadata: Metadata = {
   title: "Blog | Piron Finance",
   description:
-    "Read Piron’s perspective on fixed income, risk framing, and why better yield products need better disclosure.",
+    "Announcements, product notes, and perspectives from Piron Finance.",
 };
 
-const coverage = [
-  {
-    title: "Product notes",
-    description:
-      "Updates on how Piron thinks about pool design, disclosure, reporting, and user experience.",
-  },
-  {
-    title: "Market explainers",
-    description:
-      "Plain-language breakdowns of fixed-income products, duration, liquidity, and emerging market context.",
-  },
-  {
-    title: "Risk memos",
-    description:
-      "Writing that explains why serious yield products need serious framing, especially when they sit behind an easy interface.",
-  },
-];
+type BlogPageProps = {
+  searchParams?: {
+    category?: string;
+    page?: string;
+    q?: string;
+  };
+};
 
-const essays = [
-  {
-    title: "Why fixed income is a natural fit for on-chain distribution",
-    summary:
-      "Some products become clearer when moved on-chain. Fixed income is one of them, because users care about cash flow timing, duration, and asset quality in ways that map well to transparent product rails.",
-    body: [
-      "The appeal is not that fixed income becomes magically risk-free on-chain. It does not. The appeal is that a well-designed interface can expose more of the product shape than traditional wrappers usually do. A user can inspect hold periods, pool status, historical distributions, and operating mechanics before capital moves.",
-      "That matters because fixed income is fundamentally about structure. When the structure is visible, the product gets easier to compare and harder to misunderstand. That does not eliminate due diligence, but it makes the due diligence surface better.",
-    ],
-  },
-  {
-    title: "What a serious yield page should disclose",
-    summary:
-      "Headline APY is not enough. Users need to see where yield comes from, when liquidity is available, and what can go wrong if the underlying assumptions break.",
-    body: [
-      "A serious yield interface should make it obvious whether capital is locked, how returns are generated, what fees apply, and whether distributions depend on issuer, manager, or market performance. It should explain the downside case with the same energy it explains the upside case.",
-      "This is not just a legal or compliance problem. It is a product design problem. Good disclosure improves decisions, reduces support friction, and builds a healthier relationship with users who are committing real capital.",
-    ],
-  },
-  {
-    title: "Why emerging market access needs cleaner infrastructure",
-    summary:
-      "Emerging market fixed-income opportunities can be compelling, but access is often gated by distribution friction, fragmented information, and trust gaps between local opportunity and global capital.",
-    body: [
-      "Cleaner infrastructure helps by making allocation pathways easier to inspect. Users should be able to see what a pool targets, how funds are routed, and what time horizons or risk concentrations matter before they deposit. Distribution without visibility is not enough.",
-      "The long-term opportunity is not just moving more assets on-chain. It is building interfaces and operating models that make cross-border yield products easier to understand, easier to monitor, and easier to compare against alternatives.",
-    ],
-  },
-];
+function buildLoadMoreHref({
+  category,
+  page,
+  query,
+}: {
+  category: string;
+  page: number;
+  query: string;
+}) {
+  const params = new URLSearchParams();
 
-export default function BlogPage() {
+  if (category) {
+    params.set("category", category);
+  }
+
+  if (query) {
+    params.set("q", query);
+  }
+
+  params.set("page", String(page + 1));
+  return `/blog?${params.toString()}`;
+}
+
+export default async function BlogPage({ searchParams }: BlogPageProps) {
+  const activeCategory = searchParams?.category || "";
+  const searchQuery = searchParams?.q || "";
+  const page = Number.parseInt(searchParams?.page || "1", 10) || 1;
+  const data = await getBlogIndexData({
+    category: activeCategory,
+    page,
+    query: searchQuery,
+  });
+
+  const showEditorialSections = !data.activeCategory && !data.searchQuery;
+  const resultsTitle = data.activeCategory || data.searchQuery ? "Results" : "Most recent";
+
   return (
-    <MarketingPageShell
-      eyebrow="Piron Journal"
-      title="Notes on yield, structure, and clearer capital markets."
-      description="The Piron blog is where we explain the thinking behind the product: why fixed income belongs on better rails, why disclosure matters, and what we think serious yield interfaces should make legible."
-      actions={[
-        { label: "Launch app", href: APP_URL },
-        { label: "How it works", href: "/how-it-works", tone: "secondary" },
-      ]}
+    <div
+      className="relative min-h-screen w-full"
+      style={{
+        background: `
+          radial-gradient(ellipse 80% 50% at 50% 0%, rgba(0, 90, 90, 0.35) 0%, transparent 50%),
+          radial-gradient(ellipse 80% 50% at 50% 100%, rgba(0, 90, 90, 0.35) 0%, transparent 50%),
+          black
+        `,
+      }}
     >
-      <MarketingSection
-        eyebrow="Coverage"
-        title="What we write about"
-        description="This page is meant to be useful even before it becomes a traditional post archive. The focus is the substance behind the product, not content for its own sake."
-      >
-        <div className="grid gap-4 md:grid-cols-3">
-          {coverage.map((item) => (
-            <MarketingCard
-              key={item.title}
-              title={item.title}
-              description={item.description}
-            />
-          ))}
-        </div>
-      </MarketingSection>
+      <Header />
 
-      <MarketingSection
-        eyebrow="Featured essays"
-        title="Three ideas behind the platform"
-        description="These notes capture the tone we want from the journal: practical, risk-aware, and grounded in the mechanics that sit beneath any yield product."
-      >
-        <div className="grid gap-4 xl:grid-cols-3">
-          {essays.map((essay) => (
-            <MarketingCard
-              key={essay.title}
-              title={essay.title}
-              description={essay.summary}
-            >
-              <div className="space-y-4 text-sm leading-relaxed text-white/60">
-                {essay.body.map((paragraph) => (
-                  <p key={paragraph}>{paragraph}</p>
-                ))}
+      <div className="relative overflow-x-hidden">
+        <section className="relative overflow-hidden pt-28 pb-10">
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(ellipse 70% 45% at 30% 0%, rgba(0,196,140,0.14) 0%, transparent 60%)",
+            }}
+          />
+
+          <div className="relative mx-auto max-w-7xl px-6">
+            <div className="grid gap-8 lg:grid-cols-[1fr_340px] lg:items-end">
+              <div className="max-w-3xl">
+                <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-1.5 text-[11px] uppercase tracking-[0.2em] text-white/50">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#00C48C]" />
+                  {data.settings.title}
+                </p>
+                <h1 className="text-5xl font-bold leading-[1.05] tracking-tight text-white md:text-6xl">
+                  Blog
+                </h1>
+                <p className="mt-5 max-w-2xl text-base leading-relaxed text-white/55 md:text-lg">
+                  {data.settings.description}
+                </p>
+                {!data.configured ? (
+                  <p className="mt-4 text-sm text-white/40">
+                    Showing seeded content until Sanity is connected.
+                  </p>
+                ) : null}
               </div>
-            </MarketingCard>
-          ))}
-        </div>
-      </MarketingSection>
-    </MarketingPageShell>
+
+              <SearchForm activeCategory={data.activeCategory} searchQuery={data.searchQuery} />
+            </div>
+
+            <div className="mt-10">
+              <CategoryTabs
+                activeCategory={data.activeCategory}
+                categories={data.categories}
+                searchQuery={data.searchQuery}
+              />
+            </div>
+          </div>
+        </section>
+
+        <section className="pb-20">
+          <div className="mx-auto flex max-w-7xl flex-col gap-16 px-6">
+            {showEditorialSections && data.heroPost ? (
+              <div>
+                <PostCard post={data.heroPost} variant="feature" />
+              </div>
+            ) : null}
+
+            {showEditorialSections && data.featuredPosts.length > 0 ? (
+              <section>
+                <div className="mb-6 flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.22em] text-white/35">
+                      Editorial picks
+                    </p>
+                    <h2 className="mt-2 text-3xl font-semibold tracking-tight text-white">
+                      Featured
+                    </h2>
+                  </div>
+                </div>
+
+                <div className="grid gap-8 lg:grid-cols-3">
+                  {data.featuredPosts.map((post) => (
+                    <PostCard key={post._id} post={post} />
+                  ))}
+                </div>
+              </section>
+            ) : null}
+
+            <section>
+              <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-white/35">
+                    Archive
+                  </p>
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight text-white">
+                    {resultsTitle}
+                  </h2>
+                </div>
+
+                {(data.activeCategory || data.searchQuery) && data.totalRecentPosts > 0 ? (
+                  <p className="text-sm text-white/45">
+                    {data.totalRecentPosts} article{data.totalRecentPosts === 1 ? "" : "s"}
+                  </p>
+                ) : null}
+              </div>
+
+              {data.recentPosts.length > 0 ? (
+                <div className="grid gap-8 lg:grid-cols-3">
+                  {data.recentPosts.map((post) => (
+                    <PostCard key={post._id} post={post} />
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-[1.75rem] border border-white/10 bg-white/[0.03] p-8 text-white/55">
+                  No articles matched this filter yet.
+                </div>
+              )}
+            </section>
+
+            {data.hasMore ? (
+              <div className="flex justify-center">
+                <Link
+                  href={buildLoadMoreHref({
+                    category: data.activeCategory,
+                    page: data.page,
+                    query: data.searchQuery,
+                  })}
+                  className="rounded-full border border-white/10 bg-white/[0.03] px-6 py-3 text-sm font-medium text-white/70 transition-colors hover:border-white/20 hover:text-white"
+                >
+                  Load more articles
+                </Link>
+              </div>
+            ) : null}
+
+            <BlogCTA settings={data.settings} />
+          </div>
+        </section>
+
+        <Footer />
+      </div>
+    </div>
   );
 }
