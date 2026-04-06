@@ -3,21 +3,17 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === "production" ? "" : "http://localhost:3001");
-
 const footerLinks = {
   product: [
-    { label: "Pools", href: APP_URL },
     { label: "How it works", href: "/how-it-works" },
-    { label: "Institutions", href: "#" },
+    { label: "Institutions", href: "/institutions" },
   ],
   company: [
-    { label: "About", href: "#" },
-    { label: "Careers", href: "#" },
-    { label: "Press", href: "#" },
+    { label: "About", href: "/about" },
+    { label: "Blog", href: "/blog" },
   ],
   legal: [
-    { label: "Risk disclosure", href: "#" },
+    { label: "Risk disclosure", href: "/risk-disclosure" },
     { label: "Terms", href: "/terms" },
     { label: "Privacy", href: "/privacy" },
   ],
@@ -95,7 +91,7 @@ export function Footer() {
 
         <div className="mt-10 border-t border-white/10 pt-6">
           <p className="text-center text-xs text-white/40">
-            © 2025 Piron Finance. Not a bank. Returns are not guaranteed and may
+            © {new Date().getFullYear()} Piron Finance. Not a bank. Returns are not guaranteed and may
             involve risk of loss.
           </p>
         </div>
