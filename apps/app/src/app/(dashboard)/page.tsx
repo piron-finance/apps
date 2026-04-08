@@ -23,17 +23,48 @@ function formatTVL(value: string | undefined): string {
 function formatAPY(value: string | number | null | undefined): string {
   if (value === null || value === undefined) return "—";
   const num = typeof value === "string" ? parseFloat(value) : value;
+  if (isNaN(num)) return "—";
   return `${num.toFixed(1)}%`;
 }
 
-function getPoolInfo(pool: Pool): string {
-  const tvl = pool.analytics?.totalValueLocked 
-    ? formatTVL(pool.analytics.totalValueLocked) 
+function getPoolTVL(pool: Pool): string {
+  return pool.analytics?.totalValueLocked
+    ? formatTVL(pool.analytics.totalValueLocked)
     : "$0";
-  const utilization = pool.analytics?.utilizationRate 
+}
+
+function getPoolSubtitle(pool: Pool): string | undefined {
+  if (pool.poolType === "STABLE_YIELD") {
+    const nav = pool.analytics?.navPerShare;
+    return nav ? `NAV Price: ${parseFloat(nav).toFixed(4)} / share` : undefined;
+  }
+  if (pool.poolType === "SINGLE_ASSET") {
+    const rate = pool.discountRate ? pool.discountRate / 100 : null;
+    return rate ? `Target APY: ${rate.toFixed(1)}%` : undefined;
+  }
+  // LOCKED — subtitle handled by tiers prop
+  return undefined;
+}
+
+function getPoolTiers(pool: Pool): { duration: string; rate: string }[] | undefined {
+  if (pool.poolType !== "LOCKED" || !pool.lockTiers?.length) return undefined;
+  return pool.lockTiers.map((t) => ({
+    duration: `${t.lockDurationDays}d`,
+    rate: `${parseFloat(t.interestRatePercent).toFixed(1)}%`,
+  }));
+}
+
+function getPoolInfo(pool: Pool): string {
+  if (pool.poolType === "SINGLE_ASSET") {
+    const raised = pool.analytics?.totalValueLocked ? parseFloat(pool.analytics.totalValueLocked) : 0;
+    const target = pool.targetRaise ? parseFloat(pool.targetRaise) : 0;
+    const progress = target > 0 ? Math.round((raised / target) * 100) : 0;
+    return `${formatTVL(pool.analytics?.totalValueLocked)} of ${formatTVL(pool.targetRaise || undefined)} (${progress}%)`;
+  }
+  const utilization = pool.analytics?.utilizationRate
     ? `${parseFloat(pool.analytics.utilizationRate).toFixed(0)}% at work`
     : "";
-  return `${tvl} TVL${utilization ? ` · ${utilization}` : ""}`;
+  return utilization || "";
 }
 
 function getPoolTags(pool: Pool): string[] {
@@ -55,33 +86,56 @@ export default function DashboardPage() {
   const lockedPools = pools.filter((p) => p.poolType === "LOCKED");
   const singleAssetPools = pools.filter((p) => p.poolType === "SINGLE_ASSET");
 
-  const filteredStablePools = activeAsset === "All" 
-    ? stableYieldPools 
+  const filteredStablePools = activeAsset === "All"
+    ? stableYieldPools
     : stableYieldPools.filter((p) => p.assetSymbol === activeAsset);
 
   const filteredLockedPools = activeDuration === "All"
     ? lockedPools
-    : lockedPools.filter((p) => {
-        // Filter by maturity days if available
-        return true; // TODO: Add duration filtering
-      });
+    : lockedPools.filter(() => true);
 
-  const tvlChangeNum = metrics?.tvlChange24hPercentage 
-    ? (typeof metrics.tvlChange24hPercentage === "string" 
-        ? parseFloat(metrics.tvlChange24hPercentage) 
-        : metrics.tvlChange24hPercentage)
+  // TVL change badge — avoid showing misleading "+100%" when TVL was zero
+  const tvlChangeNum = metrics?.tvlChange24hPercentage
+    ? parseFloat(String(metrics.tvlChange24hPercentage))
     : null;
-  const tvlChange = tvlChangeNum !== null 
+  const tvlChange = tvlChangeNum !== null && Math.abs(tvlChangeNum) < 99.5
     ? `${tvlChangeNum >= 0 ? "+" : ""}${tvlChangeNum.toFixed(1)}%`
-    : undefined;
+    : tvlChangeNum !== null && tvlChangeNum > 0
+      ? "New"
+      : undefined;
+
+  // Blended APY — use platform metric, fall back to manual calc from pools
+  const blendedAPY = (() => {
+    if (metrics?.averageAPY && parseFloat(String(metrics.averageAPY)) > 0) {
+      return formatAPY(metrics.averageAPY);
+    }
+    // Manual fallback: TVL-weighted across all pools
+    let totalWeight = 0;
+    let weightedSum = 0;
+    for (const pool of pools) {
+      const tvl = parseFloat(pool.analytics?.totalValueLocked || "0");
+      if (tvl <= 0) continue;
+      let apy = 0;
+      if (pool.poolType === "SINGLE_ASSET" && pool.discountRate) {
+        apy = pool.discountRate / 100;
+      } else if (pool.projectedAPY) {
+        apy = parseFloat(String(pool.projectedAPY));
+      } else if (pool.analytics?.apy) {
+        apy = parseFloat(pool.analytics.apy);
+      }
+      weightedSum += apy * tvl;
+      totalWeight += tvl;
+    }
+    return totalWeight > 0 ? formatAPY(weightedSum / totalWeight) : "—";
+  })();
 
   return (
     <div className="min-h-screen bg-black p-4">
       {/* Stats Row */}
       <div className="grid grid-cols-4 gap-4 mb-4">
-        <StatCard 
-          label="TOTAL VALUE LOCKED" 
-          value={metrics?.totalValueLockedFormatted || formatTVL(metrics?.totalValueLocked) || "$0"} 
+        <StatCard
+          label="TOTAL VALUE LOCKED"
+          value={metrics?.totalValueLockedFormatted || formatTVL(metrics?.totalValueLocked) || "$0"}
           badge={tvlChange}
         />
         <StatCard
@@ -91,7 +145,7 @@ export default function DashboardPage() {
         />
         <StatCard
           label="BLENDED APY"
-          value={formatAPY(metrics?.averageAPY)}
+          value={blendedAPY}
           subtitle="TVL-weighted, net of fees"
         />
         <StatCard
@@ -119,10 +173,11 @@ export default function DashboardPage() {
                     type={pool.poolType === "STABLE_YIELD" ? "Stable Yield" : pool.poolType === "LOCKED" ? "Locked" : "Single Asset"}
                     asset={pool.assetSymbol}
                     name={pool.name}
-                    apyLabel="Live APY"
-                    apy={formatAPY(pool.projectedAPY || pool.analytics?.apy)}
+                    tvl={getPoolTVL(pool)}
+                    subtitle={getPoolSubtitle(pool)}
+                    tiers={getPoolTiers(pool)}
                     info={getPoolInfo(pool)}
-                    right="Featured"
+                    right=""
                     tags={getPoolTags(pool)}
                     link="Enter pool →"
                     minInvestment={pool.minInvestment}
@@ -169,10 +224,11 @@ export default function DashboardPage() {
                     type="Stable Yield"
                     asset={pool.assetSymbol}
                     name={pool.name}
-                    apyLabel="Live APY"
-                    apy={formatAPY(pool.analytics?.apy)}
+                    tvl={getPoolTVL(pool)}
+                    subtitle={getPoolSubtitle(pool)}
+                    tiers={getPoolTiers(pool)}
                     info={getPoolInfo(pool)}
-                    right={pool.minDeposit ? `Min ${formatTVL(pool.minDeposit)}` : ""}
+                    right=""
                     tags={getPoolTags(pool)}
                     link="Enter pool →"
                     minInvestment={pool.minInvestment}
@@ -217,12 +273,13 @@ export default function DashboardPage() {
                     key={pool.id}
                     poolId={pool.poolAddress}
                     type="Locked"
-                    asset={`${pool.assetSymbol}`}
+                    asset={pool.assetSymbol}
                     name={pool.name}
-                    apyLabel="Locked APY"
-                    apy={formatAPY(pool.projectedAPY || pool.analytics?.apy)}
+                    tvl={getPoolTVL(pool)}
+                    subtitle={getPoolSubtitle(pool)}
+                    tiers={getPoolTiers(pool)}
                     info={getPoolInfo(pool)}
-                    right={pool.maturityDate ? `Matures ${new Date(pool.maturityDate).toLocaleDateString()}` : ""}
+                    right={pool.maturityDate ? `${Math.ceil((new Date(pool.maturityDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))}d tenor` : ""}
                     tags={getPoolTags(pool)}
                     link="Review terms →"
                     minInvestment={pool.minInvestment}
@@ -245,29 +302,24 @@ export default function DashboardPage() {
               ) : singleAssetPools.length === 0 ? (
                 <div className="col-span-2 py-8 text-center text-[#666]">No single asset pools available</div>
               ) : (
-                singleAssetPools.map((pool) => {
-                  const raised = pool.analytics?.totalValueLocked ? parseFloat(pool.analytics.totalValueLocked) : 0;
-                  const target = pool.targetRaise ? parseFloat(pool.targetRaise) : 0;
-                  const progress = target > 0 ? Math.round((raised / target) * 100) : 0;
-                  
-                  return (
-                    <PoolCard
-                      key={pool.id}
-                      poolId={pool.poolAddress}
-                      type="Single Asset"
-                      asset={pool.assetSymbol}
-                      name={pool.name}
-                      apyLabel="Target APY"
-                      apy={formatAPY(pool.discountRate || pool.analytics?.apy)}
-                      info={`${formatTVL(pool.analytics?.totalValueLocked)} of ${formatTVL(pool.targetRaise || undefined)} filled (${progress}%)`}
-                      right={pool.maturityDate ? `${Math.ceil((new Date(pool.maturityDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))}d tenor` : ""}
-                      tags={getPoolTags(pool)}
-                      link="View deal memo →"
-                      minInvestment={pool.minInvestment}
-                      currency={pool.assetSymbol}
-                    />
-                  );
-                })
+                singleAssetPools.map((pool) => (
+                  <PoolCard
+                    key={pool.id}
+                    poolId={pool.poolAddress}
+                    type="Single Asset"
+                    asset={pool.assetSymbol}
+                    name={pool.name}
+                    tvl={getPoolTVL(pool)}
+                    subtitle={getPoolSubtitle(pool)}
+                    tiers={getPoolTiers(pool)}
+                    info={getPoolInfo(pool)}
+                    right={pool.maturityDate ? `${Math.ceil((new Date(pool.maturityDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))}d tenor` : ""}
+                    tags={getPoolTags(pool)}
+                    link="View deal memo →"
+                    minInvestment={pool.minInvestment}
+                    currency={pool.assetSymbol}
+                  />
+                ))
               )}
             </div>
           </PoolSection>

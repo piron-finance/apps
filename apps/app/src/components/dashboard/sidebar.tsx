@@ -2,6 +2,7 @@
 
 import { useAccount } from "wagmi";
 import { usePlatformMetrics } from "@/hooks/usePlatformData";
+import { usePoolsData } from "@/hooks/usePoolsData";
 import { useUserPositions } from "@/hooks/useUserData";
 import { useUserLockedPositions } from "@/hooks/useLockedPools";
 
@@ -23,7 +24,7 @@ export function Sidebar() {
     <div className="w-[32%] space-y-4">
       {isConnected && <PortfolioSection walletAddress={address!} />}
       <LiquiditySection />
-      <MaturitiesSection />
+      <RecentPoolsSection />
       <ProtocolHealthSection />
     </div>
   );
@@ -41,8 +42,8 @@ function PortfolioSection({ walletAddress }: { walletAddress: string }) {
   const { data: positions, isLoading } = useUserPositions(walletAddress);
   const { data: lockedPositions } = useUserLockedPositions(walletAddress);
 
-  const totalValue = positions?.analytics?.totalValue 
-    ? parseFloat(positions.analytics.totalValue) 
+  const totalValue = positions?.analytics?.totalValue
+    ? parseFloat(positions.analytics.totalValue)
     : 0;
   const totalReturn = positions?.analytics?.totalReturn
     ? parseFloat(positions.analytics.totalReturn)
@@ -51,7 +52,16 @@ function PortfolioSection({ walletAddress }: { walletAddress: string }) {
     ? parseFloat(positions.analytics.totalReturnPercentage)
     : 0;
   const activePositions = positions?.analytics?.activePositions || 0;
-  const lockedCount = lockedPositions?.summary?.activePositions || 0;
+  const lockedCount = positions?.analytics?.activeLockedPositions || lockedPositions?.summary?.activePositions || 0;
+  const avgAPY = positions?.analytics?.averageAPY;
+
+  // Locked position value
+  const lockedValue = positions?.analytics?.lockedPrincipal
+    ? parseFloat(positions.analytics.lockedPrincipal)
+    : 0;
+  const lockedPayout = positions?.analytics?.lockedExpectedPayout
+    ? parseFloat(positions.analytics.lockedExpectedPayout)
+    : 0;
 
   return (
     <SidebarCard>
@@ -61,7 +71,7 @@ function PortfolioSection({ walletAddress }: { walletAddress: string }) {
 
       {isLoading ? (
         <div className="py-4 text-center text-[#666] text-[12px]">Loading...</div>
-      ) : totalValue === 0 ? (
+      ) : totalValue === 0 && lockedCount === 0 ? (
         <div className="py-4 text-center text-[#666] text-[12px]">
           No positions yet. Deposit into a pool to get started.
         </div>
@@ -75,19 +85,27 @@ function PortfolioSection({ walletAddress }: { walletAddress: string }) {
           </div>
 
           <div className="space-y-2.5">
-            <SidebarRow label="Active positions" value={String(activePositions)} />
+            <SidebarRow label="Pool positions" value={String(activePositions)} />
             <SidebarRow label="Locked positions" value={String(lockedCount)} />
-            <SidebarRow label="Avg APY" value={positions?.analytics?.averageAPY || "—"} />
+            {avgAPY && parseFloat(avgAPY) > 0 && (
+              <SidebarRow label="Weighted APY" value={`${parseFloat(avgAPY).toFixed(1)}%`} />
+            )}
           </div>
 
-          <div className="bg-[#0a0a0a] rounded-lg mt-4 p-4 flex gap-2">
-            <button className="px-3 py-1.5 text-[11px] text-[#888] border border-[#1a1a1a] rounded-full hover:text-white hover:border-[#333] transition-colors">
-              View portfolio
-            </button>
-            <button className="px-3 py-1.5 text-[11px] text-[#888] border border-[#1a1a1a] rounded-full hover:text-white hover:border-[#333] transition-colors">
-              Transaction history
-            </button>
-          </div>
+          {/* Position breakdown instead of dummy buttons */}
+          {(lockedValue > 0 || totalValue > 0) && (
+            <div className="bg-[#0a0a0a] rounded-lg mt-4 p-4 space-y-2.5">
+              {totalValue - lockedValue > 0 && (
+                <SidebarRow label="Liquid (withdrawable)" value={formatValue(totalValue - lockedValue)} muted />
+              )}
+              {lockedValue > 0 && (
+                <SidebarRow label="Locked principal" value={formatValue(lockedValue)} muted />
+              )}
+              {lockedPayout > 0 && (
+                <SidebarRow label="Expected at maturity" value={formatValue(lockedPayout)} muted />
+              )}
+            </div>
+          )}
         </>
       )}
     </SidebarCard>
@@ -98,7 +116,7 @@ function LiquiditySection() {
   const { data: metrics, isLoading } = usePlatformMetrics();
 
   const tvl = metrics?.totalValueLocked ? parseFloat(metrics.totalValueLocked) : 0;
-  
+
   // Use tvlByType from platform metrics if available
   const tvlByType = (metrics as any)?.tvlByType;
   const stableYieldTvl = tvlByType?.STABLE_YIELD ? parseFloat(tvlByType.STABLE_YIELD) : tvl * 0.48;
@@ -117,7 +135,7 @@ function LiquiditySection() {
       <p className="text-[12px] text-[#666] mb-4">
         TVL by pool type. Useful for gauging depth.
       </p>
-      
+
       {isLoading ? (
         <div className="py-4 text-center text-[#666] text-[12px]">Loading...</div>
       ) : (
@@ -137,24 +155,69 @@ function LiquiditySection() {
   );
 }
 
-function MaturitiesSection() {
+function RecentPoolsSection() {
+  const { data: poolsResponse, isLoading } = usePoolsData();
+  const pools = poolsResponse?.data || [];
+
+  // Show pools with nearest maturity or most recently active
+  const upcomingPools = pools
+    .filter((p) => p.maturityDate)
+    .sort((a, b) => new Date(a.maturityDate!).getTime() - new Date(b.maturityDate!).getTime())
+    .slice(0, 4);
+
+  const activePools = pools
+    .filter((p) => p.status === "FUNDING" || p.status === "INVESTED")
+    .slice(0, 4);
+
+  const displayPools = upcomingPools.length > 0 ? upcomingPools : activePools;
+
   return (
     <SidebarCard>
       <h3 className="text-[14px] font-medium text-white mb-0.5">
-        Coming due
+        Pool timeline
       </h3>
       <p className="text-[12px] text-[#666] mb-4">
-        Maturities and payouts over the next two weeks.
+        {upcomingPools.length > 0 ? "Upcoming maturities and key dates." : "Active pools and their status."}
       </p>
-      <div className="space-y-2.5">
-        <SidebarRow label="Maturities" value="4 pools · $3.2M" />
-        <SidebarRow label="Coupon sweeps" value="3 runs · $410k" />
-      </div>
-      <div className="bg-[#0a0a0a] rounded-lg mt-4 p-4 space-y-2.5">
-        <SidebarRow label="Today" value="NAV window open" muted />
-        <SidebarRow label="Thu" value="2 locked pools mature" muted />
-        <SidebarRow label="Next Mon" value="Coupon distribution" muted />
-      </div>
+      {isLoading ? (
+        <div className="py-4 text-center text-[#666] text-[12px]">Loading...</div>
+      ) : displayPools.length === 0 ? (
+        <div className="py-4 text-center text-[#666] text-[12px]">No active pools</div>
+      ) : (
+        <div className="space-y-2.5">
+          {displayPools.map((pool) => {
+            const maturity = pool.maturityDate ? new Date(pool.maturityDate) : null;
+            const daysUntil = maturity
+              ? Math.ceil((maturity.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+              : null;
+            const rightText = daysUntil !== null
+              ? daysUntil <= 0
+                ? "Matured"
+                : `${daysUntil}d left`
+              : pool.status || "";
+
+            return (
+              <div key={pool.id} className="flex justify-between text-[12px]">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                    daysUntil !== null && daysUntil <= 7
+                      ? "bg-yellow-500"
+                      : daysUntil !== null && daysUntil <= 0
+                        ? "bg-red-400"
+                        : "bg-[#00c853]"
+                  }`} />
+                  <span className="text-[#888] truncate">{pool.name}</span>
+                </div>
+                <span className={`text-[#666] flex-shrink-0 ml-2 ${
+                  daysUntil !== null && daysUntil <= 7 ? "text-yellow-500" : ""
+                }`}>
+                  {rightText}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </SidebarCard>
   );
 }
@@ -162,11 +225,13 @@ function MaturitiesSection() {
 function ProtocolHealthSection() {
   const { data: metrics, isLoading } = usePlatformMetrics();
 
-  // Extract last24h data from platform metrics
   const last24h = (metrics as any)?.last24h;
   const deposits24h = last24h?.deposits ? formatValue(last24h.deposits) : "—";
   const withdrawals24h = last24h?.withdrawals ? formatValue(last24h.withdrawals) : "—";
   const newInvestors24h = last24h?.newInvestors ? String(last24h.newInvestors) : "—";
+
+  // Compute blended APY same way as main page
+  const avgAPY = metrics?.averageAPY ? parseFloat(String(metrics.averageAPY)) : 0;
 
   return (
     <SidebarCard>
@@ -176,7 +241,7 @@ function ProtocolHealthSection() {
       <p className="text-[12px] text-[#666] mb-4">
         Quick read on protocol status.
       </p>
-      
+
       {isLoading ? (
         <div className="py-4 text-center text-[#666] text-[12px]">Loading...</div>
       ) : (
@@ -184,21 +249,15 @@ function ProtocolHealthSection() {
           <div className="space-y-2.5">
             <SidebarRow label="Total investors" value={String(metrics?.totalUsers || 0)} />
             <SidebarRow label="Total transactions" value={metrics?.totalTransactions ? String(metrics.totalTransactions) : "—"} />
-            <SidebarRow label="Avg APY" value={metrics?.averageAPY ? `${parseFloat(String(metrics.averageAPY)).toFixed(2)}%` : "—"} />
+            {avgAPY > 0 && (
+              <SidebarRow label="Platform APY" value={`${avgAPY.toFixed(1)}%`} />
+            )}
             <SidebarRow label="System status" value="Nominal" />
           </div>
           <div className="bg-[#0a0a0a] rounded-lg mt-4 p-4 space-y-2.5">
             <SidebarRow label="24h deposits" value={deposits24h} muted />
             <SidebarRow label="24h withdrawals" value={withdrawals24h} muted />
             <SidebarRow label="New investors (24h)" value={newInvestors24h} muted />
-          </div>
-          <div className="flex gap-2 mt-4">
-            <button className="px-3 py-1.5 text-[11px] text-[#888] border border-[#1a1a1a] rounded-full hover:text-white hover:border-[#333] transition-colors">
-              Full analytics
-            </button>
-            <button className="px-3 py-1.5 text-[11px] text-[#888] border border-[#1a1a1a] rounded-full hover:text-white hover:border-[#333] transition-colors">
-              Risk docs
-            </button>
           </div>
         </>
       )}

@@ -1,0 +1,128 @@
+<svg width="1500" height="500" viewBox="0 0 1500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgAtmosphere" x1="76" y1="78" x2="1424" y2="438" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#040806"/>
+      <stop offset="0.5" stop-color="#020403"/>
+      <stop offset="1" stop-color="#05110D"/>
+    </linearGradient>
+    <radialGradient id="leftGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(244 250) rotate(90) scale(254 254)">
+      <stop stop-color="#0F3D2F" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#0F3D2F" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="rightGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1230 220) rotate(90) scale(276 384)">
+      <stop stop-color="#1F8F63" stop-opacity="0.26"/>
+      <stop offset="0.45" stop-color="#0C4B35" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#0C4B35" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="flowStroke" x1="236" y1="145" x2="1450" y2="360" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#12372B" stop-opacity="0"/>
+      <stop offset="0.18" stop-color="#245C48" stop-opacity="0.55"/>
+      <stop offset="0.5" stop-color="#4FA97D" stop-opacity="0.44"/>
+      <stop offset="0.82" stop-color="#79E0B4" stop-opacity="0.48"/>
+      <stop offset="1" stop-color="#79E0B4" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="accentStroke" x1="1058" y1="64" x2="1330" y2="432" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4FA97D"/>
+      <stop offset="0.56" stop-color="#79E0B4"/>
+      <stop offset="1" stop-color="#1E6F4E"/>
+    </linearGradient>
+    <linearGradient id="eyebrowAccent" x1="500" y1="151" x2="676" y2="151" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#79E0B4"/>
+      <stop offset="1" stop-color="#275C48"/>
+    </linearGradient>
+    <filter id="softBlur" x="-40" y="-40" width="1580" height="580" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="28"/>
+    </filter>
+    <filter id="arcGlow" x="1008" y="26" width="392" height="438" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="12"/>
+    </filter>
+    <clipPath id="globeClip">
+      <circle cx="250" cy="250" r="208"/>
+    </clipPath>
+  </defs>
+
+  <rect width="1500" height="500" fill="#010302"/>
+  <rect width="1500" height="500" fill="url(#bgAtmosphere)"/>
+  <circle cx="244" cy="250" r="254" fill="url(#leftGlow)"/>
+  <ellipse cx="1230" cy="220" rx="384" ry="276" fill="url(#rightGlow)"/>
+
+  <g filter="url(#softBlur)" opacity="0.26">
+    <path d="M122 144C254 100 388 110 488 155C575 195 654 236 771 230C931 221 1018 118 1188 122C1298 125 1393 186 1492 252" stroke="#58BA8C" stroke-width="26" stroke-linecap="round"/>
+  </g>
+
+  <g opacity="0.22">
+    <path d="M0 84H1500" stroke="#113528"/>
+    <path d="M0 416H1500" stroke="#113528"/>
+    <path d="M0 250H1500" stroke="#102C22"/>
+  </g>
+
+  <g clip-path="url(#globeClip)" opacity="0.62">
+    <circle cx="250" cy="250" r="208" fill="#04100C" stroke="#143328" stroke-width="1.5"/>
+    <ellipse cx="250" cy="250" rx="56" ry="208" stroke="#1E5B44" stroke-opacity="0.65" stroke-width="1.2"/>
+    <ellipse cx="250" cy="250" rx="118" ry="208" stroke="#1A4838" stroke-opacity="0.48" stroke-width="1.2"/>
+    <ellipse cx="250" cy="250" rx="172" ry="208" stroke="#163B2F" stroke-opacity="0.42" stroke-width="1.2"/>
+    <ellipse cx="250" cy="250" rx="208" ry="44" stroke="#1E5B44" stroke-opacity="0.62" stroke-width="1.2"/>
+    <ellipse cx="250" cy="250" rx="208" ry="90" stroke="#1B4B3A" stroke-opacity="0.46" stroke-width="1.2"/>
+    <ellipse cx="250" cy="250" rx="208" ry="142" stroke="#173E31" stroke-opacity="0.38" stroke-width="1.2"/>
+    <path d="M46 312C108 292 166 236 210 196C248 161 301 109 368 96C425 84 471 92 530 120" stroke="#245C48" stroke-opacity="0.46" stroke-width="1.4"/>
+    <path d="M-10 214C104 194 189 208 256 248C308 279 352 336 420 364C488 391 561 390 650 360" stroke="#245C48" stroke-opacity="0.42" stroke-width="1.4"/>
+    <path d="M40 384C106 334 163 314 236 312C321 309 372 339 442 364C512 389 598 395 675 366" stroke="#173E31" stroke-opacity="0.4" stroke-width="1.2"/>
+  </g>
+
+  <g opacity="0.5">
+    <circle cx="179" cy="173" r="4" fill="#79E0B4"/>
+    <circle cx="325" cy="230" r="3" fill="#4FA97D"/>
+    <circle cx="210" cy="334" r="4" fill="#4FA97D"/>
+    <circle cx="357" cy="133" r="2.5" fill="#79E0B4"/>
+    <circle cx="122" cy="269" r="2.5" fill="#79E0B4"/>
+  </g>
+
+  <g opacity="0.48">
+    <path d="M250 148C389 134 498 140 618 185C719 223 805 253 915 242C1064 228 1150 144 1293 144C1382 144 1448 180 1500 214" stroke="url(#flowStroke)" stroke-width="1.7"/>
+    <path d="M154 248C305 220 452 222 585 270C691 308 781 345 907 337C1058 327 1160 238 1280 236C1368 235 1442 268 1500 302" stroke="url(#flowStroke)" stroke-width="1.5"/>
+    <path d="M118 360C257 316 407 310 560 344C680 371 790 408 922 404C1080 399 1182 332 1322 330C1401 330 1460 352 1500 372" stroke="url(#flowStroke)" stroke-width="1.4"/>
+  </g>
+
+  <g filter="url(#arcGlow)" opacity="0.3">
+    <path d="M1108 82C1222 107 1303 189 1328 282C1344 339 1335 393 1309 438" stroke="#79E0B4" stroke-width="26" stroke-linecap="round"/>
+  </g>
+
+  <g>
+    <path d="M1080 92C1165 108 1237 148 1288 206" stroke="url(#accentStroke)" stroke-width="24" stroke-linecap="round"/>
+    <path d="M1304 230C1322 271 1323 318 1308 358C1299 383 1284 407 1263 428" stroke="url(#accentStroke)" stroke-width="24" stroke-linecap="round"/>
+    <path d="M1018 126C1110 86 1215 83 1316 130" stroke="#2D7759" stroke-opacity="0.9" stroke-width="8" stroke-linecap="round"/>
+    <path d="M1118 76L1156 83" stroke="#79E0B4" stroke-opacity="0.72" stroke-width="8" stroke-linecap="round"/>
+    <path d="M1265 435L1282 402" stroke="#4FA97D" stroke-opacity="0.82" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="1328" cy="253" r="21" fill="#020403"/>
+    <circle cx="1328" cy="253" r="15" stroke="#79E0B4" stroke-opacity="0.6" stroke-width="1.4"/>
+  </g>
+
+  <g>
+    <rect x="500" y="148" width="176" height="6" rx="3" fill="url(#eyebrowAccent)"/>
+    <text x="500" y="135" fill="#79E0B4" font-family="Satoshi, Inter, Arial, sans-serif" font-size="14" font-weight="600" letter-spacing="6">PIRON FINANCE</text>
+
+    <text x="500" y="228" fill="#F4FFF9" font-family="Satoshi, Inter, Arial, sans-serif" font-size="54" font-weight="600" letter-spacing="-1.6">
+      <tspan x="500" dy="0">The Onchain Global</tspan>
+      <tspan x="500" dy="60">Money Market Protocol</tspan>
+    </text>
+
+    <text x="500" y="336" fill="#B0D8C7" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="400" letter-spacing="0.1">
+      <tspan x="500" dy="0">Structured access to global fixed income with</tspan>
+      <tspan x="500" dy="30">clearer capital paths and visible onchain rails.</tspan>
+    </text>
+  </g>
+
+  <g>
+    <rect x="500" y="390" width="214" height="34" rx="17" fill="#07110D" stroke="#1E4B39"/>
+    <rect x="726" y="390" width="214" height="34" rx="17" fill="#07110D" stroke="#1E4B39"/>
+    <rect x="952" y="390" width="214" height="34" rx="17" fill="#07110D" stroke="#1E4B39"/>
+
+    <circle cx="522" cy="407" r="4" fill="#79E0B4"/>
+    <circle cx="748" cy="407" r="4" fill="#79E0B4"/>
+    <circle cx="974" cy="407" r="4" fill="#79E0B4"/>
+
+    <text x="536" y="412" fill="#DFF8EC" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="600" letter-spacing="1">GLOBAL FIXED INCOME</text>
+    <text x="762" y="412" fill="#DFF8EC" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="600" letter-spacing="1">VISIBLE ASSET FLOWS</text>
+    <text x="988" y="412" fill="#DFF8EC" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="600" letter-spacing="1">WALLET-NATIVE ACCESS</text>
+  </g>
+</svg>

@@ -2,13 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === "production" ? "" : "http://localhost:3001");
+import { APP_URL, DOCS_URL } from "@/components/marketing/links";
 
 const navItems = [
-  { name: "Overview", href: "#" },
+  { name: "Overview", href: "/" },
   { name: "How it works", href: "/how-it-works" },
-  { name: "Docs", href: "https://piron.gitbook.io/piron-finance/"}, 
+  { name: "Blog", href: "/blog" },
+  { name: "Docs", href: DOCS_URL },
 ];
 
 const Header = () => {

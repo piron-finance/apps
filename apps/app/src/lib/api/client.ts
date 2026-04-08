@@ -35,11 +35,9 @@ apiClient.interceptors.response.use(
       const url = error.config?.url || "";
       const status = error.response.status;
 
-      // Silently pass through 404s on user position/profile routes
-      // These are expected when a user hasn't deposited yet
-      const isSilent404 =
-        status === 404 &&
-        (url.includes("/users/") && (url.includes("/positions") || url.includes("/locked-positions")));
+      // Silently pass through 404s on user-scoped routes
+      // These are expected when a user hasn't deposited yet or has no data
+      const isSilent404 = status === 404 && url.includes("/users/");
 
       if (!isSilent404) {
         // Server responded with error status
