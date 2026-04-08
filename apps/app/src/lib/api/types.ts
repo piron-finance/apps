@@ -290,7 +290,10 @@ export interface PortfolioAnalytics {
   unrealizedReturn: string;
   realizedReturn: string;
   activePositions: number;
+  activeLockedPositions: number;
   averageAPY: string;
+  lockedPrincipal: string;
+  lockedExpectedPayout: string;
 }
 
 export interface PortfolioSummary {
