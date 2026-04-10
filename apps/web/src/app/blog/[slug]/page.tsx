@@ -9,6 +9,7 @@ import { PostImage } from "@/components/blog/post-image";
 import { RichText } from "@/components/blog/rich-text";
 import { ShareButtons } from "@/components/blog/share-buttons";
 import { getBlogPostPageData } from "@/lib/blog/data";
+import { resolveBodyImages } from "@/lib/sanity/image";
 import { absoluteUrl } from "@/lib/site";
 
 type BlogPostPageProps = {
@@ -137,7 +138,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
             <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_260px]">
               <article className="space-y-8">
-                <RichText value={post.body} />
+                <RichText value={resolveBodyImages(post.body)} />
               </article>
 
               <aside className="lg:sticky lg:top-24 lg:self-start lg:border-l lg:border-white/10 lg:pl-8">
