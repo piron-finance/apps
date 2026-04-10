@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { SOCIAL_LINKS } from "@/components/marketing/links";
 
 const footerLinks = {
   product: [
@@ -38,6 +39,21 @@ export function Footer() {
               Global fixed income made accessible. Simple on-chain pools for 
               emerging markets and serious treasuries.
             </p>
+            {SOCIAL_LINKS.length > 0 ? (
+              <div className="mt-5 flex flex-wrap items-center gap-4">
+                {SOCIAL_LINKS.map((link) => (
+                  <Link
+                    key={link.label}
+                    href={link.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-sm text-white/55 transition-colors hover:text-white"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            ) : null}
           </div>
 
           <div>

@@ -151,7 +151,10 @@ Domain: app.piron.finance
 #### Marketing Site (`apps/web`)
 
 ```env
+NEXT_PUBLIC_APP_URL=http://localhost:3001
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
+NEXT_PUBLIC_X_URL=https://x.com/pironfinance
+NEXT_PUBLIC_LINKEDIN_URL=
 SANITY_PROJECT_ID=
 SANITY_DATASET=production
 SANITY_API_VERSION=2026-04-06
@@ -242,9 +245,10 @@ To make the `/blog` route editable by non-engineering teams:
 1. Create a Sanity project and dataset.
 2. Set `SANITY_STUDIO_PROJECT_ID` and `SANITY_STUDIO_DATASET` when running `apps/cms`.
 3. Set `SANITY_PROJECT_ID`, `SANITY_DATASET`, and `NEXT_PUBLIC_SITE_URL` in the marketing site environment.
-4. Optionally set `SANITY_API_READ_TOKEN` if your dataset is private.
-5. Create a Sanity webhook that points to `/api/revalidate` on the marketing site and use the same `SANITY_REVALIDATE_SECRET` value in both places.
-6. In Studio, create at least one author, one category, the singleton `Blog settings` document, and your posts.
+4. Optionally set `NEXT_PUBLIC_X_URL` and `NEXT_PUBLIC_LINKEDIN_URL` to surface your social links on the site.
+5. Optionally set `SANITY_API_READ_TOKEN` if your dataset is private.
+6. Create a Sanity webhook that points to `/api/revalidate` on the marketing site and use the same `SANITY_REVALIDATE_SECRET` value in both places.
+7. In Studio, create at least one author, one category, the singleton `Blog settings` document, and your posts.
 
 Until Sanity is configured, the blog renders seeded sample content so the route stays usable during setup.
 

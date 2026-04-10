@@ -127,15 +127,13 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
         <section className="pb-20">
           <div className="mx-auto flex max-w-6xl flex-col gap-12 px-6">
-            <div className="relative aspect-[16/9]">
-              <PostImage
-                image={post.image}
-                title={post.title}
-                category={post.category?.title}
-                priority
-                className="h-full w-full"
-              />
-            </div>
+            <PostImage
+              image={post.image}
+              title={post.title}
+              category={post.category?.title}
+              priority
+              intrinsic
+            />
 
             <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_260px]">
               <article className="space-y-8">
@@ -147,7 +145,11 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                   Share
                 </p>
                 <div className="mt-4">
-                  <ShareButtons title={post.title} url={articleUrl} />
+                  <ShareButtons
+                    title={post.title}
+                    url={articleUrl}
+                    xCopy={post.xCopy || post.socialDescription || post.excerpt}
+                  />
                 </div>
               </aside>
             </div>

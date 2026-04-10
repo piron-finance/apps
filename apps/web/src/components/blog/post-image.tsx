@@ -7,6 +7,7 @@ type PostImageProps = {
   category?: string;
   priority?: boolean;
   className?: string;
+  intrinsic?: boolean;
 };
 
 function FallbackArt({
@@ -20,7 +21,7 @@ function FallbackArt({
 }) {
   return (
     <div
-      className={`relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-[linear-gradient(135deg,rgba(0,196,140,0.18),rgba(15,23,42,0.95)_55%,rgba(14,165,233,0.16))] ${className}`}
+      className={`relative overflow-hidden rounded-3xl border border-white/10 bg-[linear-gradient(135deg,rgba(0,196,140,0.18),rgba(15,23,42,0.95)_55%,rgba(14,165,233,0.16))] ${className}`}
     >
       <div
         className="absolute inset-0 opacity-30"
@@ -51,23 +52,60 @@ export function PostImage({
   category,
   priority = false,
   className = "",
+  intrinsic = false,
 }: PostImageProps) {
   const url = image?.asset?.url;
   const width = image?.asset?.metadata?.dimensions?.width || 1200;
   const height = image?.asset?.metadata?.dimensions?.height || 800;
+  const aspectRatio = width / height;
+  const isWideBanner = aspectRatio >= 2;
 
   if (!url) {
+    if (intrinsic) {
+      return (
+        <div className={`aspect-[16/9] ${className}`}>
+          <FallbackArt title={title} category={category} className="h-full w-full" />
+        </div>
+      );
+    }
+
     return <FallbackArt title={title} category={category} className={className} />;
   }
 
+  if (intrinsic) {
+    return (
+      <div
+        className={`overflow-hidden rounded-3xl border border-white/10 ${
+          isWideBanner ? "bg-black/30" : "bg-white/[0.03]"
+        } ${className}`}
+      >
+        <Image
+          src={url}
+          alt={image?.alt || title}
+          width={width}
+          height={height}
+          priority={priority}
+          className="h-auto w-full"
+          sizes="(max-width: 1280px) 100vw, 1100px"
+          placeholder={image?.asset?.metadata?.lqip ? "blur" : "empty"}
+          blurDataURL={image?.asset?.metadata?.lqip}
+        />
+      </div>
+    );
+  }
+
   return (
-    <div className={`relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-white/[0.03] ${className}`}>
+    <div
+      className={`relative overflow-hidden rounded-3xl border border-white/10 ${
+        isWideBanner ? "bg-black/30" : "bg-white/[0.03]"
+      } ${className}`}
+    >
       <Image
         src={url}
         alt={image?.alt || title}
         fill
         priority={priority}
-        className="object-cover"
+        className={isWideBanner ? "object-contain" : "object-cover"}
         sizes="(max-width: 768px) 100vw, 50vw"
         placeholder={image?.asset?.metadata?.lqip ? "blur" : "empty"}
         blurDataURL={image?.asset?.metadata?.lqip}
