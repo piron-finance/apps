@@ -3,3 +3,13 @@ export const APP_URL =
   (process.env.NODE_ENV === "production" ? "" : "http://localhost:3001");
 
 export const DOCS_URL = "https://piron.gitbook.io/piron-finance/";
+
+export const X_URL =
+  process.env.NEXT_PUBLIC_X_URL || "https://x.com/pironfinance";
+
+export const LINKEDIN_URL = process.env.NEXT_PUBLIC_LINKEDIN_URL || "";
+
+export const SOCIAL_LINKS = [
+  { label: "X", href: X_URL },
+  ...(LINKEDIN_URL ? [{ label: "LinkedIn", href: LINKEDIN_URL }] : []),
+];

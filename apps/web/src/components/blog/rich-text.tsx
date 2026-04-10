@@ -1,9 +1,21 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { PortableText, type PortableTextComponents } from "@portabletext/react";
 import { urlFor } from "@/lib/sanity/image";
+
+function getSanityAssetDimensions(assetRef?: string) {
+  const match = assetRef?.match(/-(\d+)x(\d+)-/);
+
+  if (!match) {
+    return null;
+  }
+
+  return {
+    width: Number.parseInt(match[1], 10),
+    height: Number.parseInt(match[2], 10),
+  };
+}
 
 const components: PortableTextComponents = {
   block: {
@@ -55,7 +67,10 @@ const components: PortableTextComponents = {
   },
   types: {
     image: ({ value }) => {
-      const imageUrl = value?.asset?._ref ? urlFor(value).width(1600).fit("max").url() : null;
+      const imageUrl = value?.asset?._ref
+        ? urlFor(value).width(1600).fit("max").auto("format").url()
+        : null;
+      const dimensions = getSanityAssetDimensions(value?.asset?._ref);
 
       if (!imageUrl) {
         return null;
@@ -63,13 +78,15 @@ const components: PortableTextComponents = {
 
       return (
         <figure className="space-y-3">
-          <div className="relative aspect-[16/9] overflow-hidden rounded-[1.75rem] border border-white/10 bg-white/[0.03]">
-            <Image
+          <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03]">
+            <img
               src={imageUrl}
               alt={value?.alt || ""}
-              fill
-              className="object-cover"
-              sizes="(max-width: 1024px) 100vw, 900px"
+              width={dimensions?.width || 1600}
+              height={dimensions?.height || 900}
+              loading="lazy"
+              decoding="async"
+              className="h-auto w-full"
             />
           </div>
           {value?.caption ? (

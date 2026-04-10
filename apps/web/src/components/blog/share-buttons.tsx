@@ -5,12 +5,13 @@ import { useState } from "react";
 type ShareButtonsProps = {
   title: string;
   url: string;
+  xCopy?: string;
 };
 
-export function ShareButtons({ title, url }: ShareButtonsProps) {
+export function ShareButtons({ title, url, xCopy }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false);
   const encodedUrl = encodeURIComponent(url);
-  const encodedTitle = encodeURIComponent(title);
+  const encodedXCopy = encodeURIComponent(xCopy || title);
 
   async function copyLink() {
     try {
@@ -33,7 +34,7 @@ export function ShareButtons({ title, url }: ShareButtonsProps) {
         LinkedIn
       </a>
       <a
-        href={`https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`}
+        href={`https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedXCopy}`}
         target="_blank"
         rel="noreferrer"
         className="rounded-full border border-white/10 px-4 py-2 text-sm text-white/60 transition-colors hover:border-white/20 hover:text-white"
@@ -45,7 +46,7 @@ export function ShareButtons({ title, url }: ShareButtonsProps) {
         onClick={copyLink}
         className="rounded-full border border-white/10 px-4 py-2 text-sm text-white/60 transition-colors hover:border-white/20 hover:text-white"
       >
-        {copied ? "Copied" : "Copy link"}
+        {copied ? "Link copied" : "Copy post link"}
       </button>
     </div>
   );

@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import Image from "next/image";
-
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === "production" ? "" : "http://localhost:3001");
+import { APP_URL, DOCS_URL } from "@/components/marketing/links";
 
 export function Hero() {
   return (
@@ -55,7 +54,9 @@ export function Hero() {
               Start earning
             </Link>
             <Link
-              href={APP_URL}
+              href={DOCS_URL}
+              target="_blank"
+              rel="noreferrer"
               className="text-sm font-medium text-white/70 transition-colors hover:text-white"
             >
               Browse docs

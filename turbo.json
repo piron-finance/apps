@@ -2,8 +2,11 @@
   "$schema": "https://turbo.build/schema.json",
   "globalEnv": [
     "NEXT_PUBLIC_API_URL",
+    "NEXT_PUBLIC_APP_URL",
+    "NEXT_PUBLIC_LINKEDIN_URL",
     "NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID",
     "NEXT_PUBLIC_SITE_URL",
+    "NEXT_PUBLIC_X_URL",
     "SANITY_API_READ_TOKEN",
     "SANITY_API_VERSION",
     "SANITY_DATASET",
@@ -18,8 +21,11 @@
       "outputs": [".next/**", "!.next/cache/**"],
       "env": [
         "NEXT_PUBLIC_API_URL",
+        "NEXT_PUBLIC_APP_URL",
+        "NEXT_PUBLIC_LINKEDIN_URL",
         "NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID",
         "NEXT_PUBLIC_SITE_URL",
+        "NEXT_PUBLIC_X_URL",
         "SANITY_API_READ_TOKEN",
         "SANITY_API_VERSION",
         "SANITY_DATASET",

@@ -25,7 +25,6 @@ export async function sanityFetch<T>({
   }
 
   return sanityClient.fetch<T>(query, params, {
-    cache: "force-cache",
     next: {
       revalidate: 300,
       tags: Array.from(new Set(["sanity:blog", ...tags])),
