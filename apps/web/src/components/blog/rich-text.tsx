@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { PortableText, type PortableTextComponents } from "@portabletext/react";
-import { urlFor } from "@/lib/sanity/image";
 
 function getSanityAssetDimensions(assetRef?: string) {
   const match = assetRef?.match(/-(\d+)x(\d+)-/);
@@ -67,9 +66,7 @@ const components: PortableTextComponents = {
   },
   types: {
     image: ({ value }) => {
-      const imageUrl = value?.asset?._ref
-        ? urlFor(value).width(1600).fit("max").auto("format").url()
-        : null;
+      const imageUrl = value?._resolvedUrl || null;
       const dimensions = getSanityAssetDimensions(value?.asset?._ref);
 
       if (!imageUrl) {

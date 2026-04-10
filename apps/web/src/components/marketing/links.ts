@@ -10,6 +10,8 @@ export const X_URL =
 export const LINKEDIN_URL = process.env.NEXT_PUBLIC_LINKEDIN_URL || "";
 
 export const SOCIAL_LINKS = [
-  { label: "X", href: X_URL },
-  ...(LINKEDIN_URL ? [{ label: "LinkedIn", href: LINKEDIN_URL }] : []),
+  { label: "X", href: X_URL, icon: "x" as const },
+  ...(LINKEDIN_URL
+    ? [{ label: "LinkedIn", href: LINKEDIN_URL, icon: "linkedin" as const }]
+    : []),
 ];
