@@ -1,6 +1,6 @@
 # Piron Finance
 
-Tokenizing global bond markets through on-chain investment pools backed by real-world assets — T-Bills, bonds, and fixed-income instruments.
+Access institutional-grade fixed income through simple on-chain pools. No minimums, no paperwork, no middlemen.
 
 ## Architecture
 
