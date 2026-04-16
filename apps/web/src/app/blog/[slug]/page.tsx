@@ -76,39 +76,24 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const articleUrl = absoluteUrl(`/blog/${post.slug}`);
 
   return (
-    <div
-      className="relative min-h-screen w-full"
-      style={{
-        background: `
-          radial-gradient(ellipse 80% 50% at 50% 0%, rgba(0, 90, 90, 0.35) 0%, transparent 50%),
-          radial-gradient(ellipse 80% 50% at 50% 100%, rgba(0, 90, 90, 0.35) 0%, transparent 50%),
-          black
-        `,
-      }}
-    >
+    <div className="page-shell-gradient relative min-h-screen w-full">
       <Header />
 
       <div className="relative overflow-x-hidden">
         <section className="relative overflow-hidden pt-28 pb-12">
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{
-              background:
-                "radial-gradient(ellipse 70% 45% at 30% 0%, rgba(0,196,140,0.14) 0%, transparent 60%)",
-            }}
-          />
+          <div className="page-shell-hero-glow pointer-events-none absolute inset-0" />
 
           <div className="relative mx-auto max-w-4xl px-6">
             <Link
               href="/blog"
-              className="text-sm text-white/45 transition-colors hover:text-white"
+              className="text-sm text-content-tertiary transition-colors hover:text-content-primary"
             >
               ← Back to blog
             </Link>
 
-            <div className="mt-8 flex flex-wrap items-center gap-3 text-sm text-white/45">
+            <div className="mt-8 flex flex-wrap items-center gap-3 text-sm text-content-tertiary">
               {post.category?.title ? (
-                <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs font-medium text-white/70">
+                <span className="rounded-full border border-border bg-white/[0.05] px-3 py-1 text-xs font-medium text-content-secondary">
                   {post.category.title}
                 </span>
               ) : null}
@@ -116,11 +101,11 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               {post.author?.name ? <span>By {post.author.name}</span> : null}
             </div>
 
-            <h1 className="mt-6 text-4xl font-bold leading-tight tracking-tight text-white md:text-6xl">
+            <h1 className="mt-6 text-4xl font-bold leading-tight tracking-tight text-content-primary md:text-6xl">
               {post.title}
             </h1>
 
-            <p className="mt-6 max-w-3xl text-base leading-relaxed text-white/55 md:text-lg">
+            <p className="mt-6 max-w-3xl text-base leading-relaxed text-content-secondary md:text-lg">
               {post.excerpt}
             </p>
           </div>
@@ -141,8 +126,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                 <RichText value={resolveBodyImages(post.body)} />
               </article>
 
-              <aside className="lg:sticky lg:top-24 lg:self-start lg:border-l lg:border-white/10 lg:pl-8">
-                <p className="text-[11px] uppercase tracking-[0.22em] text-white/35">
+              <aside className="lg:sticky lg:top-24 lg:self-start lg:border-l lg:border-border lg:pl-8">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-content-tertiary">
                   Share
                 </p>
                 <div className="mt-4">
@@ -158,10 +143,10 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             {relatedPosts.length > 0 ? (
               <section>
                 <div className="mb-6">
-                  <p className="text-[11px] uppercase tracking-[0.22em] text-white/35">
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-content-tertiary">
                     Continue reading
                   </p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight text-white">
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight text-content-primary">
                     Related posts
                   </h2>
                 </div>

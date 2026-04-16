@@ -21,7 +21,7 @@ function FallbackArt({
 }) {
   return (
     <div
-      className={`relative overflow-hidden rounded-3xl border border-white/10 bg-[linear-gradient(135deg,rgba(0,196,140,0.18),rgba(15,23,42,0.95)_55%,rgba(14,165,233,0.16))] ${className}`}
+      className={`relative overflow-hidden rounded-3xl border border-border bg-[linear-gradient(135deg,rgba(0,196,140,0.18),rgba(15,23,42,0.95)_55%,rgba(14,165,233,0.16))] ${className}`}
     >
       <div
         className="absolute inset-0 opacity-30"
@@ -33,11 +33,11 @@ function FallbackArt({
       />
       <div className="absolute inset-x-0 top-0 h-32 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.2),transparent_70%)]" />
       <div className="relative flex h-full flex-col justify-between p-6">
-        <span className="inline-flex w-fit rounded-full border border-white/10 bg-black/20 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-white/60">
+        <span className="inline-flex w-fit rounded-full border border-border bg-surface-secondary px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-content-secondary">
           {category || "Piron"}
         </span>
         <div>
-          <p className="max-w-sm text-2xl font-semibold leading-tight tracking-tight text-white md:text-3xl">
+          <p className="max-w-sm text-2xl font-semibold leading-tight tracking-tight text-content-primary md:text-3xl">
             {title}
           </p>
         </div>
@@ -75,8 +75,8 @@ export function PostImage({
   if (intrinsic) {
     return (
       <div
-        className={`overflow-hidden rounded-3xl border border-white/10 ${
-          isWideBanner ? "bg-black/30" : "bg-white/[0.03]"
+        className={`overflow-hidden rounded-3xl border border-border ${
+          isWideBanner ? "bg-black/30" : "bg-surface-card"
         } ${className}`}
       >
         <Image
@@ -96,8 +96,8 @@ export function PostImage({
 
   return (
     <div
-      className={`relative overflow-hidden rounded-3xl border border-white/10 ${
-        isWideBanner ? "bg-black/30" : "bg-white/[0.03]"
+      className={`relative overflow-hidden rounded-3xl border border-border ${
+        isWideBanner ? "bg-black/30" : "bg-surface-card"
       } ${className}`}
     >
       <Image

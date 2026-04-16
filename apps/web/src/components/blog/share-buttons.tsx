@@ -29,7 +29,7 @@ export function ShareButtons({ title, url, xCopy }: ShareButtonsProps) {
         href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`}
         target="_blank"
         rel="noreferrer"
-        className="rounded-full border border-white/10 px-4 py-2 text-sm text-white/60 transition-colors hover:border-white/20 hover:text-white"
+        className="rounded-full border border-border px-4 py-2 text-sm text-content-secondary transition-colors hover:border-border-hover hover:text-content-primary"
       >
         LinkedIn
       </a>
@@ -37,14 +37,14 @@ export function ShareButtons({ title, url, xCopy }: ShareButtonsProps) {
         href={`https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedXCopy}`}
         target="_blank"
         rel="noreferrer"
-        className="rounded-full border border-white/10 px-4 py-2 text-sm text-white/60 transition-colors hover:border-white/20 hover:text-white"
+        className="rounded-full border border-border px-4 py-2 text-sm text-content-secondary transition-colors hover:border-border-hover hover:text-content-primary"
       >
         X
       </a>
       <button
         type="button"
         onClick={copyLink}
-        className="rounded-full border border-white/10 px-4 py-2 text-sm text-white/60 transition-colors hover:border-white/20 hover:text-white"
+        className="rounded-full border border-border px-4 py-2 text-sm text-content-secondary transition-colors hover:border-border-hover hover:text-content-primary"
       >
         {copied ? "Link copied" : "Copy post link"}
       </button>

@@ -40,8 +40,8 @@ export function CategoryTabs({
             href={makeHref(category.slug, searchQuery)}
             className={`rounded-full border px-4 py-2 text-sm transition-colors ${
               isActive
-                ? "border-[#00C48C]/40 bg-[#00C48C]/10 text-[#9EF7D9]"
-                : "border-white/10 text-white/55 hover:border-white/20 hover:text-white"
+                ? "border-accent bg-accent-subtle text-accent"
+                : "border-border text-content-secondary hover:border-border-hover hover:text-content-primary"
             }`}
           >
             {category.title}

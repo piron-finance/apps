@@ -59,43 +59,28 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
   const resultsTitle = data.activeCategory || data.searchQuery ? "Results" : "Most recent";
 
   return (
-    <div
-      className="relative min-h-screen w-full"
-      style={{
-        background: `
-          radial-gradient(ellipse 80% 50% at 50% 0%, rgba(0, 90, 90, 0.35) 0%, transparent 50%),
-          radial-gradient(ellipse 80% 50% at 50% 100%, rgba(0, 90, 90, 0.35) 0%, transparent 50%),
-          black
-        `,
-      }}
-    >
+    <div className="page-shell-gradient relative min-h-screen w-full">
       <Header />
 
       <div className="relative overflow-x-hidden">
         <section className="relative overflow-hidden pt-28 pb-10">
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{
-              background:
-                "radial-gradient(ellipse 70% 45% at 30% 0%, rgba(0,196,140,0.14) 0%, transparent 60%)",
-            }}
-          />
+          <div className="page-shell-hero-glow pointer-events-none absolute inset-0" />
 
           <div className="relative mx-auto max-w-7xl px-6">
             <div className="grid gap-8 lg:grid-cols-[1fr_340px] lg:items-end">
               <div className="max-w-3xl">
-                <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-1.5 text-[11px] uppercase tracking-[0.2em] text-white/50">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#00C48C]" />
+                <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-border px-4 py-1.5 text-[11px] uppercase tracking-[0.2em] text-content-secondary">
+                  <span className="h-1.5 w-1.5 rounded-full bg-accent" />
                   {data.settings.title}
                 </p>
-                <h1 className="text-5xl font-bold leading-[1.05] tracking-tight text-white md:text-6xl">
+                <h1 className="text-5xl font-bold leading-[1.05] tracking-tight text-content-primary md:text-6xl">
                   Blog
                 </h1>
-                <p className="mt-5 max-w-2xl text-base leading-relaxed text-white/55 md:text-lg">
+                <p className="mt-5 max-w-2xl text-base leading-relaxed text-content-secondary md:text-lg">
                   {data.settings.description}
                 </p>
                 {!data.configured ? (
-                  <p className="mt-4 text-sm text-white/40">
+                  <p className="mt-4 text-sm text-content-tertiary">
                     Showing seeded content until Sanity is connected.
                   </p>
                 ) : null}
@@ -126,10 +111,10 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
               <section>
                 <div className="mb-6 flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-[11px] uppercase tracking-[0.22em] text-white/35">
+                    <p className="text-[11px] uppercase tracking-[0.22em] text-content-tertiary">
                       Editorial picks
                     </p>
-                    <h2 className="mt-2 text-3xl font-semibold tracking-tight text-white">
+                    <h2 className="mt-2 text-3xl font-semibold tracking-tight text-content-primary">
                       Featured
                     </h2>
                   </div>
@@ -146,16 +131,16 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
             <section>
               <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
                 <div>
-                  <p className="text-[11px] uppercase tracking-[0.22em] text-white/35">
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-content-tertiary">
                     Archive
                   </p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight text-white">
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight text-content-primary">
                     {resultsTitle}
                   </h2>
                 </div>
 
                 {(data.activeCategory || data.searchQuery) && data.totalRecentPosts > 0 ? (
-                  <p className="text-sm text-white/45">
+                  <p className="text-sm text-content-tertiary">
                     {data.totalRecentPosts} article{data.totalRecentPosts === 1 ? "" : "s"}
                   </p>
                 ) : null}
@@ -168,7 +153,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                   ))}
                 </div>
               ) : (
-                <div className="rounded-[1.75rem] border border-white/10 bg-white/[0.03] p-8 text-white/55">
+                <div className="rounded-[1.75rem] border border-border bg-surface-card p-8 text-content-secondary">
                   No articles matched this filter yet.
                 </div>
               )}
@@ -182,7 +167,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                     page: data.page,
                     query: data.searchQuery,
                   })}
-                  className="rounded-full border border-white/10 bg-white/[0.03] px-6 py-3 text-sm font-medium text-white/70 transition-colors hover:border-white/20 hover:text-white"
+                  className="rounded-full border border-border bg-surface-card px-6 py-3 text-sm font-medium text-content-secondary transition-colors hover:border-border-hover hover:text-content-primary"
                 >
                   Load more articles
                 </Link>

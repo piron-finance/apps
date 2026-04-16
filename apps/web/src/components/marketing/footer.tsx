@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { Linkedin } from "lucide-react";
 import { SOCIAL_LINKS } from "@/components/marketing/links";
 
@@ -24,9 +23,7 @@ const socialIcons = {
 };
 
 const footerLinks = {
-  product: [
-    { label: "How it works", href: "/how-it-works" },
-  ],
+  product: [{ label: "How it works", href: "/how-it-works" }],
   company: [
     { label: "About", href: "/about" },
     { label: "Blog", href: "/blog" },
@@ -40,21 +37,15 @@ const footerLinks = {
 
 export function Footer() {
   return (
-    <footer className="border-t border-white/10 py-12">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.2 }}
-        transition={{ duration: 0.5 }}
-        className="mx-auto w-full max-w-7xl px-6"
-      >
+    <footer data-header-theme="light" className="border-t border-border bg-surface-warm py-16">
+      <div className="mx-auto w-full max-w-7xl px-6">
         <div className="grid grid-cols-1 gap-10 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
           <div className="max-w-sm">
-            <h3 className="text-xl font-semibold tracking-tight text-white">
+            <h3 className="text-xl font-semibold tracking-tight text-content-primary">
               Piron Finance
             </h3>
-            <p className="mt-2 text-sm leading-relaxed text-white/50">
-              Global fixed income made accessible. Simple on-chain pools for 
+            <p className="mt-2 text-sm leading-relaxed text-content-secondary">
+              Global fixed income made accessible. Simple on-chain pools for
               emerging markets and serious treasuries.
             </p>
             {SOCIAL_LINKS.length > 0 ? (
@@ -68,7 +59,7 @@ export function Footer() {
                       target="_blank"
                       rel="noreferrer"
                       aria-label={link.label}
-                      className="text-white/55 transition-colors hover:text-white"
+                      className="text-content-tertiary transition-colors hover:text-content-primary"
                     >
                       <Icon className="h-5 w-5" />
                     </Link>
@@ -79,13 +70,15 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="mb-3 text-sm font-semibold text-white">Product</h4>
+            <h4 className="mb-3 text-sm font-semibold text-content-primary">
+              Product
+            </h4>
             <ul className="space-y-2">
               {footerLinks.product.map((link) => (
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-sm text-white/50 transition-colors hover:text-white"
+                    className="text-sm text-content-secondary transition-colors hover:text-content-primary"
                   >
                     {link.label}
                   </Link>
@@ -95,13 +88,15 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="mb-3 text-sm font-semibold text-white">Company</h4>
+            <h4 className="mb-3 text-sm font-semibold text-content-primary">
+              Company
+            </h4>
             <ul className="space-y-2">
               {footerLinks.company.map((link) => (
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-sm text-white/50 transition-colors hover:text-white"
+                    className="text-sm text-content-secondary transition-colors hover:text-content-primary"
                   >
                     {link.label}
                   </Link>
@@ -111,13 +106,15 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="mb-3 text-sm font-semibold text-white">Legal</h4>
+            <h4 className="mb-3 text-sm font-semibold text-content-primary">
+              Legal
+            </h4>
             <ul className="space-y-2">
               {footerLinks.legal.map((link) => (
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="text-sm text-white/50 transition-colors hover:text-white"
+                    className="text-sm text-content-secondary transition-colors hover:text-content-primary"
                   >
                     {link.label}
                   </Link>
@@ -127,13 +124,13 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 border-t border-white/10 pt-6">
-          <p className="text-center text-xs text-white/40">
-            © {new Date().getFullYear()} Piron Finance. Not a bank. Returns are not guaranteed and may
-            involve risk of loss.
+        <div className="mt-12 border-t border-border pt-6">
+          <p className="text-center text-xs text-content-tertiary">
+            &copy; {new Date().getFullYear()} Piron Finance. Not a bank. Returns
+            are not guaranteed and may involve risk of loss.
           </p>
         </div>
-      </motion.div>
+      </div>
     </footer>
   );
 }

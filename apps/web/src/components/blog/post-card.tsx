@@ -20,27 +20,27 @@ export function PostCard({ post, variant = "grid" }: PostCardProps) {
     return (
       <Link
         href={`/blog/${post.slug}`}
-        className="group grid gap-8 rounded-[2rem] border border-white/10 bg-white/[0.03] p-6 transition-colors hover:border-white/20 lg:grid-cols-[1.05fr_0.95fr]"
+        className="group grid gap-8 rounded-[2rem] border border-border bg-surface-card p-6 transition-colors hover:border-border-hover lg:grid-cols-[1.05fr_0.95fr]"
       >
         <div className="flex flex-col justify-center">
-          <div className="flex flex-wrap items-center gap-3 text-sm text-white/45">
+          <div className="flex flex-wrap items-center gap-3 text-sm text-content-tertiary">
             {post.category?.title ? (
-              <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs font-medium text-white/70">
+              <span className="rounded-full border border-border bg-white/[0.05] px-3 py-1 text-xs font-medium text-content-secondary">
                 {post.category.title}
               </span>
             ) : null}
             <span>{formatDate(post.publishedAt)}</span>
           </div>
 
-          <h2 className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-white transition-colors group-hover:text-[#8CF6D3] md:text-4xl">
+          <h2 className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-content-primary transition-colors group-hover:text-accent md:text-4xl">
             {post.title}
           </h2>
 
-          <p className="mt-4 max-w-2xl text-base leading-relaxed text-white/55">
+          <p className="mt-4 max-w-2xl text-base leading-relaxed text-content-secondary">
             {post.excerpt}
           </p>
 
-          <div className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-white/70 transition-colors group-hover:text-white">
+          <div className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-content-secondary transition-colors group-hover:text-content-primary">
             Read article
             <span aria-hidden="true">→</span>
           </div>
@@ -73,20 +73,20 @@ export function PostCard({ post, variant = "grid" }: PostCardProps) {
         />
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-white/45">
+      <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-content-tertiary">
         {post.category?.title ? (
-          <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs font-medium text-white/70">
+          <span className="rounded-full border border-border bg-white/[0.05] px-3 py-1 text-xs font-medium text-content-secondary">
             {post.category.title}
           </span>
         ) : null}
         <span>{formatDate(post.publishedAt)}</span>
       </div>
 
-      <h3 className="mt-4 text-2xl font-semibold leading-snug tracking-tight text-white transition-colors group-hover:text-[#8CF6D3]">
+      <h3 className="mt-4 text-2xl font-semibold leading-snug tracking-tight text-content-primary transition-colors group-hover:text-accent">
         {post.title}
       </h3>
 
-      <p className="mt-3 text-sm leading-relaxed text-white/55">
+      <p className="mt-3 text-sm leading-relaxed text-content-secondary">
         {post.excerpt}
       </p>
     </Link>
