@@ -126,9 +126,9 @@ function CapitalFlow() {
           </p>
         </motion.div>
 
-        {/* Desktop / Tablet: horizontal steps with arrows */}
+        {/* Desktop: horizontal with dotted connectors */}
         <div className="hidden md:block">
-          <div className="grid grid-cols-5 gap-4">
+          <div className="grid grid-cols-5 gap-0">
             {flowNodes.map((node, i) => (
               <motion.div
                 key={node.step}
@@ -136,41 +136,31 @@ function CapitalFlow() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.2 }}
                 transition={{ duration: 0.4, delay: i * 0.1 }}
-                className="relative"
+                className="relative flex flex-col items-center text-center"
               >
-                {/* Arrow connector */}
+                {/* Dotted line + arrow to next node */}
                 {i < flowNodes.length - 1 && (
-                  <div className="absolute right-0 top-6 z-10 translate-x-1/2">
-                    <svg
-                      width="24"
-                      height="12"
-                      viewBox="0 0 24 12"
-                      fill="none"
-                    >
-                      <line
-                        x1="0"
-                        y1="6"
-                        x2="18"
-                        y2="6"
-                        stroke="#d1d5db"
-                        strokeWidth="1.5"
-                      />
-                      <polygon points="18,2 24,6 18,10" fill="#d1d5db" />
+                  <div className="absolute left-[calc(50%+28px)] right-[calc(-50%+28px)] top-[22px] flex items-center">
+                    <div className="h-0 flex-1 border-t-2 border-dashed border-gray-300" />
+                    <svg width="8" height="12" viewBox="0 0 8 12" fill="none" className="shrink-0 -ml-px">
+                      <path d="M1 1L6 6L1 11" stroke="#d1d5db" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </div>
                 )}
 
-                <div className="rounded-xl border border-gray-100 bg-surface-warm p-5 transition-shadow hover:shadow-md">
-                  <span className="text-2xl font-bold tracking-tight text-content-primary/20">
+                {/* Node circle */}
+                <div className="relative z-10 flex h-11 w-11 items-center justify-center rounded-full border-2 border-gray-200 bg-white">
+                  <span className="text-xs font-bold text-content-primary">
                     {node.step}
                   </span>
-                  <h3 className="mt-2 text-sm font-semibold text-content-primary">
-                    {node.label}
-                  </h3>
-                  <p className="mt-2 text-xs leading-relaxed text-content-secondary">
-                    {node.sub}
-                  </p>
                 </div>
+
+                <h3 className="mt-4 text-sm font-semibold text-content-primary">
+                  {node.label}
+                </h3>
+                <p className="mt-1.5 max-w-[180px] text-xs leading-relaxed text-content-secondary">
+                  {node.sub}
+                </p>
               </motion.div>
             ))}
           </div>
@@ -181,48 +171,28 @@ function CapitalFlow() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.6 }}
-            className="mt-6 flex items-center gap-3 rounded-lg border border-accent/15 bg-accent/[0.04] px-5 py-3"
+            className="mt-10 flex items-center gap-4"
           >
-            <svg
-              viewBox="0 0 120 12"
-              fill="none"
-              className="h-3 flex-1 rotate-180"
-              preserveAspectRatio="none"
-            >
-              <line
-                x1="0"
-                y1="6"
-                x2="114"
-                y2="6"
-                stroke="rgba(0,196,140,0.35)"
-                strokeWidth="1.5"
-              />
-              <polygon points="114,2 120,6 114,10" fill="rgba(0,196,140,0.5)" />
-            </svg>
+            <div className="flex flex-1 items-center">
+              <svg width="8" height="12" viewBox="0 0 8 12" fill="none" className="shrink-0 rotate-180 -mr-px">
+                <path d="M1 1L6 6L1 11" stroke="rgba(0,196,140,0.5)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <div className="h-0 flex-1 border-t-2 border-dashed border-accent/30" />
+            </div>
             <span className="shrink-0 text-xs font-medium text-accent">
               Yield flows back to depositors on-chain
             </span>
-            <svg
-              viewBox="0 0 120 12"
-              fill="none"
-              className="h-3 flex-1 rotate-180"
-              preserveAspectRatio="none"
-            >
-              <line
-                x1="0"
-                y1="6"
-                x2="114"
-                y2="6"
-                stroke="rgba(0,196,140,0.35)"
-                strokeWidth="1.5"
-              />
-              <polygon points="114,2 120,6 114,10" fill="rgba(0,196,140,0.5)" />
-            </svg>
+            <div className="flex flex-1 items-center">
+              <div className="h-0 flex-1 border-t-2 border-dashed border-accent/30" />
+              <svg width="8" height="12" viewBox="0 0 8 12" fill="none" className="shrink-0 rotate-180 -ml-px">
+                <path d="M1 1L6 6L1 11" stroke="rgba(0,196,140,0.5)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
           </motion.div>
         </div>
 
-        {/* Mobile: vertical cards with down arrows */}
-        <div className="space-y-0 md:hidden">
+        {/* Mobile: vertical with dotted connectors */}
+        <div className="md:hidden">
           {flowNodes.map((node, i) => (
             <motion.div
               key={node.step}
@@ -230,66 +200,53 @@ function CapitalFlow() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, amount: 0.2 }}
               transition={{ duration: 0.35, delay: i * 0.08 }}
+              className="relative"
             >
-              <div className="rounded-xl border border-gray-100 bg-surface-warm p-4">
-                <div className="flex items-start gap-3">
-                  <span className="text-xl font-bold tracking-tight text-content-primary/20">
+              <div className="flex items-start gap-4 py-4">
+                {/* Node circle */}
+                <div className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-gray-200 bg-white">
+                  <span className="text-[11px] font-bold text-content-primary">
                     {node.step}
                   </span>
-                  <div>
-                    <h3 className="text-sm font-semibold text-content-primary">
-                      {node.label}
-                    </h3>
-                    <p className="mt-1 text-xs leading-relaxed text-content-secondary">
-                      {node.sub}
-                    </p>
-                  </div>
+                </div>
+                <div className="min-w-0 pt-1">
+                  <h3 className="text-sm font-semibold text-content-primary">
+                    {node.label}
+                  </h3>
+                  <p className="mt-1 text-xs leading-relaxed text-content-secondary">
+                    {node.sub}
+                  </p>
                 </div>
               </div>
+
+              {/* Dotted line + chevron down */}
               {i < flowNodes.length - 1 && (
-                <div className="flex justify-center py-1.5">
-                  <svg width="12" height="20" viewBox="0 0 12 20" fill="none">
-                    <line
-                      x1="6"
-                      y1="0"
-                      x2="6"
-                      y2="15"
-                      stroke="#d1d5db"
-                      strokeWidth="1.5"
-                    />
-                    <polygon points="2,15 6,20 10,15" fill="#d1d5db" />
+                <div className="flex flex-col items-center py-0.5" style={{ marginLeft: 18 }}>
+                  <div className="h-4 w-0 border-l-2 border-dashed border-gray-300" />
+                  <svg width="12" height="8" viewBox="0 0 12 8" fill="none" className="-mt-px">
+                    <path d="M1 1L6 6L11 1" stroke="#d1d5db" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
               )}
             </motion.div>
           ))}
 
+          {/* Return flow */}
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.5 }}
-            className="mt-4 flex items-center gap-3 rounded-lg border border-accent/15 bg-accent/[0.04] px-4 py-3"
+            className="mt-6 flex items-center gap-3"
           >
-            <svg
-              width="12"
-              height="20"
-              viewBox="0 0 12 20"
-              fill="none"
-              className="shrink-0 rotate-180"
-            >
-              <line
-                x1="6"
-                y1="0"
-                x2="6"
-                y2="15"
-                stroke="rgba(0,196,140,0.4)"
-                strokeWidth="1.5"
-              />
-              <polygon points="2,15 6,20 10,15" fill="rgba(0,196,140,0.5)" />
-            </svg>
+            <div className="flex items-center">
+              <svg width="8" height="12" viewBox="0 0 8 12" fill="none" className="shrink-0 rotate-180">
+                <path d="M1 1L6 6L1 11" stroke="rgba(0,196,140,0.5)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <div className="h-0 w-8 border-t-2 border-dashed border-accent/30" />
+            </div>
             <span className="text-xs font-medium text-accent">
-              Yield flows back to depositors on-chain
+              Yield flows back on-chain
             </span>
           </motion.div>
         </div>
@@ -696,32 +653,36 @@ function Infrastructure() {
 
 const faqs = [
   {
-    q: "Who holds my money?",
-    a: "No one. Your stablecoins flow directly from your wallet into an audited smart contract. Piron Finance never takes custody of your funds at any point.",
+    q: "Is Piron a bank?",
+    a: "No. Piron is a protocol that connects depositors to regulated fixed-income pools. We do not take deposits in the banking sense, do not lend on our own balance sheet, and are not covered by deposit insurance. Your capital is deployed into real instruments through licensed fund managers and held in ring-fenced legal entities.",
   },
   {
-    q: "What happens if Piron shuts down?",
-    a: "Your funds are held in a ring-fenced legal entity that is legally separate from Piron Finance. In the event of insolvency, the entity's assets are not part of Piron's estate. Liquidation follows the documented exit process.",
+    q: "Who has custody of my funds?",
+    a: "At no point does Piron hold your money. Stablecoins move directly from your wallet into an audited smart contract. From there, capital is allocated to segregated escrow accounts managed by qualified custodians. You retain full control until you sign a deposit transaction, and you can verify the location of funds on-chain at any time.",
   },
   {
-    q: "How exactly is yield generated?",
-    a: "Pool capital is deployed by licensed fund managers into real-world instruments: government T-Bills, money market funds, trade receivables, and corporate credit. Returns flow back to the pool as instruments pay interest or mature, accruing daily to your token balance.",
+    q: "How is my capital protected if something goes wrong?",
+    a: "Every pool is backed by a dedicated, ring-fenced legal entity that is completely separate from Piron Finance. This means pool assets cannot be used to settle Piron's obligations. If the protocol were to cease operations, the legal entity continues to hold and administer the underlying assets on behalf of depositors until maturity or orderly wind-down.",
   },
   {
-    q: "Can I lose money?",
-    a: "Fixed income instruments carry low but non-zero risk. Default risk is mitigated by using short-duration, high-grade instruments and diversified structures. Piron is not a bank and returns are not guaranteed. Read the risk disclosure before investing.",
+    q: "Where does the yield come from?",
+    a: "Yield is generated from real-world fixed-income instruments: government Treasury Bills, money market funds, trade receivables, and short-duration corporate credit. Licensed fund managers source and underwrite every position. Returns accrue daily to your pool token balance as the underlying instruments pay interest or mature.",
   },
   {
-    q: "What is pool NAV and why does it change?",
-    a: "NAV (Net Asset Value) reflects the total value of a pool's assets divided by the total pool tokens outstanding. It increases daily as the underlying instruments accrue interest. Your pool tokens are always redeemable at current NAV.",
+    q: "What are the risks?",
+    a: "Fixed-income instruments are lower risk but not risk-free. Key risks include credit default (a borrower fails to pay), interest rate movements, and liquidity constraints during stressed markets. Piron mitigates these through diversification, short duration bias, and institutional-grade underwriting. However, returns are never guaranteed. Read our risk disclosure before depositing.",
   },
   {
-    q: "Are there fees?",
-    a: "Yes. Piron charges a management fee that is already reflected in the pool's published net yield. What you see is what you earn. There are no hidden fees. Full fee breakdown is displayed on each pool page before you deposit.",
+    q: "How do withdrawals work?",
+    a: "For Stable Yield pools, you can withdraw freely after a 7-day holding period. Locked Term pools pay out at maturity, with an optional early exit at a transparent, pre-disclosed penalty. Single Asset pools follow the payment schedule of the underlying deal. All withdrawal requests and settlements are processed and recorded on-chain.",
   },
   {
-    q: "What wallets are supported?",
-    a: "Any EVM-compatible wallet: MetaMask, WalletConnect, Ledger, Coinbase Wallet, and more. No email or password required.",
+    q: "What does NAV mean and how is it calculated?",
+    a: "NAV stands for Net Asset Value. It represents the total value of a pool's holdings divided by the number of pool tokens outstanding. As the underlying instruments earn interest, NAV increases. Your pool tokens are always redeemable at the current NAV, so you can see exactly what your position is worth at any time.",
+  },
+  {
+    q: "What fees does Piron charge?",
+    a: "Piron charges a management fee that is already factored into the net yield shown on each pool page. The rate you see is the rate you earn. There are no hidden charges, entry fees, or surprise deductions. A full fee breakdown is available on every pool page before you deposit.",
   },
 ];
 

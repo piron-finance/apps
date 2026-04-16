@@ -6,6 +6,7 @@ import { useAccount } from "wagmi";
 import { useWeb3Modal } from "@web3modal/wagmi/react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import { TestTokenAnnouncement } from "@/components/dashboard/test-token-announcement";
 
 const navItems = [
   { name: "Pools", href: "/" },
@@ -96,6 +97,8 @@ export default function DashboardLayout({
           </nav>
         </div>
       </header>
+
+      <TestTokenAnnouncement />
 
       <main className="flex-1">{children}</main>
 

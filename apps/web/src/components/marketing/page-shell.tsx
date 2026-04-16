@@ -43,19 +43,16 @@ export function MarketingPageShell({
   children,
 }: MarketingPageShellProps) {
   return (
-    <div className="page-shell-gradient relative min-h-screen w-full pt-16">
+    <div className="relative min-h-screen w-full bg-surface-warm pt-16">
       <Header />
       <div className="relative overflow-x-hidden">
-        <section className="relative overflow-hidden pt-12 pb-16 md:pt-16 md:pb-20">
-          <div className="page-shell-hero-glow pointer-events-none absolute inset-0" />
-
+        <section data-header-theme="light" className="relative bg-surface-warm pt-12 pb-16 md:pt-16 md:pb-20">
           <div className="relative mx-auto max-w-7xl px-6">
-            <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-border px-4 py-1.5 text-[11px] uppercase tracking-[0.2em] text-content-tertiary">
-              <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+            <p className="text-[13px] font-medium uppercase tracking-[0.2em] text-content-tertiary">
               {eyebrow}
-            </div>
+            </p>
 
-            <div className="max-w-4xl">
+            <div className="mt-4 max-w-4xl">
               <h1 className="text-5xl font-bold leading-[1.05] tracking-tight text-content-primary md:text-6xl lg:text-7xl">
                 {title}
               </h1>
@@ -76,7 +73,7 @@ export function MarketingPageShell({
                       href={action.href}
                       className={
                         action.tone === "secondary"
-                          ? "rounded-full border border-border px-6 py-3 text-sm font-medium text-content-secondary transition-colors hover:border-border-hover hover:text-content-primary"
+                          ? "rounded-full bg-white px-6 py-3 text-sm font-medium text-content-secondary shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-shadow hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)]"
                           : "rounded-full bg-accent px-6 py-3 text-sm font-medium text-accent-text transition-colors hover:bg-accent-hover"
                       }
                     >
@@ -89,7 +86,7 @@ export function MarketingPageShell({
           </div>
         </section>
 
-        <section className="pb-20">
+        <section data-header-theme="light" className="bg-surface-warm pb-20">
           <div className="mx-auto flex max-w-7xl flex-col gap-8 px-6">
             {children}
           </div>
@@ -108,15 +105,15 @@ export function MarketingSection({
   children,
 }: MarketingSectionProps) {
   return (
-    <section className="rounded-[2rem] border border-border bg-surface-card p-8 shadow-sm backdrop-blur-sm md:p-10">
+    <section className="rounded-2xl bg-white p-8 shadow-[0_1px_3px_rgba(0,0,0,0.04)] md:p-10">
       {eyebrow ? (
-        <p className="mb-3 text-[11px] uppercase tracking-[0.22em] text-content-tertiary">
+        <p className="mb-3 text-[11px] font-medium uppercase tracking-[0.22em] text-content-tertiary">
           {eyebrow}
         </p>
       ) : null}
 
       <div className="max-w-3xl">
-        <h2 className="text-3xl font-semibold tracking-tight text-content-primary md:text-4xl">
+        <h2 className="text-3xl font-bold tracking-tight text-content-primary md:text-4xl">
           {title}
         </h2>
 
@@ -138,7 +135,7 @@ export function MarketingCard({
   children,
 }: MarketingCardProps) {
   return (
-    <div className="rounded-[1.75rem] border border-border bg-surface-secondary p-6">
+    <div className="rounded-xl bg-surface-warm p-6">
       <h3 className="text-xl font-semibold tracking-tight text-content-primary">{title}</h3>
       {description ? (
         <p className="mt-3 text-sm leading-relaxed text-content-secondary">

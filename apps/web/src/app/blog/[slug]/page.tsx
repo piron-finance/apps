@@ -76,24 +76,22 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const articleUrl = absoluteUrl(`/blog/${post.slug}`);
 
   return (
-    <div className="page-shell-gradient relative min-h-screen w-full">
-      <Header />
+    <div className="relative min-h-screen w-full bg-surface-warm">
+      <Header transparent />
 
       <div className="relative overflow-x-hidden">
-        <section className="relative overflow-hidden pt-28 pb-12">
-          <div className="page-shell-hero-glow pointer-events-none absolute inset-0" />
-
+        <section data-header-theme="light" className="relative bg-surface-warm pb-12 pt-28">
           <div className="relative mx-auto max-w-4xl px-6">
             <Link
               href="/blog"
               className="text-sm text-content-tertiary transition-colors hover:text-content-primary"
             >
-              ← Back to blog
+              &#8592; Back to blog
             </Link>
 
             <div className="mt-8 flex flex-wrap items-center gap-3 text-sm text-content-tertiary">
               {post.category?.title ? (
-                <span className="rounded-full border border-border bg-white/[0.05] px-3 py-1 text-xs font-medium text-content-secondary">
+                <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-content-secondary shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
                   {post.category.title}
                 </span>
               ) : null}
@@ -111,7 +109,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           </div>
         </section>
 
-        <section className="pb-20">
+        <section data-header-theme="light" className="bg-surface-warm pb-20">
           <div className="mx-auto flex max-w-6xl flex-col gap-12 px-6">
             <PostImage
               image={post.image}
@@ -126,8 +124,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                 <RichText value={resolveBodyImages(post.body)} />
               </article>
 
-              <aside className="lg:sticky lg:top-24 lg:self-start lg:border-l lg:border-border lg:pl-8">
-                <p className="text-[11px] uppercase tracking-[0.22em] text-content-tertiary">
+              <aside className="lg:sticky lg:top-24 lg:self-start lg:border-l lg:border-gray-200 lg:pl-8">
+                <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-content-tertiary">
                   Share
                 </p>
                 <div className="mt-4">
@@ -143,10 +141,10 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             {relatedPosts.length > 0 ? (
               <section>
                 <div className="mb-6">
-                  <p className="text-[11px] uppercase tracking-[0.22em] text-content-tertiary">
+                  <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-content-tertiary">
                     Continue reading
                   </p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight text-content-primary">
+                  <h2 className="mt-2 text-3xl font-bold tracking-tight text-content-primary">
                     Related posts
                   </h2>
                 </div>
