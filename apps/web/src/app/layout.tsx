@@ -18,7 +18,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} min-h-screen bg-black text-white relative overflow-x-hidden antialiased`}>
+      <body className={`${inter.className} min-h-screen bg-surface-primary text-content-primary relative overflow-x-hidden antialiased`}>
         <div className="relative z-10">
           <main>{children}</main>
           <Analytics/>

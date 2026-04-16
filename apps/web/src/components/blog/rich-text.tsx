@@ -19,27 +19,27 @@ function getSanityAssetDimensions(assetRef?: string) {
 const components: PortableTextComponents = {
   block: {
     normal: ({ children }) => (
-      <p className="text-base leading-8 text-white/65">{children}</p>
+      <p className="text-base leading-8 text-content-secondary">{children}</p>
     ),
     h2: ({ children }) => (
-      <h2 className="text-3xl font-semibold tracking-tight text-white md:text-4xl">
+      <h2 className="text-3xl font-semibold tracking-tight text-content-primary md:text-4xl">
         {children}
       </h2>
     ),
     h3: ({ children }) => (
-      <h3 className="text-2xl font-semibold tracking-tight text-white">
+      <h3 className="text-2xl font-semibold tracking-tight text-content-primary">
         {children}
       </h3>
     ),
     blockquote: ({ children }) => (
-      <blockquote className="border-l-2 border-[#00C48C]/50 pl-5 text-lg leading-8 text-white/75">
+      <blockquote className="border-l-2 border-accent pl-5 text-lg leading-8 text-content-secondary">
         {children}
       </blockquote>
     ),
   },
   list: {
     bullet: ({ children }) => (
-      <ul className="space-y-3 pl-5 text-base leading-8 text-white/65">
+      <ul className="space-y-3 pl-5 text-base leading-8 text-content-secondary">
         {children}
       </ul>
     ),
@@ -55,7 +55,7 @@ const components: PortableTextComponents = {
       return (
         <Link
           href={href}
-          className="text-[#8CF6D3] underline decoration-[#8CF6D3]/30 underline-offset-4 hover:text-white"
+          className="text-accent underline decoration-accent underline-offset-4 hover:text-content-primary"
           target={external ? "_blank" : undefined}
           rel={external ? "noreferrer" : undefined}
         >
@@ -75,7 +75,7 @@ const components: PortableTextComponents = {
 
       return (
         <figure className="space-y-3">
-          <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03]">
+          <div className="overflow-hidden rounded-3xl border border-border bg-surface-card">
             <img
               src={imageUrl}
               alt={value?.alt || ""}
@@ -87,7 +87,7 @@ const components: PortableTextComponents = {
             />
           </div>
           {value?.caption ? (
-            <figcaption className="text-sm leading-relaxed text-white/45">
+            <figcaption className="text-sm leading-relaxed text-content-tertiary">
               {value.caption}
             </figcaption>
           ) : null}
@@ -99,16 +99,16 @@ const components: PortableTextComponents = {
         value?.tone === "warning"
           ? "border-amber-400/30 bg-amber-400/10"
           : value?.tone === "success"
-            ? "border-[#00C48C]/30 bg-[#00C48C]/10"
-            : "border-white/10 bg-white/[0.04]";
+            ? "border-accent bg-accent-subtle"
+            : "border-border bg-white/[0.04]";
 
       return (
         <div className={`rounded-[1.5rem] border p-5 ${tone}`}>
           {value?.title ? (
-            <h4 className="text-lg font-semibold text-white">{value.title}</h4>
+            <h4 className="text-lg font-semibold text-content-primary">{value.title}</h4>
           ) : null}
           {value?.body ? (
-            <p className="mt-2 text-sm leading-7 text-white/65">{value.body}</p>
+            <p className="mt-2 text-sm leading-7 text-content-secondary">{value.body}</p>
           ) : null}
         </div>
       );

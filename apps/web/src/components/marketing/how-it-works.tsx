@@ -25,37 +25,45 @@ const steps = [
 
 export function HowItWorks() {
   return (
-    <section className="py-24">
+    <section data-header-theme="light" className="bg-surface-warm py-32">
       <div className="mx-auto w-full max-w-7xl px-6">
-        <motion.h2
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.5 }}
-          className="mb-16 text-center text-4xl font-bold tracking-tight text-white"
+          className="mb-20 max-w-2xl"
         >
-          How it works
-        </motion.h2>
+          <p className="text-[13px] font-medium uppercase tracking-[0.2em] text-content-tertiary">
+            Getting started
+          </p>
+          <h2 className="mt-4 text-4xl font-bold tracking-tight text-content-primary md:text-5xl lg:text-6xl">
+            Start earning in three steps.
+          </h2>
+        </motion.div>
 
-        <div className="grid grid-cols-1 gap-12 md:grid-cols-3 md:gap-8">
+        <div className="grid grid-cols-1 gap-12 gap-y-8 lg:grid-cols-3">
           {steps.map((step, idx) => (
             <motion.div
-              key={step.number}
+              key={step.title}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.2 }}
               transition={{ duration: 0.5, delay: idx * 0.1 }}
-              className="text-left"
             >
-              <span className="text-6xl font-bold tracking-tight text-white/10 md:text-7xl">
-                {step.number}
-              </span>
-              <h3 className="mt-4 text-xl font-semibold tracking-tight text-white">
-                {step.title}
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-white/50">
-                {step.description}
-              </p>
+                {/* Gradient-faded ghost number */}
+                <span className="text-6xl tracking-tight font-bold opacity-45  md:text-7xl">
+                  {step.number}
+                </span>
+
+      
+                  <h3 className="mt-4 text-xl font-semibold tracking-tight text-gray-600">
+                    {step.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-gray-500">
+                    {step.description}
+                  </p>
+      
             </motion.div>
           ))}
         </div>

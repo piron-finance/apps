@@ -5,77 +5,69 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import Header from "@/components/marketing/Header";
 import { Footer } from "@/components/marketing/footer";
-
-const APP_URL =
-  process.env.NEXT_PUBLIC_APP_URL ||
-  (process.env.NODE_ENV === "production" ? "" : "http://localhost:3001");
+import { APP_URL, DOCS_URL } from "@/components/marketing/links";
 
 // ─── Hero ─────────────────────────────────────────────────────────────────────
 
 function Hero() {
   return (
-    <section className="relative overflow-hidden pt-28 pb-32">
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(ellipse 80% 50% at 50% 0%, rgba(0,196,140,0.18) 0%, transparent 60%)",
-        }}
-      />
-
-      <div className="relative mx-auto max-w-7xl px-6 text-center">
-        <motion.div
+    <section
+      data-header-theme="light"
+      className="relative overflow-hidden bg-surface-warm pb-24 pt-28 md:pb-32"
+    >
+      <div className="relative mx-auto max-w-7xl px-6">
+        <motion.p
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="mb-7 inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-1.5 text-[11px] uppercase tracking-[0.2em] text-white/50"
+          className="text-[13px] font-medium uppercase tracking-[0.2em] text-content-tertiary"
         >
-          <span className="h-1.5 w-1.5 rounded-full bg-[#00C48C]" />
-          How Piron Works
-        </motion.div>
+          How Piron works
+        </motion.p>
 
         <motion.h1
           initial={{ opacity: 0, y: 22 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="mx-auto max-w-3xl text-5xl font-bold leading-[1.1] tracking-tight text-white md:text-6xl lg:text-7xl"
+          className="mt-5 max-w-3xl text-5xl font-bold leading-[1.08] tracking-tight text-content-primary md:text-6xl lg:text-7xl"
         >
-          Real yield.
+          Your money. Real assets.
           <br />
-          <span className="text-white/30">Demystified.</span>
+          <span className="text-content-tertiary">Transparent yield.</span>
         </motion.h1>
 
         <motion.p
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="mx-auto mt-6 max-w-lg text-base leading-relaxed text-white/50"
+          className="mt-6 max-w-xl text-lg leading-relaxed text-content-secondary"
         >
-          Connect your wallet, deposit stablecoins, and earn yield from
-          institutional-grade fixed income — backed by regulated SPVs,
-          transparent on-chain, no paperwork.
+          Connect your wallet, deposit stablecoins, and earn yield backed by
+          Treasury Bills, bonds, and trade finance. No bank account, no
+          paperwork, no middlemen.
         </motion.p>
 
         <motion.div
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="mt-8 flex items-center justify-center gap-5"
+          className="mt-8 flex flex-wrap items-center gap-4"
         >
           <Link
             href={APP_URL}
-            className="rounded-full bg-[#00C48C] px-7 py-3 text-sm font-medium text-black transition-colors hover:bg-[#00D99A]"
+            className="rounded-full bg-accent px-7 py-3 text-sm font-medium text-accent-text transition-colors hover:bg-accent-hover"
           >
             Start earning
           </Link>
           <Link
-            href="https://piron.gitbook.io/piron-finance/"
-            className="text-sm font-medium text-white/50 transition-colors hover:text-white"
+            href={DOCS_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="text-sm font-medium text-content-secondary transition-colors hover:text-content-primary"
           >
-            Read the docs →
+            Read the docs &#8594;
           </Link>
         </motion.div>
-
       </div>
     </section>
   );
@@ -85,157 +77,178 @@ function Hero() {
 
 const flowNodes = [
   {
-    id: "wallet",
     step: "01",
     label: "Your Wallet",
     sub: "Connect any EVM wallet. Approve USDC, USDT, or CNGN. Nothing moves without your signature.",
-    color: "#00C48C",
   },
   {
-    id: "pool",
     step: "02",
-    label: "Piron Pool",
-    sub: "Audited smart contract receives your deposit and issues pool tokens representing your share.",
-    color: "#0ea5e9",
+    label: "Smart Contract",
+    sub: "An audited on-chain vault receives your deposit and issues pool tokens representing your share.",
   },
   {
-    id: "spv",
     step: "03",
-    label: "Regulated SPV",
-    sub: "A ring-fenced legal entity holds and deploys capital. Your funds are legally separate from Piron.",
-    color: "#a855f7",
+    label: "Segregated Escrow",
+    sub: "A ring-fenced legal entity holds and deploys capital. Your funds are legally separated from Piron.",
   },
   {
-    id: "rwa",
     step: "04",
     label: "Real-World Assets",
-    sub: "Licensed fund managers deploy into T-bills, bonds, invoices, and trade finance. Real instruments.",
-    color: "#f59e0b",
+    sub: "Licensed fund managers deploy into T-Bills, bonds, invoices, and trade finance.",
   },
   {
-    id: "yield",
     step: "05",
     label: "Yield to You",
-    sub: "Returns stream back on-chain as instruments pay interest or mature. Claim after the hold period.",
-    color: "#00C48C",
+    sub: "Returns flow back on-chain as instruments pay interest or mature. Claim after the hold period.",
   },
 ];
 
 function CapitalFlow() {
-  const [active, setActive] = useState<string | null>(null);
-
   return (
-    <section className="py-24">
+    <section data-header-theme="light" className="bg-white py-24">
       <div className="mx-auto max-w-7xl px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.5 }}
-          className="mb-16"
+          className="mb-16 max-w-2xl"
         >
-          <p className="mb-3 text-[11px] uppercase tracking-[0.2em] text-white/40">
+          <p className="text-[13px] font-medium uppercase tracking-[0.2em] text-content-tertiary">
             The full picture
           </p>
-          <h2 className="text-4xl font-semibold tracking-tight text-white md:text-5xl">
+          <h2 className="mt-4 text-4xl font-bold tracking-tight text-content-primary md:text-5xl">
             From wallet to yield.
-            <br />
-            <span className="text-white/30">Five steps.</span>
           </h2>
-          <p className="mt-4 max-w-lg text-base leading-relaxed text-white/50">
-            Your capital takes a transparent, verifiable journey — from your
-            wallet through on-chain contracts, regulated entities, and real
-            instruments — before returning as yield.
+          <p className="mt-4 max-w-lg text-base leading-relaxed text-content-secondary">
+            Your capital takes a transparent, verifiable journey through
+            on-chain contracts, regulated entities, and real instruments.
           </p>
         </motion.div>
 
-        {/* Desktop: horizontal flow */}
-        <div className="relative hidden md:block">
-          <div className="absolute top-[2.625rem] left-[7%] right-[7%] h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-          <div className="grid grid-cols-5 gap-4">
+        {/* Desktop: horizontal with dotted connectors */}
+        <div className="hidden md:block">
+          <div className="grid grid-cols-5 gap-0">
             {flowNodes.map((node, i) => (
-              <motion.button
-                key={node.id}
-                initial={{ opacity: 0, y: 24 }}
+              <motion.div
+                key={node.step}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.3 }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-                onClick={() => setActive(active === node.id ? null : node.id)}
-                className="group flex flex-col items-center text-center"
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.4, delay: i * 0.1 }}
+                className="relative flex flex-col items-center text-center"
               >
-                <div
-                  className="relative z-10 mb-4 flex h-[3.25rem] w-[3.25rem] items-center justify-center rounded-full border text-sm font-bold transition-all duration-300"
-                  style={{
-                    borderColor:
-                      active === node.id
-                        ? node.color
-                        : "rgba(255,255,255,0.1)",
-                    backgroundColor:
-                      active === node.id
-                        ? `${node.color}18`
-                        : "rgba(255,255,255,0.02)",
-                    color:
-                      active === node.id
-                        ? node.color
-                        : "rgba(255,255,255,0.3)",
-                    boxShadow:
-                      active === node.id
-                        ? `0 0 24px ${node.color}28`
-                        : "none",
-                  }}
-                >
-                  {node.step}
-                </div>
-                <p className="text-sm font-semibold text-white">{node.label}</p>
-                <AnimatePresence>
-                  {active === node.id && (
-                    <motion.p
-                      initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                      animate={{ opacity: 1, height: "auto", marginTop: 8 }}
-                      exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                      className="text-xs leading-relaxed text-white/40"
-                    >
-                      {node.sub}
-                    </motion.p>
-                  )}
-                </AnimatePresence>
-                {active !== node.id && (
-                  <p className="mt-1 text-[11px] text-white/25 transition-colors group-hover:text-white/40">
-                    tap to expand
-                  </p>
+                {/* Dotted line + arrow to next node */}
+                {i < flowNodes.length - 1 && (
+                  <div className="absolute left-[calc(50%+28px)] right-[calc(-50%+28px)] top-[22px] flex items-center">
+                    <div className="h-0 flex-1 border-t-2 border-dashed border-gray-300" />
+                    <svg width="8" height="12" viewBox="0 0 8 12" fill="none" className="shrink-0 -ml-px">
+                      <path d="M1 1L6 6L1 11" stroke="#d1d5db" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
                 )}
-              </motion.button>
+
+                {/* Node circle */}
+                <div className="relative z-10 flex h-11 w-11 items-center justify-center rounded-full border-2 border-gray-200 bg-white">
+                  <span className="text-xs font-bold text-content-primary">
+                    {node.step}
+                  </span>
+                </div>
+
+                <h3 className="mt-4 text-sm font-semibold text-content-primary">
+                  {node.label}
+                </h3>
+                <p className="mt-1.5 max-w-[180px] text-xs leading-relaxed text-content-secondary">
+                  {node.sub}
+                </p>
+              </motion.div>
             ))}
           </div>
+
+          {/* Return flow */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+            className="mt-10 flex items-center gap-4"
+          >
+            <div className="flex flex-1 items-center">
+              <svg width="8" height="12" viewBox="0 0 8 12" fill="none" className="shrink-0 rotate-180 -mr-px">
+                <path d="M1 1L6 6L1 11" stroke="rgba(0,196,140,0.5)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <div className="h-0 flex-1 border-t-2 border-dashed border-accent/30" />
+            </div>
+            <span className="shrink-0 text-xs font-medium text-accent">
+              Yield flows back to depositors on-chain
+            </span>
+            <div className="flex flex-1 items-center">
+              <div className="h-0 flex-1 border-t-2 border-dashed border-accent/30" />
+              <svg width="8" height="12" viewBox="0 0 8 12" fill="none" className="shrink-0 rotate-180 -ml-px">
+                <path d="M1 1L6 6L1 11" stroke="rgba(0,196,140,0.5)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+          </motion.div>
         </div>
 
-        {/* Mobile: vertical cards */}
-        <div className="space-y-3 md:hidden">
+        {/* Mobile: vertical with dotted connectors */}
+        <div className="md:hidden">
           {flowNodes.map((node, i) => (
             <motion.div
-              key={node.id}
-              initial={{ opacity: 0, x: -16 }}
+              key={node.step}
+              initial={{ opacity: 0, x: -12 }}
               whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.4, delay: i * 0.08 }}
-              className="flex items-start gap-4 rounded-xl border border-white/10 bg-white/[0.02] p-4"
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.35, delay: i * 0.08 }}
+              className="relative"
             >
-              <div
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold"
-                style={{
-                  backgroundColor: `${node.color}18`,
-                  color: node.color,
-                  border: `1px solid ${node.color}40`,
-                }}
-              >
-                {node.step}
+              <div className="flex items-start gap-4 py-4">
+                {/* Node circle */}
+                <div className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-gray-200 bg-white">
+                  <span className="text-[11px] font-bold text-content-primary">
+                    {node.step}
+                  </span>
+                </div>
+                <div className="min-w-0 pt-1">
+                  <h3 className="text-sm font-semibold text-content-primary">
+                    {node.label}
+                  </h3>
+                  <p className="mt-1 text-xs leading-relaxed text-content-secondary">
+                    {node.sub}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="font-semibold text-white">{node.label}</p>
-                <p className="mt-1 text-sm text-white/40">{node.sub}</p>
-              </div>
+
+              {/* Dotted line + chevron down */}
+              {i < flowNodes.length - 1 && (
+                <div className="flex flex-col items-center py-0.5" style={{ marginLeft: 18 }}>
+                  <div className="h-4 w-0 border-l-2 border-dashed border-gray-300" />
+                  <svg width="12" height="8" viewBox="0 0 12 8" fill="none" className="-mt-px">
+                    <path d="M1 1L6 6L11 1" stroke="#d1d5db" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+              )}
             </motion.div>
           ))}
+
+          {/* Return flow */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className="mt-6 flex items-center gap-3"
+          >
+            <div className="flex items-center">
+              <svg width="8" height="12" viewBox="0 0 8 12" fill="none" className="shrink-0 rotate-180">
+                <path d="M1 1L6 6L1 11" stroke="rgba(0,196,140,0.5)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <div className="h-0 w-8 border-t-2 border-dashed border-accent/30" />
+            </div>
+            <span className="text-xs font-medium text-accent">
+              Yield flows back on-chain
+            </span>
+          </motion.div>
         </div>
       </div>
     </section>
@@ -250,14 +263,14 @@ const steps = [
     title: "Connect your wallet",
     description:
       "Use MetaMask, WalletConnect, Ledger, or any EVM-compatible wallet. No email, no account creation, no password. Your keys, your capital.",
-    note: "KYC may be required for certain pools or jurisdictions. You'll be prompted if needed.",
+    note: "KYC may be required for certain pools or jurisdictions.",
     tags: ["MetaMask", "WalletConnect", "Ledger", "Coinbase Wallet"],
   },
   {
     number: "02",
     title: "Pick your pool",
     description:
-      "Browse live pools by type, yield, duration, and underlying asset class. Each pool page shows real-time NAV, current APY, maturity date, and full allocation breakdown.",
+      "Browse live pools by type, yield, duration, and asset class. Each pool page shows real-time NAV, current APY, maturity date, and full allocation breakdown.",
     note: "Stable Yield pools are open 24/7. Locked Term and Single Asset pools have defined deposit windows.",
     tags: ["Stable Yield", "Locked Term", "Single Asset"],
   },
@@ -265,42 +278,40 @@ const steps = [
     number: "03",
     title: "Deposit stablecoins",
     description:
-      "Approve and send USDC, USDT, or CNGN to the pool contract in a single transaction. You receive pool tokens immediately — representing your proportional share of the pool's assets.",
+      "Approve and send USDC, USDT, or CNGN to the pool contract in a single transaction. You receive pool tokens immediately representing your proportional share of the pool.",
     note: "Funds flow directly to the audited pool contract. Piron never holds your money.",
     tags: ["USDC", "USDT", "CNGN"],
   },
   {
     number: "04",
-    title: "Earn — then withdraw",
+    title: "Earn, then withdraw",
     description:
       "Yield accrues to your pool token balance daily, reflected in NAV updates. After the minimum holding period, submit a withdrawal request. For Locked Term pools, wait for maturity or early exit with a transparent penalty.",
-    note: "Every deposit, accrual, and withdrawal is recorded on-chain and verifiable.",
+    note: "Every deposit, accrual, and withdrawal is recorded on-chain.",
     tags: ["Daily accrual", "7-day hold", "On-chain receipts"],
   },
 ];
 
 function StepByStep() {
   return (
-    <section className="py-24">
+    <section data-header-theme="light" className="bg-surface-warm py-24">
       <div className="mx-auto max-w-7xl px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.5 }}
-          className="mb-16"
+          className="mb-16 max-w-2xl"
         >
-          <p className="mb-3 text-[11px] uppercase tracking-[0.2em] text-white/40">
+          <p className="text-[13px] font-medium uppercase tracking-[0.2em] text-content-tertiary">
             Step by step
           </p>
-          <h2 className="text-4xl font-semibold tracking-tight text-white">
-            No jargon.
-            <br />
-            <span className="text-white/30">Just the process.</span>
+          <h2 className="mt-4 text-4xl font-bold tracking-tight text-content-primary md:text-5xl">
+            No jargon. Just the process.
           </h2>
         </motion.div>
 
-        <div className="space-y-5">
+        <div className="space-y-4">
           {steps.map((step, i) => (
             <motion.div
               key={step.number}
@@ -308,34 +319,34 @@ function StepByStep() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.2 }}
               transition={{ duration: 0.5, delay: i * 0.07 }}
-              className="group grid grid-cols-1 gap-6 rounded-2xl border border-white/10 bg-white/[0.02] p-6 transition-all duration-300 hover:border-white/20 hover:bg-white/[0.03] lg:grid-cols-[100px_1fr]"
+              className="group rounded-2xl bg-white p-6 shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-shadow hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] md:p-8"
             >
-              <div className="flex items-start pt-1">
-                <span className="text-6xl font-bold leading-none tracking-tighter text-white/[0.07] transition-colors duration-300 group-hover:text-white/[0.13]">
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-[80px_1fr]">
+                <span className="text-5xl font-bold leading-none tracking-tighter text-content-primary/15 transition-colors group-hover:text-content-primary/25">
                   {step.number}
                 </span>
-              </div>
-              <div>
-                <h3 className="text-xl font-semibold tracking-tight text-white">
-                  {step.title}
-                </h3>
-                <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/50">
-                  {step.description}
-                </p>
-                {step.note && (
-                  <p className="mt-3 text-xs italic text-white/25">
-                    {step.note}
+                <div>
+                  <h3 className="text-xl font-semibold tracking-tight text-content-primary">
+                    {step.title}
+                  </h3>
+                  <p className="mt-2 max-w-2xl text-sm leading-relaxed text-content-secondary">
+                    {step.description}
                   </p>
-                )}
-                <div className="mt-5 flex flex-wrap gap-2">
-                  {step.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="rounded-full border border-white/10 px-3 py-1 text-xs text-white/40"
-                    >
-                      {tag}
-                    </span>
-                  ))}
+                  {step.note && (
+                    <p className="mt-3 text-xs italic text-content-tertiary">
+                      {step.note}
+                    </p>
+                  )}
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {step.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="rounded-full bg-surface-warm px-3 py-1 text-xs text-content-tertiary"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -355,15 +366,14 @@ const pools = [
     tagline: "Park and earn.",
     headline: "Daily liquidity. Real returns.",
     description:
-      "Deposit any amount and earn yield from diversified short-term instruments like T-bills and money market funds. NAV updates daily. Withdraw after 7 days — no penalty, no lockup.",
+      "Deposit any amount and earn yield from diversified short-term instruments like T-Bills and money market funds. NAV updates daily. Withdraw after 7 days with no penalty.",
     ideal: "Idle capital, corporate treasuries, retail savers",
     features: [
       { label: "Min. hold", value: "7 days" },
       { label: "Yield type", value: "Variable, daily" },
-      { label: "Backing", value: "T-bills, MMFs" },
+      { label: "Backing", value: "T-Bills, MMFs" },
       { label: "Exit penalty", value: "None after 7d" },
     ],
-    color: "#00C48C",
   },
   {
     id: "locked",
@@ -371,7 +381,7 @@ const pools = [
     tagline: "Fix your rate.",
     headline: "Guaranteed return at maturity.",
     description:
-      "Commit your capital for 3, 6, or 12 months and lock in today's rate. Choose interest upfront or at maturity. Auto-roll when the term ends. Early exit available with a transparent, pre-disclosed penalty.",
+      "Commit capital for 3, 6, or 12 months and lock in today's rate. Choose interest upfront or at maturity. Auto-roll when the term ends. Early exit available with a transparent, pre-disclosed penalty.",
     ideal: "Planned expenses, runway extension, treasury laddering",
     features: [
       { label: "Term options", value: "3, 6, 12 mo." },
@@ -379,7 +389,6 @@ const pools = [
       { label: "Interest", value: "Upfront or maturity" },
       { label: "Early exit", value: "With penalty" },
     ],
-    color: "#0ea5e9",
   },
   {
     id: "single",
@@ -387,7 +396,7 @@ const pools = [
     tagline: "Pick the deal.",
     headline: "Defined maturity. Full transparency.",
     description:
-      "Each pool funds a specific real-world deal — an invoice, trade finance transaction, or corporate credit. You see exactly what backs your investment: the borrower, the term, the rate, and the payment date.",
+      "Each pool funds a specific real-world deal: an invoice, trade finance transaction, or corporate credit. You see exactly what backs your investment, the borrower, the term, the rate, and the payment date.",
     ideal: "Sophisticated investors, higher-yield seekers, deal-focused capital",
     features: [
       { label: "Maturity", value: "Per deal" },
@@ -395,7 +404,6 @@ const pools = [
       { label: "Backing", value: "Single instrument" },
       { label: "Transparency", value: "Full deal view" },
     ],
-    color: "#a855f7",
   },
 ];
 
@@ -404,32 +412,30 @@ function PoolTypesSection() {
   const pool = pools.find((p) => p.id === active)!;
 
   return (
-    <section className="py-24">
+    <section data-header-theme="light" className="bg-white py-24">
       <div className="mx-auto max-w-7xl px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.5 }}
-          className="mb-12"
+          className="mb-12 max-w-2xl"
         >
-          <p className="mb-3 text-[11px] uppercase tracking-[0.2em] text-white/40">
+          <p className="text-[13px] font-medium uppercase tracking-[0.2em] text-content-tertiary">
             Choose your strategy
           </p>
-          <h2 className="text-4xl font-semibold tracking-tight text-white">
-            Three pools.
-            <br />
-            <span className="text-white/30">One dashboard.</span>
+          <h2 className="mt-4 text-4xl font-bold tracking-tight text-content-primary md:text-5xl">
+            Three pools. One dashboard.
           </h2>
-          <p className="mt-4 max-w-lg text-base leading-relaxed text-white/50">
+          <p className="mt-4 max-w-lg text-base leading-relaxed text-content-secondary">
             Whether you need instant access, fixed returns, or want to pick
-            specific deals — there is a pool built for that.
+            specific deals, there is a pool built for that.
           </p>
         </motion.div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[260px_1fr]">
           {/* Selector */}
-          <div className="flex flex-row gap-3 lg:flex-col">
+          <div className="flex flex-row gap-3 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0">
             {pools.map((p, i) => (
               <motion.button
                 key={p.id}
@@ -438,22 +444,18 @@ function PoolTypesSection() {
                 viewport={{ once: true, amount: 0.3 }}
                 transition={{ duration: 0.4, delay: i * 0.1 }}
                 onClick={() => setActive(p.id)}
-                className={`flex-1 rounded-xl border p-4 text-left transition-all lg:p-5 ${
+                className={`shrink-0 flex-1 rounded-xl p-4 text-left transition-all lg:flex-none lg:p-5 ${
                   active === p.id
-                    ? "border-white/20 bg-white/[0.05]"
-                    : "border-white/10 bg-white/[0.01] hover:border-white/15"
+                    ? "bg-surface-warm shadow-[0_1px_3px_rgba(0,0,0,0.04)]"
+                    : "bg-transparent hover:bg-surface-warm/50"
                 }`}
               >
-                <div
-                  className="mb-1 text-[10px] uppercase tracking-[0.15em] transition-colors"
-                  style={{
-                    color:
-                      active === p.id ? p.color : "rgba(255,255,255,0.25)",
-                  }}
-                >
+                <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-content-tertiary">
                   {p.type}
-                </div>
-                <p className="text-sm font-semibold text-white">{p.tagline}</p>
+                </p>
+                <p className="mt-1 text-sm font-semibold text-content-primary">
+                  {p.tagline}
+                </p>
               </motion.button>
             ))}
           </div>
@@ -466,18 +468,15 @@ function PoolTypesSection() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -16 }}
               transition={{ duration: 0.22 }}
-              className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 lg:p-8"
+              className="rounded-2xl bg-surface-warm p-6 md:p-8"
             >
-              <div
-                className="mb-1 text-[10px] uppercase tracking-[0.15em]"
-                style={{ color: pool.color }}
-              >
+              <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-content-tertiary">
                 {pool.type}
-              </div>
-              <h3 className="text-2xl font-bold tracking-tight text-white">
+              </p>
+              <h3 className="mt-1 text-2xl font-bold tracking-tight text-content-primary">
                 {pool.headline}
               </h3>
-              <p className="mt-3 max-w-xl text-sm leading-relaxed text-white/50">
+              <p className="mt-3 max-w-xl text-sm leading-relaxed text-content-secondary">
                 {pool.description}
               </p>
 
@@ -485,30 +484,33 @@ function PoolTypesSection() {
                 {pool.features.map((f) => (
                   <div
                     key={f.label}
-                    className="rounded-xl border border-white/10 bg-white/[0.02] px-3 py-3"
+                    className="rounded-xl bg-white px-3 py-3 shadow-[0_1px_2px_rgba(0,0,0,0.03)]"
                   >
-                    <p className="text-[10px] text-white/35">{f.label}</p>
-                    <p className="mt-1 text-sm font-semibold text-white">
+                    <p className="text-[10px] uppercase tracking-wider text-content-tertiary">
+                      {f.label}
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-content-primary">
                       {f.value}
                     </p>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-5 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3.5">
-                <p className="text-[10px] uppercase tracking-[0.12em] text-white/35">
+              <div className="mt-5 rounded-xl bg-white px-4 py-3.5 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
+                <p className="text-[10px] uppercase tracking-wider text-content-tertiary">
                   Ideal for
                 </p>
-                <p className="mt-1 text-sm text-white/55">{pool.ideal}</p>
+                <p className="mt-1 text-sm text-content-secondary">
+                  {pool.ideal}
+                </p>
               </div>
 
               <div className="mt-7">
                 <Link
                   href={APP_URL}
-                  className="inline-flex rounded-full px-6 py-2.5 text-sm font-medium text-black transition-all hover:opacity-90"
-                  style={{ backgroundColor: pool.color }}
+                  className="inline-flex rounded-full bg-accent px-6 py-2.5 text-sm font-medium text-accent-text transition-colors hover:bg-accent-hover"
                 >
-                  Explore {pool.type} pools →
+                  Explore {pool.type} pools &#8594;
                 </Link>
               </div>
             </motion.div>
@@ -527,41 +529,36 @@ const layers = [
     title: "Your wallet",
     description:
       "Non-custodial at every step. You sign every transaction. Nothing moves without your approval.",
-    color: "#00C48C",
   },
   {
     step: "02",
     title: "Smart contracts",
     description:
       "Audited on-chain logic handles deposits, NAV accounting, and withdrawal queues. Open source.",
-    color: "#0ea5e9",
   },
   {
     step: "03",
-    title: "Regulated SPV",
+    title: "Ring-fenced legal entity",
     description:
-      "A ring-fenced special purpose vehicle holds capital and owns the instruments. Legally separated from Piron Finance.",
-    color: "#a855f7",
+      "A dedicated legal entity holds capital and owns the instruments. Legally separated from Piron Finance.",
   },
   {
     step: "04",
     title: "Licensed fund manager",
     description:
-      "Regulated professionals source, underwrite, and manage the underlying assets. Due diligence on every deal.",
-    color: "#f59e0b",
+      "Regulated professionals source, underwrite, and manage the underlying assets.",
   },
   {
     step: "05",
     title: "Real-world instruments",
     description:
-      "T-bills, bonds, trade receivables, commercial paper. Actual yield-bearing assets with defined maturities.",
-    color: "#ef4444",
+      "T-Bills, bonds, trade receivables, commercial paper. Actual yield-bearing assets with defined maturities.",
   },
 ];
 
 function Infrastructure() {
   return (
-    <section className="py-24">
+    <section data-header-theme="light" className="bg-surface-warm py-24">
       <div className="mx-auto max-w-7xl px-6">
         <div className="grid grid-cols-1 gap-16 lg:grid-cols-2 lg:items-center">
           <motion.div
@@ -570,27 +567,25 @@ function Infrastructure() {
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.5 }}
           >
-            <p className="mb-3 text-[11px] uppercase tracking-[0.2em] text-white/40">
+            <p className="text-[13px] font-medium uppercase tracking-[0.2em] text-content-tertiary">
               Under the hood
             </p>
-            <h2 className="text-4xl font-semibold tracking-tight text-white">
-              Institutional
+            <h2 className="mt-4 text-4xl font-bold tracking-tight text-content-primary md:text-5xl">
+              Institutional infrastructure.
               <br />
-              infrastructure.
-              <br />
-              <span className="text-white/30">For everyone.</span>
+              <span className="text-content-tertiary">For everyone.</span>
             </h2>
-            <p className="mt-5 text-base leading-relaxed text-white/50">
+            <p className="mt-5 text-base leading-relaxed text-content-secondary">
               Piron never holds your money. Capital flows through an auditable
               stack of smart contracts, legal entities, and licensed
-              professionals — giving you the same protections hedge funds pay
+              professionals, giving you the same protections hedge funds pay
               millions to access.
             </p>
 
-            <div className="mt-8 grid grid-cols-2 gap-5">
+            <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
               {[
                 {
-                  title: "SPV ring-fenced",
+                  title: "Ring-fenced capital",
                   desc: "Funds legally separated from Piron Finance",
                 },
                 {
@@ -608,12 +603,12 @@ function Infrastructure() {
               ].map((item) => (
                 <div key={item.title}>
                   <div className="mb-1 flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#00C48C]" />
-                    <p className="text-sm font-semibold text-white">
+                    <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
+                    <p className="text-sm font-semibold text-content-primary">
                       {item.title}
                     </p>
                   </div>
-                  <p className="pl-3.5 text-xs leading-relaxed text-white/35">
+                  <p className="pl-3.5 text-xs leading-relaxed text-content-tertiary">
                     {item.desc}
                   </p>
                 </div>
@@ -630,23 +625,20 @@ function Infrastructure() {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true, amount: 0.25 }}
                 transition={{ duration: 0.4, delay: i * 0.09 }}
-                className="flex items-center gap-4 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-4 transition-all duration-300 hover:border-white/20 hover:bg-white/[0.035]"
+                className="rounded-xl bg-white p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-shadow hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)]"
               >
-                <div
-                  className="h-9 w-1 shrink-0 rounded-full"
-                  style={{ backgroundColor: layer.color }}
-                />
-                <div className="min-w-0">
-                  <p
-                    className="mb-0.5 text-[10px] uppercase tracking-[0.12em]"
-                    style={{ color: `${layer.color}80` }}
-                  >
-                    Layer {layer.step}
-                  </p>
-                  <p className="font-semibold text-white">{layer.title}</p>
-                  <p className="text-xs leading-relaxed text-white/40">
-                    {layer.description}
-                  </p>
+                <div className="flex items-start gap-4">
+                  <span className="text-lg font-bold text-content-primary/15">
+                    {layer.step}
+                  </span>
+                  <div>
+                    <p className="font-semibold text-content-primary">
+                      {layer.title}
+                    </p>
+                    <p className="mt-0.5 text-xs leading-relaxed text-content-secondary">
+                      {layer.description}
+                    </p>
+                  </div>
                 </div>
               </motion.div>
             ))}
@@ -661,32 +653,36 @@ function Infrastructure() {
 
 const faqs = [
   {
-    q: "Who holds my money?",
-    a: "No one. Your stablecoins flow directly from your wallet into an audited smart contract. Piron Finance never takes custody of your funds at any point.",
+    q: "Is Piron a bank?",
+    a: "No. Piron is a protocol that connects depositors to regulated fixed-income pools. We do not take deposits in the banking sense, do not lend on our own balance sheet, and are not covered by deposit insurance. Your capital is deployed into real instruments through licensed fund managers and held in ring-fenced legal entities.",
   },
   {
-    q: "What happens if Piron shuts down?",
-    a: "Your funds are held in an SPV that is legally ring-fenced from Piron Finance. In the event of insolvency, the SPV's assets are not part of Piron's estate. Liquidation follows the SPV's documented exit process.",
+    q: "Who has custody of my funds?",
+    a: "At no point does Piron hold your money. Stablecoins move directly from your wallet into an audited smart contract. From there, capital is allocated to segregated escrow accounts managed by qualified custodians. You retain full control until you sign a deposit transaction, and you can verify the location of funds on-chain at any time.",
   },
   {
-    q: "How exactly is yield generated?",
-    a: "Pool capital is deployed by licensed fund managers into real-world instruments: government T-bills, money market funds, trade receivables, and corporate credit. Returns flow back to the pool as instruments pay interest or mature — accruing daily to your token balance.",
+    q: "How is my capital protected if something goes wrong?",
+    a: "Every pool is backed by a dedicated, ring-fenced legal entity that is completely separate from Piron Finance. This means pool assets cannot be used to settle Piron's obligations. If the protocol were to cease operations, the legal entity continues to hold and administer the underlying assets on behalf of depositors until maturity or orderly wind-down.",
   },
   {
-    q: "Can I lose money?",
-    a: "Fixed income instruments carry low but non-zero risk. Default risk is mitigated by using short-duration, high-grade instruments and diversified SPVs. Piron is not a bank and returns are not guaranteed. Read the risk disclosure before investing.",
+    q: "Where does the yield come from?",
+    a: "Yield is generated from real-world fixed-income instruments: government Treasury Bills, money market funds, trade receivables, and short-duration corporate credit. Licensed fund managers source and underwrite every position. Returns accrue daily to your pool token balance as the underlying instruments pay interest or mature.",
   },
   {
-    q: "What is pool NAV and why does it change?",
-    a: "NAV (Net Asset Value) reflects the total value of a pool's assets divided by the total pool tokens outstanding. It increases daily as the underlying instruments accrue interest. Your pool tokens are always redeemable at current NAV.",
+    q: "What are the risks?",
+    a: "Fixed-income instruments are lower risk but not risk-free. Key risks include credit default (a borrower fails to pay), interest rate movements, and liquidity constraints during stressed markets. Piron mitigates these through diversification, short duration bias, and institutional-grade underwriting. However, returns are never guaranteed. Read our risk disclosure before depositing.",
   },
   {
-    q: "Are there fees?",
-    a: "Yes. Piron charges a management fee that is already reflected in the pool's published net yield — what you see is what you earn. There are no hidden fees. Full fee breakdown is displayed on each pool page before you deposit.",
+    q: "How do withdrawals work?",
+    a: "For Stable Yield pools, you can withdraw freely after a 7-day holding period. Locked Term pools pay out at maturity, with an optional early exit at a transparent, pre-disclosed penalty. Single Asset pools follow the payment schedule of the underlying deal. All withdrawal requests and settlements are processed and recorded on-chain.",
   },
   {
-    q: "What wallets are supported?",
-    a: "Any EVM-compatible wallet: MetaMask, WalletConnect, Ledger, Coinbase Wallet, and more. No email or password required — just connect and start.",
+    q: "What does NAV mean and how is it calculated?",
+    a: "NAV stands for Net Asset Value. It represents the total value of a pool's holdings divided by the number of pool tokens outstanding. As the underlying instruments earn interest, NAV increases. Your pool tokens are always redeemable at the current NAV, so you can see exactly what your position is worth at any time.",
+  },
+  {
+    q: "What fees does Piron charge?",
+    a: "Piron charges a management fee that is already factored into the net yield shown on each pool page. The rate you see is the rate you earn. There are no hidden charges, entry fees, or surprise deductions. A full fee breakdown is available on every pool page before you deposit.",
   },
 ];
 
@@ -694,30 +690,30 @@ function FAQ() {
   const [open, setOpen] = useState<number | null>(null);
 
   return (
-    <section className="py-24">
+    <section data-header-theme="light" className="bg-white py-24">
       <div className="mx-auto max-w-7xl px-6">
-        <div className="grid grid-cols-1 gap-16 lg:grid-cols-[1fr_2fr]">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_2fr] lg:gap-16">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.5 }}
           >
-            <p className="mb-3 text-[11px] uppercase tracking-[0.2em] text-white/40">
+            <p className="text-[13px] font-medium uppercase tracking-[0.2em] text-content-tertiary">
               Questions
             </p>
-            <h2 className="text-4xl font-semibold leading-snug tracking-tight text-white">
-              The ones
+            <h2 className="mt-4 text-4xl font-bold leading-snug tracking-tight text-content-primary">
+              The ones everyone
               <br />
-              everyone
-              <br />
-              <span className="text-white/30">asks first.</span>
+              <span className="text-content-tertiary">asks first.</span>
             </h2>
-            <p className="mt-5 text-sm leading-relaxed text-white/40">
+            <p className="mt-5 text-sm leading-relaxed text-content-tertiary">
               Still have questions?{" "}
               <a
-                href="https://piron.gitbook.io/piron-finance/"
-                className="text-white/60 underline underline-offset-4 transition-colors hover:text-white"
+                href={DOCS_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="text-content-secondary underline underline-offset-4 transition-colors hover:text-content-primary"
               >
                 Read the docs
               </a>
@@ -732,19 +728,20 @@ function FAQ() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.15 }}
                 transition={{ duration: 0.4, delay: i * 0.05 }}
-                className="overflow-hidden rounded-xl border border-white/10"
+                className="overflow-hidden rounded-xl border border-gray-100"
               >
                 <button
                   onClick={() => setOpen(open === i ? null : i)}
-                  className="flex w-full items-center justify-between bg-white/[0.02] px-5 py-4 text-left transition-colors hover:bg-white/[0.04]"
+                  className="flex w-full items-center justify-between bg-surface-warm px-5 py-4 text-left transition-colors hover:bg-gray-50"
                 >
-                  <span className="pr-6 text-sm font-medium text-white">
+                  <span className="pr-6 text-sm font-medium text-content-primary">
                     {faq.q}
                   </span>
                   <span
-                    className="shrink-0 text-lg font-light text-white/30 transition-transform duration-200"
+                    className="shrink-0 text-lg font-light text-content-tertiary transition-transform duration-200"
                     style={{
-                      transform: open === i ? "rotate(45deg)" : "rotate(0deg)",
+                      transform:
+                        open === i ? "rotate(45deg)" : "rotate(0deg)",
                       display: "inline-block",
                     }}
                   >
@@ -759,7 +756,7 @@ function FAQ() {
                       exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: 0.2 }}
                     >
-                      <p className="border-t border-white/10 px-5 py-4 text-sm leading-relaxed text-white/50">
+                      <p className="border-t border-gray-100 px-5 py-4 text-sm leading-relaxed text-content-secondary">
                         {faq.a}
                       </p>
                     </motion.div>
@@ -778,46 +775,38 @@ function FAQ() {
 
 function CTA() {
   return (
-    <section className="py-16">
-      <div className="mx-auto max-w-7xl px-6">
+    <section data-header-theme="light" className="bg-surface-warm py-24">
+      <div className="mx-auto max-w-4xl px-6 text-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.6 }}
-          className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.06] to-white/[0.01] px-8 py-20 text-center md:px-16 md:py-24"
         >
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{
-              background:
-                "radial-gradient(ellipse 70% 80% at 50% 120%, rgba(0,196,140,0.14) 0%, transparent 60%)",
-            }}
-          />
-          <p className="relative mb-4 text-[11px] uppercase tracking-[0.2em] text-[#00C48C]">
+          <p className="text-[13px] font-medium uppercase tracking-[0.2em] text-content-tertiary">
             Ready to start?
           </p>
-          <h2 className="relative text-4xl font-bold tracking-tight text-white md:text-5xl">
-            Your idle capital
-            <br />
-            deserves better.
+          <h2 className="mt-4 text-4xl font-bold tracking-tight text-content-primary md:text-5xl">
+            Your idle capital deserves better.
           </h2>
-          <p className="relative mx-auto mt-4 max-w-md text-base text-white/50">
+          <p className="mx-auto mt-4 max-w-md text-base leading-relaxed text-content-secondary">
             No bank. No broker. No middleman. Just your wallet, a pool, and
-            real yield — verifiable on-chain.
+            real yield, verifiable on-chain.
           </p>
-          <div className="relative mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-5">
+          <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
               href={APP_URL}
-              className="rounded-full bg-[#00C48C] px-8 py-3 text-sm font-medium text-black transition-colors hover:bg-[#00D99A]"
+              className="rounded-full bg-accent px-8 py-3 text-sm font-medium text-accent-text transition-colors hover:bg-accent-hover"
             >
               Launch the app
             </Link>
             <Link
-              href="https://piron.gitbook.io/piron-finance/"
-              className="text-sm font-medium text-white/50 transition-colors hover:text-white"
+              href={DOCS_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="text-sm font-medium text-content-secondary transition-colors hover:text-content-primary"
             >
-              Read the docs →
+              Read the docs &#8594;
             </Link>
           </div>
         </motion.div>
@@ -830,16 +819,8 @@ function CTA() {
 
 export default function HowItWorksPage() {
   return (
-    <div
-      className="relative min-h-screen w-full"
-      style={{
-        background: `
-          radial-gradient(ellipse 80% 50% at 50% 0%, rgba(0, 90, 90, 0.35) 0%, transparent 50%),
-          black
-        `,
-      }}
-    >
-      <Header />
+    <div className="relative min-h-screen w-full">
+      <Header transparent />
       <div className="relative overflow-x-hidden">
         <Hero />
         <CapitalFlow />
