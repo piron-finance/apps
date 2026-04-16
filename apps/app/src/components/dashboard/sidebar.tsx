@@ -21,7 +21,7 @@ export function Sidebar() {
   const { address, isConnected } = useAccount();
 
   return (
-    <div className="w-[32%] space-y-4">
+    <div className="w-full space-y-4 xl:w-[32%]">
       {isConnected && <PortfolioSection walletAddress={address!} />}
       <LiquiditySection />
       <RecentPoolsSection />
@@ -32,7 +32,7 @@ export function Sidebar() {
 
 function SidebarCard({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-[#1a1a1a] bg-black p-5">
+    <div className="rounded-xl border border-[#1a1a1a] bg-black p-4 sm:p-5">
       {children}
     </div>
   );
@@ -197,7 +197,7 @@ function RecentPoolsSection() {
               : pool.status || "";
 
             return (
-              <div key={pool.id} className="flex justify-between text-[12px]">
+              <div key={pool.id} className="flex min-w-0 justify-between gap-3 text-[12px]">
                 <div className="flex items-center gap-2 min-w-0">
                   <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
                     daysUntil !== null && daysUntil <= 7
@@ -276,9 +276,9 @@ function SidebarRow({
   muted?: boolean;
 }) {
   return (
-    <div className="flex justify-between text-[12px]">
-      <span className="text-[#888]">{label}</span>
-      <span className={muted ? "text-[#666]" : "text-white"}>{value}</span>
+    <div className="flex min-w-0 justify-between gap-3 text-[12px]">
+      <span className="min-w-0 text-[#888]">{label}</span>
+      <span className={`shrink-0 text-right ${muted ? "text-[#666]" : "text-white"}`}>{value}</span>
     </div>
   );
 }

@@ -130,9 +130,9 @@ export default function DashboardPage() {
   })();
 
   return (
-    <div className="min-h-screen bg-black p-4">
+    <div className="min-h-screen bg-black p-3 sm:p-4 lg:p-6">
       {/* Stats Row */}
-      <div className="grid grid-cols-4 gap-4 mb-4">
+      <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:gap-4">
         <StatCard
           label="TOTAL VALUE LOCKED"
           value={metrics?.totalValueLockedFormatted || formatTVL(metrics?.totalValueLocked) || "$0"}
@@ -155,9 +155,9 @@ export default function DashboardPage() {
         />
       </div>
 
-      <div className="flex gap-4">
+      <div className="flex flex-col gap-4 xl:flex-row">
         {/* Main Content */}
-        <div className="w-[68%] space-y-4">
+        <div className="w-full space-y-4 xl:w-[68%]">
           {/* Featured Pools */}
           {featuredPools.length > 0 && (
             <PoolSection
@@ -165,7 +165,7 @@ export default function DashboardPage() {
               title="Top picks this week."
               subtitle="Curated pools with strong performance and high liquidity."
             >
-              <div className="grid grid-cols-2 gap-4 mt-5">
+              <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
                 {featuredPools.slice(0, 2).map((pool) => (
                   <PoolCard
                     key={pool.id}
@@ -194,7 +194,7 @@ export default function DashboardPage() {
             title="Withdraw anytime. Earn daily."
             subtitle="NAV-priced pools holding T-bills and money market paper. Your capital works from day one."
             filters={
-              <div className="flex gap-2">
+              <div className="flex min-w-max gap-2 sm:min-w-0 sm:flex-wrap">
                 {["All", "USDC", "USDT", "DAI", "CNGN"].map((c) => (
                   <button
                     key={c}
@@ -211,11 +211,11 @@ export default function DashboardPage() {
               </div>
             }
           >
-            <div className="grid grid-cols-2 gap-4 mt-5">
+            <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
               {poolsLoading ? (
-                <div className="col-span-2 py-8 text-center text-[#666]">Loading pools...</div>
+                <div className="col-span-full py-8 text-center text-[#666]">Loading pools...</div>
               ) : filteredStablePools.length === 0 ? (
-                <div className="col-span-2 py-8 text-center text-[#666]">No stable yield pools available</div>
+                <div className="col-span-full py-8 text-center text-[#666]">No stable yield pools available</div>
               ) : (
                 filteredStablePools.map((pool) => (
                   <PoolCard
@@ -245,7 +245,7 @@ export default function DashboardPage() {
             title="Lock your rate. Skip the volatility."
             subtitle="Fixed-term deposits with guaranteed APY. Choose when you receive interest. Early exit costs you."
             filters={
-              <div className="flex gap-2">
+              <div className="flex min-w-max gap-2 sm:min-w-0 sm:flex-wrap">
                 {["All", "90d", "180d", "365d"].map((d) => (
                   <button
                     key={d}
@@ -262,11 +262,11 @@ export default function DashboardPage() {
               </div>
             }
           >
-            <div className="grid grid-cols-2 gap-4 mt-5">
+            <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
               {poolsLoading ? (
-                <div className="col-span-2 py-8 text-center text-[#666]">Loading pools...</div>
+                <div className="col-span-full py-8 text-center text-[#666]">Loading pools...</div>
               ) : filteredLockedPools.length === 0 ? (
-                <div className="col-span-2 py-8 text-center text-[#666]">No locked pools available</div>
+                <div className="col-span-full py-8 text-center text-[#666]">No locked pools available</div>
               ) : (
                 filteredLockedPools.map((pool) => (
                   <PoolCard
@@ -296,11 +296,11 @@ export default function DashboardPage() {
             title="One deal. Full visibility."
             subtitle="Finance a specific receivable or credit facility. SPV-wrapped with documents on-chain."
           >
-            <div className="grid grid-cols-2 gap-4 mt-5">
+            <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
               {poolsLoading ? (
-                <div className="col-span-2 py-8 text-center text-[#666]">Loading pools...</div>
+                <div className="col-span-full py-8 text-center text-[#666]">Loading pools...</div>
               ) : singleAssetPools.length === 0 ? (
-                <div className="col-span-2 py-8 text-center text-[#666]">No single asset pools available</div>
+                <div className="col-span-full py-8 text-center text-[#666]">No single asset pools available</div>
               ) : (
                 singleAssetPools.map((pool) => (
                   <PoolCard

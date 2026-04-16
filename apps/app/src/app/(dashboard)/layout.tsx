@@ -17,18 +17,18 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
   const { address, isConnected } = useAccount();
   const { open } = useWeb3Modal();
 
   return (
     <div className="min-h-screen bg-black">
-      <header className="sticky top-0 z-50 backdrop-blur-xl bg-gradient-to-b from-black/20 to-transparent border-b border-white/10">
-        <div className=" flex h-16 items-center justify-between  px-6">
-          <div className="flex items-center gap-16">
-            <Link href="/" className="flex items-center">
+      <header className="sticky top-0 z-50 border-b border-white/10 bg-black/80 backdrop-blur-xl">
+        <div className="flex min-h-16 flex-wrap items-center justify-between gap-x-4 gap-y-3 px-3 py-3 sm:px-6 md:flex-nowrap">
+          <div className="flex min-w-0 items-center gap-4 md:gap-16">
+            <Link href="/" className="flex min-w-0 items-center">
               <Image src="/pironLogo.png" alt="PIRON" width={38} height={38} />
-              <span className="text-sm font-medium tracking-wide text-white">
+              <span className="hidden text-sm font-medium tracking-wide text-white sm:inline">
                 Piron Finance
               </span>
             </Link>
@@ -46,7 +46,7 @@ export default function DashboardLayout({
             </nav>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex shrink-0 items-center gap-3 sm:gap-4">
             <Link
               href="https://piron.gitbook.io/piron/"
               target="_blank"
@@ -63,6 +63,27 @@ export default function DashboardLayout({
                 : "Connect"}
             </Button>
           </div>
+
+          <nav className="order-3 flex w-full items-center gap-2 overflow-x-auto md:hidden">
+            {navItems.map((item) => {
+              const isActive =
+                item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`whitespace-nowrap rounded-full border px-3 py-1.5 text-[12px] transition-colors ${
+                    isActive
+                      ? "border-[#00c853]/40 bg-[#00c853]/10 text-white"
+                      : "border-white/10 text-white/55"
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              );
+            })}
+          </nav>
         </div>
       </header>
 

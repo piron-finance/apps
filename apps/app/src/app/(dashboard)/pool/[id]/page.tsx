@@ -108,29 +108,29 @@ function PoolDetailContent({ pool }: { pool: Pool }) {
   const maxAPY = tiers.length > 0 ? Math.max(...tiers.map(t => parseFloat(t.interestRatePercent))) : undefined;
 
   return (
-    <div className="min-h-screen bg-black p-4">
+    <div className="min-h-screen bg-black p-3 sm:p-4 lg:p-6">
       {/* Top Analytics Bar */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-6">
-          <div>
+      <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:items-center sm:gap-6">
+          <div className="rounded-lg border border-[#1a1a1a] bg-[#060607] p-3 sm:border-0 sm:bg-transparent sm:p-0">
             <span className="text-[11px] text-[#666]">{isLockedPool ? "Total Deposits" : "TVL"}</span>
-            <p className="text-white font-medium">
+            <p className="break-words text-white font-medium">
               {isLockedPool && lockedMetrics
                 ? parseFloat((lockedMetrics.totalDepositsFormatted || "0").replace(/,/g, "")).toLocaleString("en-US", { maximumFractionDigits: 2 })
                 : formatValue(tvl)}
             </p>
           </div>
-          <div className="w-px h-8 bg-[#1a1a1a]" />
+          <div className="hidden h-8 w-px bg-[#1a1a1a] sm:block" />
           {isLockedPool ? (
             <>
-              <div>
+              <div className="rounded-lg border border-[#1a1a1a] bg-[#060607] p-3 sm:border-0 sm:bg-transparent sm:p-0">
                 <span className="text-[11px] text-[#666]">Active Positions</span>
-                <p className="text-white font-medium">{lockedMetrics?.activePositions ?? "—"}</p>
+                <p className="break-words text-white font-medium">{lockedMetrics?.activePositions ?? "—"}</p>
               </div>
-              <div className="w-px h-8 bg-[#1a1a1a]" />
-              <div>
+              <div className="hidden h-8 w-px bg-[#1a1a1a] sm:block" />
+              <div className="rounded-lg border border-[#1a1a1a] bg-[#060607] p-3 sm:border-0 sm:bg-transparent sm:p-0">
                 <span className="text-[11px] text-[#666]">Lock Periods</span>
-                <p className="text-white font-medium">
+                <p className="break-words text-white font-medium">
                   {minLockDays && maxLockDays
                     ? minLockDays === maxLockDays
                       ? `${minLockDays}d`
@@ -138,10 +138,10 @@ function PoolDetailContent({ pool }: { pool: Pool }) {
                     : "—"}
                 </p>
               </div>
-              <div className="w-px h-8 bg-[#1a1a1a]" />
-              <div>
+              <div className="hidden h-8 w-px bg-[#1a1a1a] sm:block" />
+              <div className="rounded-lg border border-[#1a1a1a] bg-[#060607] p-3 sm:border-0 sm:bg-transparent sm:p-0">
                 <span className="text-[11px] text-[#666]">APY Range</span>
-                <p className="text-[#00c853] font-medium">
+                <p className="break-words text-[#00c853] font-medium">
                   {minAPY !== undefined && maxAPY !== undefined
                     ? minAPY === maxAPY
                       ? `${minAPY}%`
@@ -152,19 +152,19 @@ function PoolDetailContent({ pool }: { pool: Pool }) {
             </>
           ) : (
             <>
-              <div>
+              <div className="rounded-lg border border-[#1a1a1a] bg-[#060607] p-3 sm:border-0 sm:bg-transparent sm:p-0">
                 <span className="text-[11px] text-[#666]">Utilization</span>
-                <p className="text-white font-medium">{utilization ? `${parseFloat(utilization).toFixed(0)}%` : "—"}</p>
+                <p className="break-words text-white font-medium">{utilization ? `${parseFloat(utilization).toFixed(0)}%` : "—"}</p>
               </div>
-              <div className="w-px h-8 bg-[#1a1a1a]" />
-              <div>
+              <div className="hidden h-8 w-px bg-[#1a1a1a] sm:block" />
+              <div className="rounded-lg border border-[#1a1a1a] bg-[#060607] p-3 sm:border-0 sm:bg-transparent sm:p-0">
                 <span className="text-[11px] text-[#666]">Min hold</span>
-                <p className="text-white font-medium">7 days</p>
+                <p className="break-words text-white font-medium">7 days</p>
               </div>
             </>
           )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <span className="px-3 py-1.5 text-[11px] text-[#888] border border-[#1a1a1a] rounded-lg">
             {pool.poolType?.replace("_", " ")}
           </span>
@@ -176,9 +176,9 @@ function PoolDetailContent({ pool }: { pool: Pool }) {
         </div>
       </div>
 
-      <div className="flex gap-4">
+      <div className="flex flex-col gap-4 xl:flex-row">
         {/* Left Column - Main Content */}
-        <div className="w-[65%] space-y-4">
+        <div className="w-full space-y-4 xl:w-[65%]">
           {!isLockedPool && (
             pool.poolType === "STABLE_YIELD"
               ? <NAVYieldHistory pool={pool} />
@@ -195,7 +195,7 @@ function PoolDetailContent({ pool }: { pool: Pool }) {
         </div>
 
         {/* Right Column - Info Cards */}
-        <div className="w-[35%] space-y-4">
+        <div className="w-full space-y-4 xl:w-[35%]">
           {isLockedPool ? (
             <LockedAPYCard pool={pool} tiers={tiers} lockedMetrics={lockedMetrics} />
           ) : (
@@ -287,12 +287,12 @@ function NAVYieldHistory({ pool }: { pool: Pool }) {
   };
 
   return (
-    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-5">
-      <div className="flex items-center justify-between mb-4">
+    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-[14px] font-medium text-white">NAV & yield history</h3>
-          <div className="flex items-center gap-3 mt-1">
-            <span className="text-2xl font-semibold text-white">
+          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span className="text-xl font-semibold text-white sm:text-2xl">
               {displayNav.toFixed(4)} {pool.assetSymbol}
             </span>
             <span className={`text-[12px] ${navChange >= 0 ? "text-[#00c853]" : "text-red-400"}`}>
@@ -415,8 +415,8 @@ function FundingProgress({ pool }: { pool: Pool }) {
   const milestones = [25, 50, 75, 100];
 
   return (
-    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-5">
-      <div className="flex items-center justify-between mb-1">
+    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
+      <div className="mb-1 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-[14px] font-medium text-white">Funding progress</h3>
           <p className="text-[11px] text-[#666] mt-0.5">
@@ -488,12 +488,12 @@ function FundingProgress({ pool }: { pool: Pool }) {
       )}
 
       {/* Stats row */}
-      <div className="flex items-center gap-6 text-[11px] mt-4 pt-4 border-t border-[#1a1a1a]">
+      <div className="mt-4 grid grid-cols-2 gap-3 border-t border-[#1a1a1a] pt-4 text-[11px] sm:flex sm:flex-wrap sm:items-center sm:gap-6">
         <div>
           <span className="text-[#666]">Investors</span>
           <p className="text-white font-medium">{investors}</p>
         </div>
-        <div className="w-px h-6 bg-[#1a1a1a]" />
+        <div className="hidden h-6 w-px bg-[#1a1a1a] sm:block" />
         <div>
           <span className="text-[#666]">Min deposit</span>
           <p className="text-white font-medium">
@@ -504,7 +504,7 @@ function FundingProgress({ pool }: { pool: Pool }) {
         </div>
         {epochEnd && (
           <>
-            <div className="w-px h-6 bg-[#1a1a1a]" />
+            <div className="hidden h-6 w-px bg-[#1a1a1a] sm:block" />
             <div>
               <span className="text-[#666]">Epoch ends</span>
               <p className="text-white font-medium">
@@ -515,7 +515,7 @@ function FundingProgress({ pool }: { pool: Pool }) {
         )}
         {target > 0 && (
           <>
-            <div className="w-px h-6 bg-[#1a1a1a]" />
+            <div className="hidden h-6 w-px bg-[#1a1a1a] sm:block" />
             <div>
               <span className="text-[#666]">Remaining</span>
               <p className="text-white font-medium">
@@ -656,13 +656,13 @@ function DepositFlow({ pool, tiers: tiersProp }: { pool: Pool; tiers?: any[] }) 
   const feePercent = (depositFeeRate * 100).toFixed(2);
 
   return (
-    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-5">
-      <div className="flex items-center justify-between mb-1">
+    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
+      <div className="mb-1 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <span className="text-[10px] text-[#666] uppercase tracking-wider">Deposit</span>
           <h3 className="text-[16px] font-medium text-white">Fund the pool in a few clicks.</h3>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <span className="px-3 py-1 text-[11px] text-[#888] border border-[#1a1a1a] rounded-lg">{pool.assetSymbol} only</span>
           {!isLockedPool && <span className="px-3 py-1 text-[11px] text-[#888] border border-[#1a1a1a] rounded-lg">7 day hold</span>}
           {isLockedPool && <span className="px-3 py-1 text-[11px] text-[#888] border border-[#1a1a1a] rounded-lg">Fixed APY</span>}
@@ -675,20 +675,20 @@ function DepositFlow({ pool, tiers: tiersProp }: { pool: Pool; tiers?: any[] }) 
         }
       </p>
 
-      <div className="max-w-md">
-        <div className="flex items-center justify-between mb-2">
+      <div className="max-w-md sm:max-w-lg">
+        <div className="mb-2 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
           <span className="text-[12px] text-[#888]">Amount</span>
           <span className="text-[12px] text-[#666]">
             Balance: {isConnected ? `${userBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${pool.assetSymbol}` : `— ${pool.assetSymbol}`}
           </span>
         </div>
-        <div className="flex items-center gap-2 p-3 rounded-xl border border-[#1a1a1a] bg-black focus-within:border-[#333] transition-colors">
+        <div className="flex min-w-0 items-center gap-2 rounded-xl border border-[#1a1a1a] bg-black p-3 transition-colors focus-within:border-[#333]">
           <input
             type="text"
             value={amount}
             onChange={(e) => { setAmount(e.target.value.replace(/[^0-9.]/g, "")); setDepositError(null); }}
             placeholder="0.00"
-            className="flex-1 bg-transparent text-2xl text-white outline-none"
+            className="min-w-0 flex-1 bg-transparent text-xl text-white outline-none sm:text-2xl"
           />
           <button className="px-2 py-1 text-[10px] text-[#888] border border-[#1a1a1a] rounded">{pool.assetSymbol}</button>
           <button 
@@ -705,7 +705,7 @@ function DepositFlow({ pool, tiers: tiersProp }: { pool: Pool; tiers?: any[] }) 
         {isLockedPool && tiers.length > 0 && (
           <div className="mt-4">
             <span className="text-[12px] text-[#888] block mb-2">Select lock period</span>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
               {tiers.map((tier: any) => (
                 <button
                   key={tier.index}
@@ -726,7 +726,7 @@ function DepositFlow({ pool, tiers: tiersProp }: { pool: Pool; tiers?: any[] }) 
             {/* Interest Payment Option */}
             <div className="mt-3">
               <span className="text-[12px] text-[#888] block mb-2">Interest payment</span>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => setInterestPayment("AT_MATURITY")}
                   className={`px-3 py-2 text-[11px] rounded-lg border transition-colors ${
@@ -827,11 +827,11 @@ function DepositFlow({ pool, tiers: tiersProp }: { pool: Pool; tiers?: any[] }) 
           <p className="text-[11px] text-red-400 mt-3">{depositError}</p>
         )}
 
-        <div className="flex gap-3 mt-5">
+        <div className="mt-5 flex flex-col gap-3 sm:flex-row">
           <button
             onClick={handleAction}
             disabled={isButtonDisabled}
-            className={`px-5 py-2.5 text-[12px] font-medium rounded-full transition-colors ${
+            className={`w-full px-5 py-2.5 text-[12px] font-medium rounded-full transition-colors sm:w-auto ${
               isButtonDisabled
                 ? "bg-[#1a1a1a] text-[#666] cursor-not-allowed"
                 : "bg-[#00c853] text-black hover:bg-[#00b84a]"
@@ -839,7 +839,7 @@ function DepositFlow({ pool, tiers: tiersProp }: { pool: Pool; tiers?: any[] }) 
           >
             {getButtonText()}
           </button>
-          <button className="px-4 py-2.5 text-[12px] text-[#888] border border-[#1a1a1a] rounded-full hover:text-white hover:border-[#333] transition-colors">
+          <button className="w-full px-4 py-2.5 text-[12px] text-[#888] border border-[#1a1a1a] rounded-full hover:text-white hover:border-[#333] transition-colors sm:w-auto">
             View withdrawal policy
           </button>
         </div>
@@ -868,8 +868,8 @@ function YourPositions({ pool }: { pool: Pool }) {
 
   if (!isConnected) {
     return (
-      <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-5">
-        <div className="flex items-center justify-between">
+      <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <h3 className="text-[13px] font-medium text-white">Your positions</h3>
           <p className="text-[11px] text-[#666]">Connect a wallet to see deposits and exit eligibility.</p>
         </div>
@@ -879,7 +879,7 @@ function YourPositions({ pool }: { pool: Pool }) {
 
   if (isLoading) {
     return (
-      <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-5">
+      <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
         <h3 className="text-[13px] font-medium text-white mb-4">Your positions</h3>
         <div className="py-4 text-center text-[#666]">Loading positions...</div>
       </div>
@@ -888,7 +888,7 @@ function YourPositions({ pool }: { pool: Pool }) {
 
   if (!position || parseFloat(position.totalShares || "0") === 0) {
     return (
-      <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-5">
+      <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
         <h3 className="text-[13px] font-medium text-white mb-4">Your positions</h3>
         <div className="py-4 text-center text-[#666]">No positions in this pool. Deposit above to start earning yield.</div>
       </div>
@@ -902,8 +902,8 @@ function YourPositions({ pool }: { pool: Pool }) {
   const canWithdraw = daysHeld >= 7;
 
   return (
-    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-5">
-      <div className="flex items-center justify-between mb-4">
+    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-[13px] font-medium text-white">Your positions</h3>
           <p className="text-[11px] text-[#666] mt-0.5">
@@ -923,19 +923,26 @@ function YourPositions({ pool }: { pool: Pool }) {
         </button>
       </div>
 
-      <div className="grid grid-cols-4 gap-4 text-[11px] text-[#666] border-b border-[#1a1a1a] pb-3">
+      <div className="hidden grid-cols-4 gap-4 border-b border-[#1a1a1a] pb-3 text-[11px] text-[#666] md:grid">
         <span>First deposit</span>
         <span>Shares</span>
         <span>Current value</span>
         <span>Hold status</span>
       </div>
 
-      <div className="grid grid-cols-4 gap-4 py-3 items-center">
-        <span className="text-[12px] text-[#999]">
-          {position.firstDepositTime ? formatDate(position.firstDepositTime) : "—"}
-        </span>
-        <span className="text-[12px] text-white">{totalShares.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
-        <div>
+      <div className="grid grid-cols-1 gap-3 py-3 md:grid-cols-4 md:items-center md:gap-4">
+        <div className="flex justify-between gap-3 md:block">
+          <span className="text-[11px] text-[#666] md:hidden">First deposit</span>
+          <span className="text-[12px] text-[#999]">
+            {position.firstDepositTime ? formatDate(position.firstDepositTime) : "—"}
+          </span>
+        </div>
+        <div className="flex justify-between gap-3 md:block">
+          <span className="text-[11px] text-[#666] md:hidden">Shares</span>
+          <span className="text-[12px] text-white">{totalShares.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+        </div>
+        <div className="flex justify-between gap-3 md:block">
+          <span className="text-[11px] text-[#666] md:hidden">Current value</span>
           <span className="text-[12px] text-white">${currentValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
           {totalReturn !== 0 && (
             <span className={`text-[10px] ml-1 ${totalReturn >= 0 ? "text-[#00c853]" : "text-red-400"}`}>
@@ -943,9 +950,12 @@ function YourPositions({ pool }: { pool: Pool }) {
             </span>
           )}
         </div>
-        <span className={`text-[11px] ${canWithdraw ? "text-[#00c853]" : "text-[#888]"}`}>
-          {canWithdraw ? "Unlocked" : `${7 - daysHeld}d remaining`}
-        </span>
+        <div className="flex justify-between gap-3 md:block">
+          <span className="text-[11px] text-[#666] md:hidden">Hold status</span>
+          <span className={`text-[11px] ${canWithdraw ? "text-[#00c853]" : "text-[#888]"}`}>
+            {canWithdraw ? "Unlocked" : `${7 - daysHeld}d remaining`}
+          </span>
+        </div>
       </div>
 
       {/* Withdrawal Panel */}
@@ -953,13 +963,13 @@ function YourPositions({ pool }: { pool: Pool }) {
         <div className="mt-4 pt-4 border-t border-[#1a1a1a]">
           <h4 className="text-[12px] font-medium text-white mb-3">Withdraw from position</h4>
           
-          <div className="flex items-center gap-2 mb-3">
+          <div className="mb-3 flex min-w-0 items-center gap-2">
             <input
               type="text"
               value={withdrawAmount}
               onChange={(e) => setWithdrawAmount(e.target.value.replace(/[^0-9.]/g, ""))}
               placeholder="0.00"
-              className="flex-1 px-3 py-2 bg-black border border-[#1a1a1a] rounded-lg text-white text-[14px] outline-none focus:border-[#333]"
+              className="min-w-0 flex-1 px-3 py-2 bg-black border border-[#1a1a1a] rounded-lg text-white text-[14px] outline-none focus:border-[#333]"
             />
             <button 
               onClick={() => setWithdrawAmount(String(currentValue))}
@@ -995,7 +1005,7 @@ function YourPositions({ pool }: { pool: Pool }) {
             </div>
           )}
 
-          <div className="flex gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row">
             <button className="px-4 py-2 bg-[#00c853] text-black text-[12px] font-medium rounded-lg hover:bg-[#00b84a]">
               Confirm Withdrawal
             </button>
@@ -1032,8 +1042,8 @@ function LockedPositions({ pool }: { pool: Pool }) {
 
   if (!isConnected) {
     return (
-      <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-5">
-        <div className="flex items-center justify-between">
+      <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <h3 className="text-[13px] font-medium text-white">Your locked positions</h3>
           <p className="text-[11px] text-[#666]">Connect a wallet to see your locked deposits.</p>
         </div>
@@ -1043,7 +1053,7 @@ function LockedPositions({ pool }: { pool: Pool }) {
 
   if (isLoading) {
     return (
-      <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-5">
+      <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
         <h3 className="text-[13px] font-medium text-white mb-4">Your locked positions</h3>
         <div className="py-4 text-center text-[#666]">Loading positions...</div>
       </div>
@@ -1052,7 +1062,7 @@ function LockedPositions({ pool }: { pool: Pool }) {
 
   if (poolPositions.length === 0) {
     return (
-      <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-5">
+      <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
         <h3 className="text-[13px] font-medium text-white mb-4">Your locked positions</h3>
         <div className="py-4 text-center text-[#666]">No locked positions in this pool. Select a lock tier above to start earning.</div>
       </div>
@@ -1082,8 +1092,8 @@ function LockedPositions({ pool }: { pool: Pool }) {
   };
 
   return (
-    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-5">
-      <div className="flex items-center justify-between mb-4">
+    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-[13px] font-medium text-white">Your locked positions</h3>
           <p className="text-[11px] text-[#666] mt-0.5">
@@ -1092,7 +1102,7 @@ function LockedPositions({ pool }: { pool: Pool }) {
             ${totalExpectedInterest.toLocaleString()} expected interest
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {activeCount > 0 && (
             <span className="px-2 py-1 text-[10px] text-[#00c853] bg-[#00c853]/10 rounded-lg">
               {activeCount} active
@@ -1106,7 +1116,7 @@ function LockedPositions({ pool }: { pool: Pool }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-6 gap-4 text-[11px] text-[#666] border-b border-[#1a1a1a] pb-3">
+      <div className="hidden grid-cols-6 gap-4 border-b border-[#1a1a1a] pb-3 text-[11px] text-[#666] md:grid">
         <span>Tier</span>
         <span>Principal</span>
         <span>Interest Rate</span>
@@ -1122,16 +1132,24 @@ function LockedPositions({ pool }: { pool: Pool }) {
         const daysRemaining = position.daysRemaining || 0;
 
         return (
-          <div key={position.id} className="grid grid-cols-6 gap-4 py-3 items-center border-b border-[#1a1a1a] last:border-0">
-            <span className="text-[12px] text-white">{position.tierName || `Tier ${position.tierIndex}`}</span>
-            <div>
+          <div key={position.id} className="grid grid-cols-1 gap-3 border-b border-[#1a1a1a] py-4 last:border-0 md:grid-cols-6 md:items-center md:gap-4 md:py-3">
+            <div className="flex justify-between gap-3 md:block">
+              <span className="text-[11px] text-[#666] md:hidden">Tier</span>
+              <span className="text-[12px] text-white">{position.tierName || `Tier ${position.tierIndex}`}</span>
+            </div>
+            <div className="flex justify-between gap-3 md:block">
+              <span className="text-[11px] text-[#666] md:hidden">Principal</span>
               <span className="text-[12px] text-white">${principal.toLocaleString()}</span>
               {position.expectedInterestFormatted && (
                 <span className="text-[10px] text-[#00c853] ml-1">+{position.expectedInterestFormatted}</span>
               )}
             </div>
-            <span className="text-[12px] text-[#00c853]">{position.interestRatePercent}%</span>
-            <div>
+            <div className="flex justify-between gap-3 md:block">
+              <span className="text-[11px] text-[#666] md:hidden">Interest Rate</span>
+              <span className="text-[12px] text-[#00c853]">{position.interestRatePercent}%</span>
+            </div>
+            <div className="flex justify-between gap-3 md:block">
+              <span className="text-[11px] text-[#666] md:hidden">Maturity</span>
               <span className="text-[12px] text-white">
                 {position.maturityDate || position.maturityTimeFormatted || "—"}
               </span>
@@ -1139,18 +1157,21 @@ function LockedPositions({ pool }: { pool: Pool }) {
                 <span className="text-[10px] text-[#666] ml-1">({daysRemaining}d left)</span>
               )}
             </div>
-            <span className={`text-[11px] px-2 py-1 rounded w-fit ${
-              isMatured
-                ? "text-yellow-400 bg-yellow-400/10"
-                : isActive
-                ? "text-[#00c853] bg-[#00c853]/10"
-                : position.status === "REDEEMED"
-                ? "text-[#888] bg-[#1a1a1a]"
-                : "text-red-400 bg-red-400/10"
-            }`}>
-              {position.status}
-            </span>
-            <div className="flex gap-2">
+            <div className="flex justify-between gap-3 md:block">
+              <span className="text-[11px] text-[#666] md:hidden">Status</span>
+              <span className={`text-[11px] px-2 py-1 rounded w-fit ${
+                isMatured
+                  ? "text-yellow-400 bg-yellow-400/10"
+                  : isActive
+                  ? "text-[#00c853] bg-[#00c853]/10"
+                  : position.status === "REDEEMED"
+                  ? "text-[#888] bg-[#1a1a1a]"
+                  : "text-red-400 bg-red-400/10"
+              }`}>
+                {position.status}
+              </span>
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row md:flex-col">
               {isMatured && (
                 <button
                   onClick={() => handleRedeemClick(position)}
@@ -1174,8 +1195,8 @@ function LockedPositions({ pool }: { pool: Pool }) {
 
       {/* Early Exit Confirmation Modal */}
       {showEarlyExitModal && selectedPosition && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
-          <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-6 max-w-md w-full mx-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+          <div className="max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] p-4 sm:p-6">
             <h3 className="text-[16px] font-medium text-white mb-2">Early Exit Confirmation</h3>
             <p className="text-[12px] text-[#888] mb-4">
               Exiting early will forfeit some of your earned interest and may incur a penalty.
@@ -1219,7 +1240,7 @@ function LockedPositions({ pool }: { pool: Pool }) {
               <div className="py-8 text-center text-[#666]">Loading exit preview...</div>
             )}
 
-            <div className="flex gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row">
               <button
                 onClick={confirmEarlyExit}
                 disabled={!earlyExitPreview}
@@ -1265,14 +1286,14 @@ function LockedAPYCard({ pool, tiers, lockedMetrics }: { pool: Pool; tiers: any[
   const maxAPY = apyValues.length > 0 ? Math.max(...apyValues) : 0;
 
   return (
-    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-5">
-      <div className="flex items-start justify-between mb-4">
+    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <span className="text-[11px] text-[#666]">APY Range</span>
           <p className="text-[11px] text-[#666] mt-1">Fixed rates based on lock duration.</p>
         </div>
-        <div className="text-right">
-          <p className="text-3xl font-semibold text-[#00c853]">
+        <div className="sm:text-right">
+          <p className="text-2xl font-semibold text-[#00c853] sm:text-3xl">
             {minAPY === maxAPY ? `${minAPY}%` : `${minAPY}–${maxAPY}%`}
           </p>
           <p className="text-[11px] text-[#666]">Fixed APY</p>
@@ -1297,7 +1318,7 @@ function LockedAPYCard({ pool, tiers, lockedMetrics }: { pool: Pool; tiers: any[
       {isConnected && hasPositions && (
         <div className="mb-4 p-3 rounded-lg bg-[#0a0a0a] border border-[#1a1a1a]">
           <span className="text-[10px] text-[#666] uppercase tracking-wider">Your locked deposits</span>
-          <div className="flex items-baseline justify-between mt-1">
+          <div className="mt-1 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
             <span className="text-xl font-semibold text-white">${totalPrincipal.toLocaleString()}</span>
             <span className="text-[12px] text-[#00c853]">
               +${totalExpectedInterest.toLocaleString()} expected
@@ -1310,7 +1331,7 @@ function LockedAPYCard({ pool, tiers, lockedMetrics }: { pool: Pool; tiers: any[
         </div>
       )}
 
-      <div className="flex gap-2 mb-4">
+      <div className="mb-4 flex flex-wrap gap-2">
         <span className="px-2 py-1 text-[10px] text-[#666] border border-[#1a1a1a] rounded">
           {tiers.length} lock tiers
         </span>
@@ -1319,7 +1340,7 @@ function LockedAPYCard({ pool, tiers, lockedMetrics }: { pool: Pool; tiers: any[
         </span>
       </div>
 
-      <div className="flex gap-3 mb-4">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row">
         {isConnected ? (
           <>
             <button
@@ -1374,14 +1395,14 @@ function APYCard({ pool }: { pool: Pool }) {
   const returnPercent = hasPosition ? parseFloat(position.totalReturnPercentage || "0") : 0;
 
   return (
-    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-5">
-      <div className="flex items-start justify-between mb-4">
+    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <span className="text-[11px] text-[#666]">Current APY</span>
           <p className="text-[11px] text-[#666] mt-1">Variable, based on underlying yield.</p>
         </div>
-        <div className="text-right">
-          <p className="text-3xl font-semibold text-[#00c853]">{formatAPY(apy)}</p>
+        <div className="sm:text-right">
+          <p className="text-2xl font-semibold text-[#00c853] sm:text-3xl">{formatAPY(apy)}</p>
           <p className="text-[11px] text-[#666]">Net of fees</p>
         </div>
       </div>
@@ -1389,7 +1410,7 @@ function APYCard({ pool }: { pool: Pool }) {
       {isConnected && hasPosition && (
         <div className="mb-4 p-3 rounded-lg bg-[#0a0a0a] border border-[#1a1a1a]">
           <span className="text-[10px] text-[#666] uppercase tracking-wider">Your position</span>
-          <div className="flex items-baseline justify-between mt-1">
+          <div className="mt-1 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
             <span className="text-xl font-semibold text-white">${currentValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
             <span className={`text-[12px] ${totalReturn >= 0 ? "text-[#00c853]" : "text-red-400"}`}>
               {totalReturn >= 0 ? "+" : ""}${totalReturn.toFixed(2)} ({returnPercent >= 0 ? "+" : ""}{returnPercent.toFixed(1)}%)
@@ -1399,14 +1420,14 @@ function APYCard({ pool }: { pool: Pool }) {
         </div>
       )}
 
-      <div className="flex gap-2 mb-4">
+      <div className="mb-4 flex flex-wrap gap-2">
         <span className="px-2 py-1 text-[10px] text-[#666] border border-[#1a1a1a] rounded">
           Share price {navPerShare ? parseFloat(navPerShare).toFixed(4) : "1.0000"}
         </span>
         <span className="px-2 py-1 text-[10px] text-[#666] border border-[#1a1a1a] rounded">NAV refresh: daily</span>
       </div>
 
-      <div className="flex gap-3 mb-4">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row">
         {isConnected ? (
           <>
             <button className="flex-1 px-4 py-2.5 bg-[#00c853] text-black text-[12px] font-medium rounded-full hover:bg-[#00b84a] transition-colors">
@@ -1455,7 +1476,7 @@ function PoolStatsCard({ pool, isLockedPool, lockedMetrics, tiers }: { pool: Poo
   const volume24h = stats?.last24hVolume;
 
   return (
-    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-5">
+    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
       <h3 className="text-[13px] font-medium text-white mb-0.5">Pool stats</h3>
       <p className="text-[11px] text-[#666] mb-4">Key numbers for {pool.name}.</p>
 
@@ -1537,7 +1558,7 @@ function AllocationCard({ pool }: { pool: Pool }) {
   ];
 
   return (
-    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-5">
+    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
       <h3 className="text-[13px] font-medium text-white mb-0.5">Underlying allocation</h3>
       <p className="text-[11px] text-[#666] mb-4">Indicative split across instruments.</p>
 
@@ -1599,7 +1620,7 @@ function HoldingExitsCard({ pool, isLockedPool, tiers: tiersProp }: { pool: Pool
 
   if (isLockedPool) {
     return (
-      <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-5">
+      <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
         <h3 className="text-[13px] font-medium text-white mb-0.5">Lock periods & exits</h3>
         <p className="text-[11px] text-[#666] mb-4">How deposits work in this locked pool.</p>
 
@@ -1632,7 +1653,7 @@ function HoldingExitsCard({ pool, isLockedPool, tiers: tiersProp }: { pool: Pool
           </div>
         </div>
 
-        <div className="flex gap-2 mt-4">
+        <div className="mt-4 flex flex-wrap gap-2">
           <span className="px-2 py-1 text-[10px] text-[#666] border border-[#1a1a1a] rounded">Fixed APY</span>
           <span className="px-2 py-1 text-[10px] text-[#666] border border-[#1a1a1a] rounded">Auto-rollover available</span>
         </div>
@@ -1641,7 +1662,7 @@ function HoldingExitsCard({ pool, isLockedPool, tiers: tiersProp }: { pool: Pool
   }
 
   return (
-    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-5">
+    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
       <h3 className="text-[13px] font-medium text-white mb-0.5">Holding & exits</h3>
       <p className="text-[11px] text-[#666] mb-4">How capital moves in and out of the pool.</p>
 
@@ -1666,7 +1687,7 @@ function HoldingExitsCard({ pool, isLockedPool, tiers: tiersProp }: { pool: Pool
         )}
       </div>
 
-      <div className="flex gap-2 mt-4">
+      <div className="mt-4 flex flex-wrap gap-2">
         <span className="px-2 py-1 text-[10px] text-[#666] border border-[#1a1a1a] rounded">Queue visible in app</span>
         <span className="px-2 py-1 text-[10px] text-[#666] border border-[#1a1a1a] rounded">No lockup after 7 days</span>
       </div>
@@ -1676,7 +1697,7 @@ function HoldingExitsCard({ pool, isLockedPool, tiers: tiersProp }: { pool: Pool
 
 function RiskCard({ pool }: { pool: Pool }) {
   return (
-    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-5">
+    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
       <h3 className="text-[13px] font-medium text-white mb-0.5">Risk & disclosures</h3>
       <p className="text-[11px] text-[#666] mb-4">Understand how this pool behaves under stress.</p>
 
@@ -1695,7 +1716,7 @@ function RiskCard({ pool }: { pool: Pool }) {
         </div>
       </div>
 
-      <div className="flex gap-2 mt-4">
+      <div className="mt-4 flex flex-wrap gap-2">
         <button className="px-3 py-1.5 text-[11px] text-[#888] border border-[#1a1a1a] rounded-full hover:text-white hover:border-[#333] transition-colors">
           View full disclosures
         </button>
@@ -1709,13 +1730,13 @@ function RiskCard({ pool }: { pool: Pool }) {
 
 function AboutPoolCard({ pool }: { pool: Pool }) {
   return (
-    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-5">
+    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
       <h3 className="text-[15px] font-medium text-white mb-1">About this Pool</h3>
       <p className="text-[13px] text-[#999] mb-5">
         {pool.description || "No description available."}
       </p>
 
-      <div className="grid grid-cols-2 gap-x-8 gap-y-3">
+      <div className="grid grid-cols-1 gap-y-3 sm:grid-cols-2 sm:gap-x-8">
         <div className="flex justify-between text-[12px]">
           <span className="text-[#666]">Pool Type</span>
           <span className="text-white">{pool.poolType?.replace("_", " ") || "—"}</span>
@@ -1738,7 +1759,7 @@ function AboutPoolCard({ pool }: { pool: Pool }) {
         </div>
       </div>
 
-      <div className="flex gap-2 mt-5">
+      <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
         <button className="px-3 py-1.5 text-[11px] text-[#888] border border-[#1a1a1a] rounded-lg hover:text-white hover:border-[#333] transition-colors">
           Strategy docs
         </button>
@@ -1777,10 +1798,10 @@ function PoolTransactionsTable({ poolAddress, assetSymbol }: { poolAddress: stri
   };
 
   return (
-    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-5">
-      <div className="flex items-center justify-between mb-4">
+    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h3 className="text-[13px] font-medium text-white">Pool transactions</h3>
-        <div className="flex gap-1">
+        <div className="flex w-full gap-1 overflow-x-auto sm:w-auto">
           {(["all", "deposits", "withdrawals"] as const).map((f) => (
             <button
               key={f}
@@ -1800,21 +1821,11 @@ function PoolTransactionsTable({ poolAddress, assetSymbol }: { poolAddress: stri
       ) : filteredTransactions.length === 0 ? (
         <div className="py-8 text-center text-[#666]">No transactions found</div>
       ) : (
-        <table className="w-full">
-          <thead>
-            <tr className="text-[11px] text-[#666] border-b border-[#1a1a1a]">
-              <th className="text-left font-normal pb-3">Time</th>
-              <th className="text-left font-normal pb-3">Type</th>
-              <th className="text-left font-normal pb-3">User</th>
-              <th className="text-left font-normal pb-3">Amount</th>
-              <th className="text-left font-normal pb-3">Hash</th>
-            </tr>
-          </thead>
-          <tbody>
+        <>
+          <div className="space-y-3 md:hidden">
             {filteredTransactions.map((tx) => (
-              <tr key={tx.id} className="border-b border-[#1a1a1a] last:border-0">
-                <td className="py-3 text-[12px] text-[#999]">{formatTime(tx.timestamp)}</td>
-                <td className="py-3">
+              <div key={tx.id} className="rounded-lg border border-[#1a1a1a] bg-black/40 p-3">
+                <div className="mb-3 flex items-center justify-between gap-3">
                   <span
                     className={`px-2 py-1 text-[10px] font-medium rounded ${
                       isDepositType(tx.type)
@@ -1826,27 +1837,86 @@ function PoolTransactionsTable({ poolAddress, assetSymbol }: { poolAddress: stri
                   >
                     {txTypeLabel(tx.type)}
                   </span>
-                </td>
-                <td className="py-3 text-[12px] text-[#999] font-mono">
-                  {truncateAddress(tx.userWallet || tx.user?.walletAddress || tx.from || "")}
-                </td>
-                <td className="py-3 text-[12px] text-white font-medium">
-                  {parseFloat(tx.amount).toLocaleString()} {assetSymbol}
-                </td>
-                <td className="py-3">
-                  <a
-                    href={`https://etherscan.io/tx/${tx.txHash}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[12px] text-[#00c853] font-mono hover:underline"
-                  >
-                    {truncateAddress(tx.txHash)}
-                  </a>
-                </td>
-              </tr>
+                  <span className="text-right text-[11px] text-[#666]">{formatTime(tx.timestamp)}</span>
+                </div>
+                <div className="space-y-2 text-[12px]">
+                  <div className="flex justify-between gap-3">
+                    <span className="text-[#666]">Amount</span>
+                    <span className="text-right font-medium text-white">
+                      {parseFloat(tx.amount).toLocaleString()} {assetSymbol}
+                    </span>
+                  </div>
+                  <div className="flex justify-between gap-3">
+                    <span className="text-[#666]">User</span>
+                    <span className="font-mono text-[#999]">
+                      {truncateAddress(tx.userWallet || tx.user?.walletAddress || tx.from || "")}
+                    </span>
+                  </div>
+                  <div className="flex justify-between gap-3">
+                    <span className="text-[#666]">Hash</span>
+                    <a
+                      href={`https://etherscan.io/tx/${tx.txHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-mono text-[#00c853] hover:underline"
+                    >
+                      {truncateAddress(tx.txHash)}
+                    </a>
+                  </div>
+                </div>
+              </div>
             ))}
-          </tbody>
-        </table>
+          </div>
+          <div className="hidden overflow-x-auto md:block">
+            <table className="w-full min-w-[640px]">
+              <thead>
+                <tr className="text-[11px] text-[#666] border-b border-[#1a1a1a]">
+                  <th className="text-left font-normal pb-3">Time</th>
+                  <th className="text-left font-normal pb-3">Type</th>
+                  <th className="text-left font-normal pb-3">User</th>
+                  <th className="text-left font-normal pb-3">Amount</th>
+                  <th className="text-left font-normal pb-3">Hash</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredTransactions.map((tx) => (
+                  <tr key={tx.id} className="border-b border-[#1a1a1a] last:border-0">
+                    <td className="py-3 text-[12px] text-[#999]">{formatTime(tx.timestamp)}</td>
+                    <td className="py-3">
+                      <span
+                        className={`px-2 py-1 text-[10px] font-medium rounded ${
+                          isDepositType(tx.type)
+                            ? "bg-[#1a1a1a] text-white"
+                            : isWithdrawalType(tx.type)
+                            ? "bg-red-500/10 text-red-400"
+                            : "bg-blue-500/10 text-blue-400"
+                        }`}
+                      >
+                        {txTypeLabel(tx.type)}
+                      </span>
+                    </td>
+                    <td className="py-3 text-[12px] text-[#999] font-mono">
+                      {truncateAddress(tx.userWallet || tx.user?.walletAddress || tx.from || "")}
+                    </td>
+                    <td className="py-3 text-[12px] text-white font-medium">
+                      {parseFloat(tx.amount).toLocaleString()} {assetSymbol}
+                    </td>
+                    <td className="py-3">
+                      <a
+                        href={`https://etherscan.io/tx/${tx.txHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[12px] text-[#00c853] font-mono hover:underline"
+                      >
+                        {truncateAddress(tx.txHash)}
+                      </a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       {filteredTransactions.length > 0 && (

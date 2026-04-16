@@ -182,7 +182,7 @@ export default function PoolDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-black text-white p-8 flex items-center justify-center">
+      <div className="min-h-screen bg-black p-4 text-white sm:p-8 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-12 h-12 animate-spin text-[#00c48c] mx-auto mb-4" />
           <p className="text-gray-400">Loading pool details...</p>
@@ -193,7 +193,7 @@ export default function PoolDetailPage() {
 
   if (!pool) {
     return (
-      <div className="min-h-screen bg-black text-white p-8 flex items-center justify-center">
+      <div className="min-h-screen bg-black p-4 text-white sm:p-8 flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-400">Pool not found</p>
           <Link href="/pools">
@@ -445,17 +445,21 @@ export default function PoolDetailPage() {
                     {transactionsData.data.map((tx) => (
                       <div
                         key={tx.id}
-                        className="grid grid-cols-1 sm:grid-cols-5 gap-2 sm:gap-4 px-4 py-3 text-xs sm:text-sm hover:bg-white/5 transition-colors"
+                        className="grid grid-cols-1 gap-2 rounded-lg border border-white/10 bg-black/30 px-4 py-3 text-xs transition-colors hover:bg-white/5 sm:grid-cols-5 sm:gap-4 sm:rounded-none sm:border-0 sm:bg-transparent sm:text-sm"
                       >
-                        <div className="text-gray-400">
-                          {new Date(tx.timestamp).toLocaleString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
+                        <div className="flex items-center justify-between gap-3 text-gray-400 sm:block">
+                          <span className="text-gray-500 sm:hidden">Time</span>
+                          <span>
+                            {new Date(tx.timestamp).toLocaleString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
                         </div>
-                        <div>
+                        <div className="flex items-center justify-between gap-3 sm:block">
+                          <span className="text-gray-500 sm:hidden">Type</span>
                           <Badge
                             variant={
                               tx.type === "DEPOSIT"
@@ -469,18 +473,25 @@ export default function PoolDetailPage() {
                             {tx.type}
                           </Badge>
                         </div>
-                        <div className="font-mono text-gray-400 truncate text-xs">
-                          {tx.userWallet || tx.user?.walletAddress
-                            ? `${(tx.userWallet || tx.user?.walletAddress)!.slice(0, 6)}...${(tx.userWallet || tx.user?.walletAddress)!.slice(-4)}`
-                            : "N/A"}
+                        <div className="flex items-center justify-between gap-3 sm:block">
+                          <span className="text-gray-500 sm:hidden">User</span>
+                          <span className="font-mono text-gray-400 truncate text-xs">
+                            {tx.userWallet || tx.user?.walletAddress
+                              ? `${(tx.userWallet || tx.user?.walletAddress)!.slice(0, 6)}...${(tx.userWallet || tx.user?.walletAddress)!.slice(-4)}`
+                              : "N/A"}
+                          </span>
                         </div>
-                        <div className="font-semibold text-white">
-                          {Number(tx.amount).toLocaleString("en-US", {
-                            maximumFractionDigits: 2,
-                          })}{" "}
-                          {tx.pool?.assetSymbol || pool?.assetSymbol || ""}
+                        <div className="flex items-center justify-between gap-3 sm:block">
+                          <span className="text-gray-500 sm:hidden">Amount</span>
+                          <span className="font-semibold text-white">
+                            {Number(tx.amount).toLocaleString("en-US", {
+                              maximumFractionDigits: 2,
+                            })}{" "}
+                            {tx.pool?.assetSymbol || pool?.assetSymbol || ""}
+                          </span>
                         </div>
-                        <div>
+                        <div className="flex items-center justify-between gap-3 sm:block">
+                          <span className="text-gray-500 sm:hidden">Hash</span>
                           <a
                             href={getTransactionUrl(pool.chainId, tx.txHash)}
                             target="_blank"
