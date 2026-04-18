@@ -46,23 +46,23 @@ export function MarketingPageShell({
     <div className="relative min-h-screen w-full bg-surface-warm pt-16">
       <Header />
       <div className="relative overflow-x-hidden">
-        <section data-header-theme="light" className="relative bg-surface-warm pt-12 pb-16 md:pt-16 md:pb-20">
+        <section data-header-theme="dark" className="relative bg-[#0a0a0b] pt-12 pb-16 md:pt-16 md:pb-20">
           <div className="relative mx-auto max-w-7xl px-6">
-            <p className="text-[13px] font-medium uppercase tracking-[0.2em] text-content-tertiary">
+            <p className="text-[13px] font-medium uppercase tracking-[0.2em] text-white/40">
               {eyebrow}
             </p>
 
             <div className="mt-4 max-w-4xl">
-              <h1 className="text-5xl font-bold leading-[1.05] tracking-tight text-content-primary md:text-6xl lg:text-7xl">
+              <h1 className="text-5xl font-bold leading-[1.05] tracking-tight text-white md:text-6xl lg:text-7xl">
                 {title}
               </h1>
 
-              <p className="mt-6 max-w-2xl text-base leading-relaxed text-content-secondary md:text-lg">
+              <p className="mt-6 max-w-2xl text-base leading-relaxed text-white/60 md:text-lg">
                 {description}
               </p>
 
               {meta ? (
-                <p className="mt-4 text-sm text-content-tertiary">{meta}</p>
+                <p className="mt-4 text-sm text-white/30">{meta}</p>
               ) : null}
 
               {actions.length > 0 ? (
@@ -73,7 +73,7 @@ export function MarketingPageShell({
                       href={action.href}
                       className={
                         action.tone === "secondary"
-                          ? "rounded-full bg-white px-6 py-3 text-sm font-medium text-content-secondary shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-shadow hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)]"
+                          ? "rounded-full border border-white/[0.08] bg-white/[0.04] px-6 py-3 text-sm font-medium text-white/60 transition-colors hover:text-white"
                           : "rounded-full bg-accent px-6 py-3 text-sm font-medium text-accent-text transition-colors hover:bg-accent-hover"
                       }
                     >

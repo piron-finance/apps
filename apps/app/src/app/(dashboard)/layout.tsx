@@ -34,7 +34,7 @@ export default function DashboardLayout({
 
   return (
     <div className="flex min-h-screen flex-col bg-black">
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-black/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-50 border-b border-gray-700 bg-black/80 backdrop-blur-xl">
         <div className="flex min-h-16 flex-wrap items-center justify-between gap-x-4 gap-y-3 px-3 py-3 sm:px-6 md:flex-nowrap">
           <div className="flex min-w-0 items-center gap-4 md:gap-16">
             <Link href="/" className="flex min-w-0 items-center">
