@@ -12,15 +12,15 @@ import { APP_URL, DOCS_URL } from "@/components/marketing/links";
 function Hero() {
   return (
     <section
-      data-header-theme="light"
-      className="relative overflow-hidden bg-surface-warm pb-24 pt-28 md:pb-32"
+      data-header-theme="dark"
+      className="relative flex min-h-screen items-end overflow-hidden bg-[#0a0a0b]"
     >
-      <div className="relative mx-auto max-w-7xl px-6">
+      <div className="relative mx-auto w-full max-w-7xl px-6 pb-24 md:pb-32">
         <motion.p
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="text-[13px] font-medium uppercase tracking-[0.2em] text-content-tertiary"
+          className="text-[13px] font-medium uppercase tracking-[0.2em] text-white/40"
         >
           How Piron works
         </motion.p>
@@ -29,18 +29,18 @@ function Hero() {
           initial={{ opacity: 0, y: 22 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="mt-5 max-w-3xl text-5xl font-bold leading-[1.08] tracking-tight text-content-primary md:text-6xl lg:text-7xl"
+          className="mt-5 max-w-3xl text-5xl font-bold leading-[1.08] tracking-tight text-white md:text-6xl lg:text-7xl"
         >
           Your money. Real assets.
           <br />
-          <span className="text-content-tertiary">Transparent yield.</span>
+          <span className="text-white/40">Transparent yield.</span>
         </motion.h1>
 
         <motion.p
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="mt-6 max-w-xl text-lg leading-relaxed text-content-secondary"
+          className="mt-6 max-w-xl text-lg leading-relaxed text-white/60"
         >
           Connect your wallet, deposit stablecoins, and earn yield backed by
           Treasury Bills, bonds, and trade finance. No bank account, no
@@ -63,7 +63,7 @@ function Hero() {
             href={DOCS_URL}
             target="_blank"
             rel="noreferrer"
-            className="text-sm font-medium text-content-secondary transition-colors hover:text-content-primary"
+            className="text-sm font-medium text-white/50 transition-colors hover:text-white"
           >
             Read the docs &#8594;
           </Link>
@@ -141,7 +141,7 @@ function CapitalFlow() {
                 {/* Dotted line + arrow to next node */}
                 {i < flowNodes.length - 1 && (
                   <div className="absolute left-[calc(50%+28px)] right-[calc(-50%+28px)] top-[22px] flex items-center">
-                    <div className="h-0 flex-1 border-t-2 border-dashed border-gray-300" />
+                    <div className="h-0 flex-1 border-t-2 border-dashed border-border" />
                     <svg width="8" height="12" viewBox="0 0 8 12" fill="none" className="shrink-0 -ml-px">
                       <path d="M1 1L6 6L1 11" stroke="#d1d5db" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
@@ -149,7 +149,7 @@ function CapitalFlow() {
                 )}
 
                 {/* Node circle */}
-                <div className="relative z-10 flex h-11 w-11 items-center justify-center rounded-full border-2 border-gray-200 bg-white">
+                <div className="relative z-10 flex h-11 w-11 items-center justify-center rounded-full border-2 border-border bg-white">
                   <span className="text-xs font-bold text-content-primary">
                     {node.step}
                   </span>
@@ -204,7 +204,7 @@ function CapitalFlow() {
             >
               <div className="flex items-start gap-4 py-4">
                 {/* Node circle */}
-                <div className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-gray-200 bg-white">
+                <div className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-border bg-white">
                   <span className="text-[11px] font-bold text-content-primary">
                     {node.step}
                   </span>
@@ -222,7 +222,7 @@ function CapitalFlow() {
               {/* Dotted line + chevron down */}
               {i < flowNodes.length - 1 && (
                 <div className="flex flex-col items-center py-0.5" style={{ marginLeft: 18 }}>
-                  <div className="h-4 w-0 border-l-2 border-dashed border-gray-300" />
+                  <div className="h-4 w-0 border-l-2 border-dashed border-border" />
                   <svg width="12" height="8" viewBox="0 0 12 8" fill="none" className="-mt-px">
                     <path d="M1 1L6 6L11 1" stroke="#d1d5db" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
@@ -294,7 +294,7 @@ const steps = [
 
 function StepByStep() {
   return (
-    <section data-header-theme="light" className="bg-surface-warm py-24">
+    <section data-header-theme="dark" className="bg-[#0a0a0b] py-24">
       <div className="mx-auto max-w-7xl px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -303,10 +303,10 @@ function StepByStep() {
           transition={{ duration: 0.5 }}
           className="mb-16 max-w-2xl"
         >
-          <p className="text-[13px] font-medium uppercase tracking-[0.2em] text-content-tertiary">
+          <p className="text-[13px] font-medium uppercase tracking-[0.2em] text-white/40">
             Step by step
           </p>
-          <h2 className="mt-4 text-4xl font-bold tracking-tight text-content-primary md:text-5xl">
+          <h2 className="mt-4 text-4xl font-bold tracking-tight text-white md:text-5xl">
             No jargon. Just the process.
           </h2>
         </motion.div>
@@ -319,21 +319,21 @@ function StepByStep() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.2 }}
               transition={{ duration: 0.5, delay: i * 0.07 }}
-              className="group rounded-2xl bg-white p-6 shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-shadow hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] md:p-8"
+              className="group rounded-2xl border border-white/[0.06] bg-white/[0.03] p-6 transition-colors hover:bg-white/[0.05] md:p-8"
             >
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-[80px_1fr]">
-                <span className="text-5xl font-bold leading-none tracking-tighter text-content-primary/15 transition-colors group-hover:text-content-primary/25">
+                <span className="text-5xl font-bold leading-none tracking-tighter text-white/10 transition-colors group-hover:text-white/20">
                   {step.number}
                 </span>
                 <div>
-                  <h3 className="text-xl font-semibold tracking-tight text-content-primary">
+                  <h3 className="text-xl font-semibold tracking-tight text-white">
                     {step.title}
                   </h3>
-                  <p className="mt-2 max-w-2xl text-sm leading-relaxed text-content-secondary">
+                  <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/60">
                     {step.description}
                   </p>
                   {step.note && (
-                    <p className="mt-3 text-xs italic text-content-tertiary">
+                    <p className="mt-3 text-xs italic text-white/30">
                       {step.note}
                     </p>
                   )}
@@ -341,7 +341,7 @@ function StepByStep() {
                     {step.tags.map((tag) => (
                       <span
                         key={tag}
-                        className="rounded-full bg-surface-warm px-3 py-1 text-xs text-content-tertiary"
+                        className="rounded-full bg-white/[0.06] px-3 py-1 text-xs text-white/40"
                       >
                         {tag}
                       </span>
@@ -558,7 +558,7 @@ const layers = [
 
 function Infrastructure() {
   return (
-    <section data-header-theme="light" className="bg-surface-warm py-24">
+    <section data-header-theme="dark" className="bg-[#0a0a0b] py-24">
       <div className="mx-auto max-w-7xl px-6">
         <div className="grid grid-cols-1 gap-16 lg:grid-cols-2 lg:items-center">
           <motion.div
@@ -567,15 +567,15 @@ function Infrastructure() {
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.5 }}
           >
-            <p className="text-[13px] font-medium uppercase tracking-[0.2em] text-content-tertiary">
+            <p className="text-[13px] font-medium uppercase tracking-[0.2em] text-white/40">
               Under the hood
             </p>
-            <h2 className="mt-4 text-4xl font-bold tracking-tight text-content-primary md:text-5xl">
+            <h2 className="mt-4 text-4xl font-bold tracking-tight text-white md:text-5xl">
               Institutional infrastructure.
               <br />
-              <span className="text-content-tertiary">For everyone.</span>
+              <span className="text-white/40">For everyone.</span>
             </h2>
-            <p className="mt-5 text-base leading-relaxed text-content-secondary">
+            <p className="mt-5 text-base leading-relaxed text-white/60">
               Piron never holds your money. Capital flows through an auditable
               stack of smart contracts, legal entities, and licensed
               professionals, giving you the same protections hedge funds pay
@@ -604,11 +604,11 @@ function Infrastructure() {
                 <div key={item.title}>
                   <div className="mb-1 flex items-center gap-2">
                     <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
-                    <p className="text-sm font-semibold text-content-primary">
+                    <p className="text-sm font-semibold text-white">
                       {item.title}
                     </p>
                   </div>
-                  <p className="pl-3.5 text-xs leading-relaxed text-content-tertiary">
+                  <p className="pl-3.5 text-xs leading-relaxed text-white/40">
                     {item.desc}
                   </p>
                 </div>
@@ -625,17 +625,17 @@ function Infrastructure() {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true, amount: 0.25 }}
                 transition={{ duration: 0.4, delay: i * 0.09 }}
-                className="rounded-xl bg-white p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-shadow hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)]"
+                className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4 transition-colors hover:bg-white/[0.05]"
               >
                 <div className="flex items-start gap-4">
-                  <span className="text-lg font-bold text-content-primary/15">
+                  <span className="text-lg font-bold text-white/15">
                     {layer.step}
                   </span>
                   <div>
-                    <p className="font-semibold text-content-primary">
+                    <p className="font-semibold text-white">
                       {layer.title}
                     </p>
-                    <p className="mt-0.5 text-xs leading-relaxed text-content-secondary">
+                    <p className="mt-0.5 text-xs leading-relaxed text-white/50">
                       {layer.description}
                     </p>
                   </div>
@@ -728,11 +728,11 @@ function FAQ() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.15 }}
                 transition={{ duration: 0.4, delay: i * 0.05 }}
-                className="overflow-hidden rounded-xl border border-gray-100"
+                className="overflow-hidden rounded-xl border border-border"
               >
                 <button
                   onClick={() => setOpen(open === i ? null : i)}
-                  className="flex w-full items-center justify-between bg-surface-warm px-5 py-4 text-left transition-colors hover:bg-gray-50"
+                  className="flex w-full items-center justify-between bg-surface-warm px-5 py-4 text-left transition-colors hover:bg-surface-warm"
                 >
                   <span className="pr-6 text-sm font-medium text-content-primary">
                     {faq.q}
@@ -756,7 +756,7 @@ function FAQ() {
                       exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: 0.2 }}
                     >
-                      <p className="border-t border-gray-100 px-5 py-4 text-sm leading-relaxed text-content-secondary">
+                      <p className="border-t border-border px-5 py-4 text-sm leading-relaxed text-content-secondary">
                         {faq.a}
                       </p>
                     </motion.div>
@@ -775,41 +775,47 @@ function FAQ() {
 
 function CTA() {
   return (
-    <section data-header-theme="light" className="bg-surface-warm py-24">
-      <div className="mx-auto max-w-4xl px-6 text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.6 }}
-        >
-          <p className="text-[13px] font-medium uppercase tracking-[0.2em] text-content-tertiary">
-            Ready to start?
-          </p>
-          <h2 className="mt-4 text-4xl font-bold tracking-tight text-content-primary md:text-5xl">
-            Your idle capital deserves better.
-          </h2>
-          <p className="mx-auto mt-4 max-w-md text-base leading-relaxed text-content-secondary">
-            No bank. No broker. No middleman. Just your wallet, a pool, and
-            real yield, verifiable on-chain.
-          </p>
-          <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link
-              href={APP_URL}
-              className="rounded-full bg-accent px-8 py-3 text-sm font-medium text-accent-text transition-colors hover:bg-accent-hover"
-            >
-              Launch the app
-            </Link>
-            <Link
-              href={DOCS_URL}
-              target="_blank"
-              rel="noreferrer"
-              className="text-sm font-medium text-content-secondary transition-colors hover:text-content-primary"
-            >
-              Read the docs &#8594;
-            </Link>
-          </div>
-        </motion.div>
+    <section data-header-theme="dark" className="bg-[#0a0a0b] py-24">
+      <div className="mx-auto max-w-5xl px-6">
+        <div className="relative overflow-hidden rounded-3xl border border-white/[0.06] bg-gradient-to-b from-white/[0.03] to-transparent p-16 text-center md:p-20">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(0,196,140,0.08),transparent_60%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,rgba(0,196,140,0.04),transparent_60%)]" />
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.6 }}
+            className="relative"
+          >
+            <p className="text-[13px] font-medium uppercase tracking-[0.2em] text-white/40">
+              Ready to start?
+            </p>
+            <h2 className="mt-4 text-4xl font-bold tracking-tight text-white md:text-5xl">
+              Your idle capital deserves better.
+            </h2>
+            <p className="mx-auto mt-4 max-w-md text-base leading-relaxed text-white/60">
+              No bank. No broker. No middleman. Just your wallet, a pool, and
+              real yield, verifiable on-chain.
+            </p>
+            <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <Link
+                href={APP_URL}
+                className="rounded-full bg-accent px-8 py-3 text-sm font-medium text-accent-text transition-colors hover:bg-accent-hover"
+              >
+                Launch the app
+              </Link>
+              <Link
+                href={DOCS_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sm font-medium text-white/50 transition-colors hover:text-white"
+              >
+                Read the docs &#8594;
+              </Link>
+            </div>
+          </motion.div>
+        </div>
       </div>
     </section>
   );

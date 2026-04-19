@@ -57,10 +57,10 @@ export function HowItWorks() {
                 </span>
 
       
-                  <h3 className="mt-4 text-xl font-semibold tracking-tight text-gray-600">
+                  <h3 className="mt-4 text-xl font-semibold tracking-tight text-content-primary">
                     {step.title}
                   </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-gray-500">
+                  <p className="mt-2 text-sm leading-relaxed text-content-secondary">
                     {step.description}
                   </p>
       

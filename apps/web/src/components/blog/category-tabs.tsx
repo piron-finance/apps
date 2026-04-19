@@ -5,6 +5,7 @@ type CategoryTabsProps = {
   activeCategory: string;
   categories: BlogCategory[];
   searchQuery: string;
+  variant?: "light" | "dark";
 };
 
 function makeHref(category: string, searchQuery: string) {
@@ -26,8 +27,10 @@ export function CategoryTabs({
   activeCategory,
   categories,
   searchQuery,
+  variant = "light",
 }: CategoryTabsProps) {
   const items = [{ title: "All", slug: "" }, ...categories];
+  const isDark = variant === "dark";
 
   return (
     <div className="flex flex-wrap gap-2">
@@ -40,8 +43,12 @@ export function CategoryTabs({
             href={makeHref(category.slug, searchQuery)}
             className={`rounded-full px-4 py-2 text-sm transition-colors ${
               isActive
-                ? "bg-accent/10 font-medium text-accent"
-                : "bg-white text-content-secondary shadow-[0_1px_2px_rgba(0,0,0,0.04)] hover:text-content-primary"
+                ? isDark
+                  ? "bg-white/[0.12] font-medium text-white"
+                  : "bg-accent/10 font-medium text-accent"
+                : isDark
+                  ? "border border-white/[0.08] text-white/50 hover:text-white/80"
+                  : "bg-white text-content-secondary shadow-[0_1px_2px_rgba(0,0,0,0.04)] hover:text-content-primary"
             }`}
           >
             {category.title}

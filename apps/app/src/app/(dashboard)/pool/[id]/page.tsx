@@ -93,14 +93,14 @@ function PoolDetailContent({ pool }: { pool: Pool }) {
   const tvl = pool.analytics?.totalValueLocked;
   const utilization = pool.analytics?.utilizationRate;
 
-  // Fetch locked pool metrics for locked pools
+  //  locked pool metrics for locked pools
   const { data: lockedMetrics } = useLockedPoolMetrics(
     isLockedPool ? pool.chainId : undefined,
     isLockedPool ? pool.poolAddress : undefined
   );
   const { data: tiersData } = usePoolTiers(isLockedPool ? pool.poolAddress : undefined);
 
-  // Use pool.lockTiers from the detail response as an immediate source; fall back to tiers API
+  //  pool.lockTiers from the detail response as an immediate source; fall back to tiers API
   const tiers = (tiersData?.tiers?.length ? tiersData.tiers : pool.lockTiers) || [];
   const minLockDays = tiers.length > 0 ? Math.min(...tiers.map(t => t.lockDurationDays)) : undefined;
   const maxLockDays = tiers.length > 0 ? Math.max(...tiers.map(t => t.lockDurationDays)) : undefined;
@@ -112,7 +112,7 @@ function PoolDetailContent({ pool }: { pool: Pool }) {
       {/* Top Analytics Bar */}
       <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:items-center sm:gap-6">
-          <div className="rounded-lg border border-[#1a1a1a] bg-[#060607] p-3 sm:border-0 sm:bg-transparent sm:p-0">
+          <div className="rounded-lg border border-[#2b2b2b] bg-[#060607] p-3 sm:border-0 sm:bg-transparent sm:p-0">
             <span className="text-[11px] text-[#666]">{isLockedPool ? "Total Deposits" : "TVL"}</span>
             <p className="break-words text-white font-medium">
               {isLockedPool && lockedMetrics
@@ -555,7 +555,6 @@ function DepositFlow({ pool, tiers: tiersProp }: { pool: Pool; tiers?: any[] }) 
     balance,
   } = useDeposit(pool);
 
-  // After approval succeeds, refetch allowance then auto-trigger deposit
   useEffect(() => {
     if (isApprovalSuccess && pendingDepositAfterApproval) {
       refetchAllowance().then(() => {
@@ -627,7 +626,6 @@ function DepositFlow({ pool, tiers: tiersProp }: { pool: Pool; tiers?: any[] }) 
       if (requiresApproval) {
         setPendingDepositAfterApproval(true);
         await approve(amount);
-        // Deposit will auto-trigger via the useEffect when approval succeeds
       } else {
         await deposit(amount, isLockedPool ? selectedTier : undefined, isLockedPool ? interestPayment : undefined);
       }
@@ -656,15 +654,15 @@ function DepositFlow({ pool, tiers: tiersProp }: { pool: Pool; tiers?: any[] }) 
   const feePercent = (depositFeeRate * 100).toFixed(2);
 
   return (
-    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
+    <div className="rounded-xl border border-[#2b2a2a] bg-[#060607] p-4 sm:p-5">
       <div className="mb-1 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <span className="text-[10px] text-[#666] uppercase tracking-wider">Deposit</span>
+          <span className="text-[10px] text-[#676666] uppercase tracking-wider">Deposit</span>
           <h3 className="text-[16px] font-medium text-white">Fund the pool in a few clicks.</h3>
         </div>
         <div className="flex flex-wrap gap-2">
           <span className="px-3 py-1 text-[11px] text-[#888] border border-[#1a1a1a] rounded-lg">{pool.assetSymbol} only</span>
-          {!isLockedPool && <span className="px-3 py-1 text-[11px] text-[#888] border border-[#1a1a1a] rounded-lg">7 day hold</span>}
+          {!isLockedPool && <span className="px-3 py-1 text-[11px] text-[#fff] border border-[#1a1a1a] rounded-lg">7 day hold</span>}
           {isLockedPool && <span className="px-3 py-1 text-[11px] text-[#888] border border-[#1a1a1a] rounded-lg">Fixed APY</span>}
         </div>
       </div>

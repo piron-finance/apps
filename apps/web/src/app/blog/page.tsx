@@ -63,27 +63,27 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
       <Header transparent />
 
       <div className="relative overflow-x-hidden">
-        <section data-header-theme="light" className="relative bg-surface-warm pb-10 pt-28">
+        <section data-header-theme="dark" className="relative bg-[#0a0a0b] pb-12 pt-28">
           <div className="relative mx-auto max-w-7xl px-6">
             <div className="grid gap-8 lg:grid-cols-[1fr_340px] lg:items-end">
               <div className="max-w-3xl">
-                <p className="text-[13px] font-medium uppercase tracking-[0.2em] text-content-tertiary">
+                <p className="text-[13px] font-medium uppercase tracking-[0.2em] text-white/40">
                   {data.settings.title}
                 </p>
-                <h1 className="mt-4 text-5xl font-bold leading-[1.05] tracking-tight text-content-primary md:text-6xl">
+                <h1 className="mt-4 text-5xl font-bold leading-[1.05] tracking-tight text-white md:text-6xl">
                   Blog
                 </h1>
-                <p className="mt-5 max-w-2xl text-base leading-relaxed text-content-secondary md:text-lg">
+                <p className="mt-5 max-w-2xl text-base leading-relaxed text-white/60 md:text-lg">
                   {data.settings.description}
                 </p>
                 {!data.configured ? (
-                  <p className="mt-4 text-sm text-content-tertiary">
+                  <p className="mt-4 text-sm text-white/30">
                     Showing seeded content until Sanity is connected.
                   </p>
                 ) : null}
               </div>
 
-              <SearchForm activeCategory={data.activeCategory} searchQuery={data.searchQuery} />
+              <SearchForm activeCategory={data.activeCategory} searchQuery={data.searchQuery} variant="dark" />
             </div>
 
             <div className="mt-10">
@@ -91,6 +91,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                 activeCategory={data.activeCategory}
                 categories={data.categories}
                 searchQuery={data.searchQuery}
+                variant="dark"
               />
             </div>
           </div>

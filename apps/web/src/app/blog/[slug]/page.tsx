@@ -80,18 +80,18 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       <Header transparent />
 
       <div className="relative overflow-x-hidden">
-        <section data-header-theme="light" className="relative bg-surface-warm pb-12 pt-28">
+        <section data-header-theme="dark" className="relative bg-[#0a0a0b] pb-12 pt-28">
           <div className="relative mx-auto max-w-4xl px-6">
             <Link
               href="/blog"
-              className="text-sm text-content-tertiary transition-colors hover:text-content-primary"
+              className="text-sm text-white/40 transition-colors hover:text-white"
             >
               &#8592; Back to blog
             </Link>
 
-            <div className="mt-8 flex flex-wrap items-center gap-3 text-sm text-content-tertiary">
+            <div className="mt-8 flex flex-wrap items-center gap-3 text-sm text-white/40">
               {post.category?.title ? (
-                <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-content-secondary shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+                <span className="rounded-full border border-white/[0.08] bg-white/[0.06] px-3 py-1 text-xs font-medium text-white/60">
                   {post.category.title}
                 </span>
               ) : null}
@@ -99,11 +99,11 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               {post.author?.name ? <span>By {post.author.name}</span> : null}
             </div>
 
-            <h1 className="mt-6 text-4xl font-bold leading-tight tracking-tight text-content-primary md:text-6xl">
+            <h1 className="mt-6 text-4xl font-bold leading-tight tracking-tight text-white md:text-6xl">
               {post.title}
             </h1>
 
-            <p className="mt-6 max-w-3xl text-base leading-relaxed text-content-secondary md:text-lg">
+            <p className="mt-6 max-w-3xl text-base leading-relaxed text-white/60 md:text-lg">
               {post.excerpt}
             </p>
           </div>
@@ -124,7 +124,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                 <RichText value={resolveBodyImages(post.body)} />
               </article>
 
-              <aside className="lg:sticky lg:top-24 lg:self-start lg:border-l lg:border-gray-200 lg:pl-8">
+              <aside className="lg:sticky lg:top-24 lg:self-start lg:border-l lg:border-border lg:pl-8">
                 <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-content-tertiary">
                   Share
                 </p>
