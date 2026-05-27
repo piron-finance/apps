@@ -192,6 +192,27 @@ export const CHAIN_INFO: Record<number, ChainInfo> = {
     logo: "/chains/ethereum.svg",
     color: "#627EEA",
   },
+
+  // Arc Testnet
+  5042002: {
+    id: 5042002,
+    name: "Arc Testnet",
+    shortName: "Arc",
+    network: "arc-testnet",
+    nativeCurrency: {
+      name: "Ether",
+      symbol: "ETH",
+      decimals: 18,
+    },
+    rpcUrls: ["https://arc-testnet.g.alchemy.com/v2/FeJRn-TNvhl6iQRFlBHPL"],
+    blockExplorers: [
+      {
+        name: "Arc Explorer",
+        url: "https://explorer.arc.fun",
+      },
+    ],
+    color: "#8B5CF6",
+  },
 };
 
 /**
@@ -271,7 +292,7 @@ export function getAddressUrl(chainId: number, address: string): string {
  * Check if chain is a testnet
  */
 export function isTestnet(chainId: number): boolean {
-  const testnets = [84532, 2810, 11155111, 5]; // Base Sepolia, Morph Holesky, Sepolia, Goerli
+  const testnets = [84532, 2810, 11155111, 5, 5042002]; // Base Sepolia, Morph Holesky, Sepolia, Goerli, Arc Testnet
   return testnets.includes(chainId);
 }
 

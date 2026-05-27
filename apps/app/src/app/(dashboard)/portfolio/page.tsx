@@ -8,9 +8,11 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usersApi } from "@/lib/api/endpoints";
 import type { PortfolioSummary } from "@/lib/api/types";
+import { useChainContext } from "@/lib/context/ChainContext";
 
 export default function PortfolioPage() {
   const { address } = useAccount();
+  const { activeChainId, activeChain } = useChainContext();
   const [portfolio, setPortfolio] = useState<PortfolioSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,7 +27,9 @@ export default function PortfolioPage() {
       setLoading(true);
       setError(null);
       try {
-        const data = await usersApi.getPositions(address);
+        // Pass activeChainId so positions are scoped to the selected chain.
+        // undefined = all chains (default "All Chains" view).
+        const data = await usersApi.getPositions(address, activeChainId);
         setPortfolio(data);
       } catch (err: any) {
         console.error("Error fetching portfolio:", err);
@@ -36,7 +40,8 @@ export default function PortfolioPage() {
     };
 
     fetchPortfolio();
-  }, [address]);
+  // Re-fetch when wallet or selected chain changes
+  }, [address, activeChainId]);
 
   const formatCurrency = (value: string | number) => {
     const num = typeof value === "string" ? parseFloat(value) : value;

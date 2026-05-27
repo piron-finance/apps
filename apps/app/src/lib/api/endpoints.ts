@@ -22,10 +22,12 @@ import type {
 
 export const platformApi = {
   /**
-   * Get platform-wide metrics
+   * Get platform-wide metrics, optionally scoped to a specific chain
    */
-  getMetrics: async (): Promise<PlatformMetrics> => {
-    const { data } = await apiClient.get("/platform/metrics");
+  getMetrics: async (chainId?: number): Promise<PlatformMetrics> => {
+    const { data } = await apiClient.get("/platform/metrics", {
+      params: chainId !== undefined ? { chainId } : undefined,
+    });
     return data;
   },
 };
@@ -157,8 +159,13 @@ export const usersApi = {
   /**
    * Get all user positions (regular + locked)
    */
-  getPositions: async (walletAddress: string): Promise<PortfolioSummary> => {
-    const { data } = await apiClient.get(`/users/${walletAddress}/positions`);
+  getPositions: async (
+    walletAddress: string,
+    chainId?: number
+  ): Promise<PortfolioSummary> => {
+    const { data } = await apiClient.get(`/users/${walletAddress}/positions`, {
+      params: chainId !== undefined ? { chainId } : undefined,
+    });
     return data;
   },
 
