@@ -5,6 +5,7 @@ import { usePlatformMetrics } from "@/hooks/usePlatformData";
 import { usePoolsData } from "@/hooks/usePoolsData";
 import { useUserPositions } from "@/hooks/useUserData";
 import { useUserLockedPositions } from "@/hooks/useLockedPools";
+import { useChainContext } from "@/lib/context/ChainContext";
 
 
 function formatValue(value: string | number | null | undefined): string {
@@ -113,7 +114,8 @@ function PortfolioSection({ walletAddress }: { walletAddress: string }) {
 }
 
 function LiquiditySection() {
-  const { data: metrics, isLoading } = usePlatformMetrics();
+  const { activeChainId } = useChainContext();
+  const { data: metrics, isLoading } = usePlatformMetrics(activeChainId);
 
   const tvl = metrics?.totalValueLocked ? parseFloat(metrics.totalValueLocked) : 0;
 
@@ -156,7 +158,8 @@ function LiquiditySection() {
 }
 
 function RecentPoolsSection() {
-  const { data: poolsResponse, isLoading } = usePoolsData();
+  const { activeChainId } = useChainContext();
+  const { data: poolsResponse, isLoading } = usePoolsData(activeChainId !== undefined ? { chainId: activeChainId } : undefined);
   const pools = poolsResponse?.data || [];
 
   // Show pools with nearest maturity or most recently active
@@ -223,7 +226,8 @@ function RecentPoolsSection() {
 }
 
 function ProtocolHealthSection() {
-  const { data: metrics, isLoading } = usePlatformMetrics();
+  const { activeChainId } = useChainContext();
+  const { data: metrics, isLoading } = usePlatformMetrics(activeChainId);
 
   const last24h = (metrics as any)?.last24h;
   const deposits24h = last24h?.deposits ? formatValue(last24h.deposits) : "—";

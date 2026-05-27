@@ -45,7 +45,7 @@ export default function PoolDetailPage() {
     poolAddress,
     {
       enabled: Boolean(walletAddress), // Only fetch if wallet is connected
-    }
+    },
   );
 
   // Skip NAV history for now - endpoint not implemented on backend yet
@@ -151,10 +151,9 @@ export default function PoolDetailPage() {
       return;
     }
 
-    // Check balance before proceeding (only if loaded)
     if (balanceRaw && hasInsufficientBalance(depositAmount)) {
       alert(
-        `Insufficient balance. You have ${getUserBalance()} ${pool.assetSymbol}`
+        `Insufficient balance. You have ${getUserBalance()} ${pool.assetSymbol}`,
       );
       return;
     }
@@ -162,9 +161,8 @@ export default function PoolDetailPage() {
     try {
       if (needsApproval(depositAmount)) {
         console.log("🟡 Approval needed, requesting approval...");
-        setHasTriggeredAutoDeposit(false); // Reset before approval
+        setHasTriggeredAutoDeposit(false);
         await approve(depositAmount);
-        // Deposit will be triggered automatically by the useEffect above
       } else {
         console.log("🟢 No approval needed, depositing directly...");
         await deposit(depositAmount);
@@ -173,7 +171,7 @@ export default function PoolDetailPage() {
       console.error("❌ Deposit failed:", error);
       setHasTriggeredAutoDeposit(false); // Reset on error
       alert(
-        `Transaction failed: ${error instanceof Error ? error.message : "Unknown error"}`
+        `Transaction failed: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
     }
   };
@@ -240,41 +238,6 @@ export default function PoolDetailPage() {
             {pool.status}
           </Badge>
         </div>
-        {/* <div className="flex items-center gap-2 sm:gap-3 flex-wrap lg:flex-nowrap">
-          <Button
-            variant="outline"
-            size="sm"
-            className="bg-transparent border-white/10 text-white hover:bg-white/5 text-xs sm:text-sm"
-          >
-            <Share className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-            Share
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="bg-transparent border-white/10 text-white hover:bg-white/5 text-xs sm:text-sm"
-          >
-            <FileText className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-            Docs
-          </Button>
-          <Button
-            onClick={handleDeposit}
-            disabled={
-              !walletAddress ||
-              !depositAmount ||
-              isApproving ||
-              isConfirming ||
-              Boolean(balanceRaw && hasInsufficientBalance(depositAmount))
-            }
-            className="bg-[#00c48c] hover:bg-[#00d49a] text-black font-semibold px-4 sm:px-6 text-xs sm:text-sm disabled:opacity-50"
-          >
-            {isApproving
-              ? "Approving..."
-              : isConfirming
-                ? "Depositing..."
-                : "Deposit"}
-          </Button>
-        </div> */}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
@@ -482,7 +445,9 @@ export default function PoolDetailPage() {
                           </span>
                         </div>
                         <div className="flex items-center justify-between gap-3 sm:block">
-                          <span className="text-gray-500 sm:hidden">Amount</span>
+                          <span className="text-gray-500 sm:hidden">
+                            Amount
+                          </span>
                           <span className="font-semibold text-white">
                             {Number(tx.amount).toLocaleString("en-US", {
                               maximumFractionDigits: 2,

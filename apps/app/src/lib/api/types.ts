@@ -6,13 +6,16 @@ export interface PlatformMetrics {
   tvlChange24h: string;
   tvlChange24hPercentage: number;
   netFlows24h: string;
+  netFlows24hFormatted?: string;
+  volume24h: string;
   averageAPY: number;
   activePools: number;
   totalPools: number;
   totalUsers: number;
   activeUsers: number;
   totalTransactions: number;
-  volume24h: string;
+  /** Populated when metrics are scoped to a specific chain */
+  chainId?: number | null;
   timestamp: string;
 }
 
@@ -241,6 +244,7 @@ export interface PoolFilters {
   limit?: number;
   country?: string;
   region?: string;
+  chainId?: number;
 }
 
 export interface UserPosition {
