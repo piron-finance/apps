@@ -89,13 +89,13 @@ export default function PoolDetailPage() {
         !hasTriggeredAutoDeposit
       ) {
         console.log("🟢 Approval successful, triggering deposit...");
-        setHasTriggeredAutoDeposit(true); // Prevent multiple calls
+        setHasTriggeredAutoDeposit(true);
         try {
           await refetchAllowance();
           await deposit(depositAmount);
         } catch (error) {
           console.error("Deposit after approval failed:", error);
-          setHasTriggeredAutoDeposit(false); // Reset on error to allow retry
+          setHasTriggeredAutoDeposit(false);
         }
       }
     };
@@ -109,7 +109,6 @@ export default function PoolDetailPage() {
     hasTriggeredAutoDeposit,
   ]);
 
-  // Clear amount and reset flag after successful deposit
   useEffect(() => {
     if (isSuccess) {
       const timer = setTimeout(() => {
