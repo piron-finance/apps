@@ -47,6 +47,14 @@ export const SUPPORTED_CHAINS: ChainOption[] = [
     bgColor: "rgba(139,92,246,0.12)",
     isTestnet: true,
   },
+  {
+    id: 421614,
+    label: "Arbitrum Sepolia",
+    shortLabel: "Arbitrum",
+    color: "#28A0F0",
+    bgColor: "rgba(40,160,240,0.12)",
+    isTestnet: true,
+  },
 ];
 
 const ALL_CHAINS_OPTION = SUPPORTED_CHAINS[0] as ChainOption;

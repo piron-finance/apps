@@ -34,7 +34,17 @@ export interface PoolAnalytics {
 }
 
 export type PoolType = "SINGLE_ASSET" | "STABLE_YIELD" | "LOCKED";
-export type PoolStatus = "PENDING_DEPLOYMENT" | "FUNDING" | "INVESTED" | "MATURED" | "CLOSED" | "ACTIVE" | "INACTIVE";
+// Mirrors the backend Prisma PoolStatus enum (source of truth).
+export type PoolStatus =
+  | "PENDING_DEPLOYMENT"
+  | "FUNDING"
+  | "FILLED"
+  | "PENDING_INVESTMENT"
+  | "INVESTED"
+  | "MATURED"
+  | "WITHDRAWN"
+  | "EMERGENCY"
+  | "CANCELLED";
 
 export interface Pool {
   id: string;
@@ -386,6 +396,8 @@ export interface NAVHistoryPoint {
 
 export interface NAVHistoryResponse {
   poolId: string;
+  // "floating" = STABLE_YIELD per-share NAV; "none" = no NAV (SINGLE_ASSET/LOCKED), data is empty
+  navType: "floating" | "none";
   period: string;
   interval: string;
   data: NAVHistoryPoint[];

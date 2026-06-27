@@ -26,6 +26,7 @@ interface UseDepositReturn {
   getMaxDepositAmount: () => string;
   reset: () => void;
   refetchAllowance: () => Promise<any>;
+  refetchBalance: () => Promise<any>;
 
 
   isApproving: boolean;
@@ -66,7 +67,11 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
 
   const { writeContractAsync } = useWriteContract();
 
-  const { data: balance } = useReadContract({
+  const {
+    data: balance,
+    refetch: refetchBalance,
+    error: balanceError,
+  } = useReadContract({
     address: pool?.assetAddress as `0x${string}`,
     abi: ERC20_ABI,
     functionName: "balanceOf",
@@ -76,6 +81,18 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
       enabled: Boolean(address && pool?.assetAddress && pool?.chainId),
     },
   });
+
+  // A failed balance read (e.g. an RPC 429/over-quota) otherwise renders as a
+  // silent "0 balance" → "Insufficient balance". Surface it so it's diagnosable.
+  useEffect(() => {
+    if (balanceError) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        `[useDeposit] balance read failed on chain ${pool?.chainId} for ${pool?.assetAddress}:`,
+        balanceError.message
+      );
+    }
+  }, [balanceError]); // eslint-disable-line react-hooks/exhaustive-deps
 
 
   const { data: allowance, refetch: refetchAllowance } = useReadContract({
@@ -275,6 +292,7 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
     getMaxDepositAmount,
     reset,
     refetchAllowance,
+    refetchBalance,
 
     isApproving,
     isApprovalSuccess,

@@ -20,6 +20,7 @@ function invalidateAll(
   // Pool data
   queryClient.invalidateQueries({ queryKey: ["pool", poolAddress] });
   queryClient.invalidateQueries({ queryKey: ["pool-stats", poolAddress] });
+  queryClient.invalidateQueries({ queryKey: ["pool-transactions", poolAddress] });
   queryClient.invalidateQueries({ queryKey: ["pools"] });
 
   // Withdrawal state

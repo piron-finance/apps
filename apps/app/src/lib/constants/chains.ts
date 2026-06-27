@@ -106,6 +106,31 @@ export const CHAIN_INFO: Record<number, ChainInfo> = {
     color: "#28A0F0",
   },
 
+  // Arbitrum Sepolia (Testnet)
+  421614: {
+    id: 421614,
+    name: "Arbitrum Sepolia",
+    shortName: "Arbitrum",
+    network: "arbitrum-sepolia",
+    nativeCurrency: {
+      name: "Sepolia Ether",
+      symbol: "ETH",
+      decimals: 18,
+    },
+    rpcUrls: [
+      process.env.NEXT_PUBLIC_ARBITRUM_SEPOLIA_RPC ||
+        "https://sepolia-rollup.arbitrum.io/rpc",
+    ],
+    blockExplorers: [
+      {
+        name: "Arbiscan",
+        url: "https://sepolia.arbiscan.io",
+      },
+    ],
+    logo: "/chains/arbitrum.svg",
+    color: "#28A0F0",
+  },
+
   // Morph Holesky (Testnet)
   2810: {
     id: 2810,
@@ -204,7 +229,10 @@ export const CHAIN_INFO: Record<number, ChainInfo> = {
       symbol: "ETH",
       decimals: 18,
     },
-    rpcUrls: ["https://arc-testnet.g.alchemy.com/v2/FeJRn-TNvhl6iQRFlBHPL"],
+    rpcUrls: [
+      process.env.NEXT_PUBLIC_ARC_TESTNET_RPC ||
+        "https://arc-testnet.g.alchemy.com/v2/FeJRn-TNvhl6iQRFlBHPL",
+    ],
     blockExplorers: [
       {
         name: "Arc Explorer",
@@ -292,7 +320,7 @@ export function getAddressUrl(chainId: number, address: string): string {
  * Check if chain is a testnet
  */
 export function isTestnet(chainId: number): boolean {
-  const testnets = [84532, 2810, 11155111, 5, 5042002]; // Base Sepolia, Morph Holesky, Sepolia, Goerli, Arc Testnet
+  const testnets = [84532, 2810, 11155111, 5, 5042002, 421614]; // Base Sepolia, Morph Holesky, Sepolia, Goerli, Arc Testnet, Arbitrum Sepolia
   return testnets.includes(chainId);
 }
 
