@@ -56,7 +56,7 @@ export function usePoolNavHistory(
   return useQuery({
     queryKey: ["pool-nav-history", poolId, period, interval],
     queryFn: () => poolsApi.getNavHistory(poolId, period, interval),
-    enabled: false, // Disabled - backend endpoint not implemented yet
+    enabled: !!poolId,
     staleTime: 300000, // 5 minutes
     retry: 0,
   });
