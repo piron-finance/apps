@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import { apiClient } from "@/lib/api/client";
-import { getTransactionUrl } from "@/lib/constants/chains";
+import { getTransactionUrl, getChainName } from "@/lib/constants/chains";
+import { useChainContext } from "@/lib/context/ChainContext";
 
-// Faucet currently only supports Base Sepolia (84532)
-const FAUCET_CHAIN_ID = 84532;
+// Chains the faucet can mint on. Must mirror FAUCET_CHAIN_IDS on the backend.
+const FAUCET_CHAIN_IDS = [84532, 5042002, 421614];
+const DEFAULT_FAUCET_CHAIN_ID = 84532; // Base Sepolia
 
 type ClaimStatus =
   | { canClaim: true }
@@ -33,7 +35,14 @@ function formatTimeUntil(isoDate: string): string {
 }
 
 export function TestTokenAnnouncement() {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected, chainId: walletChainId } = useAccount();
+  const { activeChainId } = useChainContext();
+
+  // Mint on the app's selected chain; fall back to the connected wallet's
+  // chain, then to Base Sepolia. Only chains the faucet supports are allowed.
+  const faucetChainId = [activeChainId, walletChainId, DEFAULT_FAUCET_CHAIN_ID]
+    .find((id) => id != null && FAUCET_CHAIN_IDS.includes(id)) as number;
+
   const [isOpen, setIsOpen] = useState(false);
   const [recipient, setRecipient] = useState("");
   const [recipientWasEdited, setRecipientWasEdited] = useState(false);
@@ -45,11 +54,19 @@ export function TestTokenAnnouncement() {
     }
   }, [address, recipientWasEdited]);
 
+  // Cooldown is per-chain — re-check when the target chain changes while open.
+  useEffect(() => {
+    if (isOpen && recipient.startsWith("0x") && recipient.length === 42) {
+      checkStatus(recipient);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [faucetChainId]);
+
   async function checkStatus(walletAddress: string) {
     setClaimState({ type: "loading-status" });
     try {
       const { data } = await apiClient.get<ClaimStatus>(
-        `/faucet/status/${walletAddress}`,
+        `/faucet/status/${walletAddress}?chainId=${faucetChainId}`,
       );
       if (data.canClaim) {
         setClaimState({ type: "ready" });
@@ -69,6 +86,7 @@ export function TestTokenAnnouncement() {
         "/faucet/claim",
         {
           walletAddress: recipient,
+          chainId: faucetChainId,
         },
       );
       setClaimState({ type: "success", txHash: data.txHash });
@@ -220,7 +238,7 @@ export function TestTokenAnnouncement() {
                   </div>
                   {claimState.txHash && (
                     <a
-                      href={getTransactionUrl(FAUCET_CHAIN_ID, claimState.txHash)}
+                      href={getTransactionUrl(faucetChainId, claimState.txHash)}
                       target="_blank"
                       rel="noreferrer"
                       className="font-mono text-[11px] text-[#00c853]/70 transition-colors hover:text-[#00c853]"
@@ -348,6 +366,14 @@ export function TestTokenAnnouncement() {
                     </span>
                     <span className="text-[13px] font-semibold text-white">
                       100,000 E20M
+                    </span>
+                  </div>
+
+                  {/* Network */}
+                  <div className="flex items-center justify-between rounded-lg border border-[#1a1a1a] px-4 py-3">
+                    <span className="text-[12px] text-[#666]">Network</span>
+                    <span className="text-[13px] font-medium text-white">
+                      {getChainName(faucetChainId)}
                     </span>
                   </div>
                 </div>
