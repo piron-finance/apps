@@ -1,14 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { useAccount } from "wagmi";
 import { apiClient } from "@/lib/api/client";
 import { getTransactionUrl, getChainName } from "@/lib/constants/chains";
-import { useChainContext } from "@/lib/context/ChainContext";
 
-// Chains the faucet can mint on. Must mirror FAUCET_CHAIN_IDS on the backend.
-const FAUCET_CHAIN_IDS = [84532, 5042002, 421614];
-const DEFAULT_FAUCET_CHAIN_ID = 84532; // Base Sepolia
+// The testnet runs on Arbitrum Sepolia for now, so the faucet always mints there —
+// regardless of the chain the dashboard happens to be filtered to. Keeps claiming
+// unambiguous for new users. Change this one constant to move the faucet chain.
+const FAUCET_CHAIN_ID = 421614; // Arbitrum Sepolia
 
 type ClaimStatus =
   | { canClaim: true }
@@ -35,13 +36,10 @@ function formatTimeUntil(isoDate: string): string {
 }
 
 export function TestTokenAnnouncement() {
-  const { address, isConnected, chainId: walletChainId } = useAccount();
-  const { activeChainId } = useChainContext();
+  const { address, isConnected } = useAccount();
 
-  // Mint on the app's selected chain; fall back to the connected wallet's
-  // chain, then to Base Sepolia. Only chains the faucet supports are allowed.
-  const faucetChainId = [activeChainId, walletChainId, DEFAULT_FAUCET_CHAIN_ID]
-    .find((id) => id != null && FAUCET_CHAIN_IDS.includes(id)) as number;
+  // Faucet is pinned to Arbitrum Sepolia (the live testnet) for now.
+  const faucetChainId = FAUCET_CHAIN_ID;
 
   const [isOpen, setIsOpen] = useState(false);
   const [recipient, setRecipient] = useState("");
@@ -106,6 +104,14 @@ export function TestTokenAnnouncement() {
     if (addr) checkStatus(addr);
   };
 
+  // Let other components (e.g. the first-run stepper) open this modal.
+  useEffect(() => {
+    const handler = () => openClaimModal();
+    window.addEventListener("piron:open-faucet", handler);
+    return () => window.removeEventListener("piron:open-faucet", handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [address, recipientWasEdited]);
+
   function closeModal() {
     setIsOpen(false);
     setClaimState({ type: "idle" });
@@ -130,33 +136,42 @@ export function TestTokenAnnouncement() {
 
   return (
     <>
-      {/* Banner */}
-      <div className="border-b border-[#00c853]/10 bg-[#00c853]/[0.04]">
-        <div className="flex items-center justify-between gap-4 px-3 py-2.5 sm:px-6">
+      {/* Banner — one big click target so new users can't miss it, but a neutral
+          surface (not a green wash); the single green accent is the CTA. */}
+      <button
+        type="button"
+        onClick={openClaimModal}
+        className="group block w-full border-b border-[#1c1c1c] bg-[#0b0b0c] text-left transition-colors hover:bg-[#0f0f11]"
+      >
+        <div className="flex items-center justify-between gap-4 px-4 py-3 sm:px-6">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="hidden h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#00c853]/15 sm:flex">
-              <div className="h-1.5 w-1.5 rounded-full bg-[#00c853]" />
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.04]">
+              <Image src="/pironLogo.png" alt="Piron" width={20} height={20} />
+            </span>
+            <div className="min-w-0">
+              <p className="text-[13px] font-semibold text-white sm:text-[14px]">
+                Get free testnet tokens to try Piron
+              </p>
+              <p className="truncate text-[11px] text-[#8a8a8a] sm:text-[12px]">
+                Claim 100,000 test tokens on Arbitrum — you&rsquo;ll need them to deposit into any pool.
+              </p>
             </div>
-            <p className="min-w-0 text-[12px] text-[#999] sm:text-[13px]">
-              <span className="font-medium text-white/80">Testnet mode</span>
-              <span className="mx-1.5 hidden text-[#333] sm:inline">
-                &middot;
-              </span>
-              <span className="hidden sm:inline">
-                Claim 100,000 E20M tokens to try deposits and pool actions
-              </span>
-            </p>
           </div>
 
-          <button
-            type="button"
-            onClick={openClaimModal}
-            className="shrink-0 rounded-full bg-[#00c853]/15 px-3.5 py-1.5 text-[11px] font-medium text-[#00c853] transition-colors hover:bg-[#00c853]/25"
-          >
+          <span className="flex shrink-0 items-center gap-1.5 rounded-lg bg-[#00b64a] px-3.5 py-2 text-[12px] font-semibold text-black transition-colors group-hover:bg-[#00c853] sm:px-4">
             Claim tokens
-          </button>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              className="transition-transform group-hover:translate-x-0.5"
+            >
+              <path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </span>
         </div>
-      </div>
+      </button>
 
       {/* Modal */}
       {isOpen && (

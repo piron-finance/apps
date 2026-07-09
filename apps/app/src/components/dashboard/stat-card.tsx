@@ -12,7 +12,7 @@ export function StatCard({ label, value, badge, subtitle }: StatCardProps) {
     <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
       <p className="text-[10px] text-[#8F9B99] tracking-wider mb-2">{label}</p>
       <div className="mb-1 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
-        <span className="break-words text-xl font-semibold text-[#F5F7F6] sm:text-2xl">
+        <span className="break-words text-xl font-semibold tabular-nums text-[#F5F7F6] sm:text-2xl">
           {value}
         </span>
         {badge && (

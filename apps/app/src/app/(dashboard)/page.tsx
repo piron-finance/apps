@@ -8,10 +8,18 @@ import {
   PoolSection,
   Sidebar,
 } from "@/components/dashboard";
+import { FirstRunStepper } from "@/components/dashboard/first-run-stepper";
+import { PoolCardSkeletonGrid } from "@/components/dashboard/skeletons";
 import type { Pool } from "@/lib/api/types";
 import { CHAIN_INFO } from "@/lib/constants/chains";
 import { useChainContext, SUPPORTED_CHAINS } from "@/lib/context/ChainContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+// The public testnet runs on Arbitrum Sepolia for now, so the dashboard is pinned
+// to it: the chain dropdown lists only Arbitrum and the active chain is forced to
+// it. This is a UI-only lock — multi-chain support underneath is untouched.
+const PINNED_CHAIN_ID = 421614;
+const DISPLAY_CHAINS = SUPPORTED_CHAINS.filter((c) => c.id === PINNED_CHAIN_ID);
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function formatTVL(value: string | undefined): string {
@@ -125,6 +133,11 @@ export default function DashboardPage() {
   // Use global ChainContext — persists across navigation + shared with portfolio page
   const { activeChainId, setActiveChainId } = useChainContext();
 
+  // Pin the dashboard to Arbitrum while the public testnet lives there.
+  useEffect(() => {
+    if (activeChainId !== PINNED_CHAIN_ID) setActiveChainId(PINNED_CHAIN_ID);
+  }, [activeChainId, setActiveChainId]);
+
   // All data scoped to the selected chain
   const { data: metrics } = usePlatformMetrics(activeChainId);
   const { data: poolsResponse, isLoading: poolsLoading } = usePoolsData(
@@ -144,6 +157,26 @@ export default function DashboardPage() {
   const stableYieldPools = pools.filter((p) => p.poolType === "STABLE_YIELD");
   const lockedPools = pools.filter((p) => p.poolType === "LOCKED");
   const singleAssetPools = pools.filter((p) => p.poolType === "SINGLE_ASSET");
+
+  // Filter options derived from the pools actually present, so a selection can
+  // never lead to an empty "No pools" dead-end (the old hardcoded USDC/USDT/DAI
+  // and 90d/180d/365d lists didn't match the real assets/tiers on-chain).
+  const stableAssetOptions = [
+    "All",
+    ...Array.from(
+      new Set(stableYieldPools.map((p) => p.assetSymbol).filter(Boolean)),
+    ),
+  ];
+  const lockedDurationOptions = [
+    "All",
+    ...Array.from(
+      new Set(
+        lockedPools.flatMap(
+          (p) => p.lockTiers?.map((t) => `${t.lockDurationDays}d`) ?? [],
+        ),
+      ),
+    ),
+  ];
 
   const filteredStablePools =
     activeAsset === "All"
@@ -225,7 +258,7 @@ export default function DashboardPage() {
             }}
             className={selectClass}
           >
-            {SUPPORTED_CHAINS.map((opt) => (
+            {DISPLAY_CHAINS.map((opt) => (
               <option key={opt.label} value={opt.id ?? "all"}>
                 {opt.label}
               </option>
@@ -236,6 +269,9 @@ export default function DashboardPage() {
         {/* Active chain indicator dot */}
         {activeChainId !== undefined && <ChainDot chainId={activeChainId} />}
       </div>
+
+      {/* ── First-run onboarding (wallet-aware; auto-hides once done) ────── */}
+      <FirstRunStepper />
 
       {/* ── Stats Row ──────────────────────────────────────────────────── */}
       <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:gap-4">
@@ -250,7 +286,7 @@ export default function DashboardPage() {
         />
         <StatCard
           label="LIVE POOLS"
-          value={String(metrics?.activePools || pools.length || 0)}
+          value={String(pools.length)}
           subtitle={`${stableYieldPools.length} Stable · ${lockedPools.length} Locked · ${singleAssetPools.length} Single`}
         />
         <StatCard
@@ -271,7 +307,7 @@ export default function DashboardPage() {
 
       <div className="flex flex-col gap-4 xl:flex-row">
         {/* ── Main Content ─────────────────────────────────────────────── */}
-        <div className="w-full space-y-4 xl:w-[68%]">
+        <div id="pools-start" className="w-full space-y-4 xl:w-[68%]">
 
           {/* Featured Pools — only shown when pools exist for this chain */}
           {featuredPools.length > 0 && (
@@ -285,6 +321,7 @@ export default function DashboardPage() {
                   <PoolCard
                     key={pool.id}
                     poolId={pool.poolAddress}
+                    chainId={pool.chainId}
                     type={
                       pool.poolType === "STABLE_YIELD"
                         ? "Stable Yield"
@@ -315,26 +352,26 @@ export default function DashboardPage() {
             title="Withdraw anytime. Earn daily."
             subtitle="NAV-priced pools holding T-bills and money market paper. Your capital works from day one."
             filters={
-              <SelectWrapper>
-                <select
-                  value={activeAsset}
-                  onChange={(e) => setActiveAsset(e.target.value)}
-                  className={selectClass}
-                >
-                  {["All", "USDC", "USDT", "DAI", "CNGN"].map((c) => (
-                    <option key={c} value={c}>
-                      {c === "All" ? "All assets" : c}
-                    </option>
-                  ))}
-                </select>
-              </SelectWrapper>
+              stableAssetOptions.length > 2 ? (
+                <SelectWrapper>
+                  <select
+                    value={activeAsset}
+                    onChange={(e) => setActiveAsset(e.target.value)}
+                    className={selectClass}
+                  >
+                    {stableAssetOptions.map((c) => (
+                      <option key={c} value={c}>
+                        {c === "All" ? "All assets" : c}
+                      </option>
+                    ))}
+                  </select>
+                </SelectWrapper>
+              ) : undefined
             }
           >
             <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
               {poolsLoading ? (
-                <div className="col-span-full py-8 text-center text-[#555]">
-                  Loading pools…
-                </div>
+                <PoolCardSkeletonGrid count={2} />
               ) : (
                 <>
                   <EmptyChainState poolType="stable yield" />
@@ -348,6 +385,7 @@ export default function DashboardPage() {
                       <PoolCard
                         key={pool.id}
                         poolId={pool.poolAddress}
+                    chainId={pool.chainId}
                         type="Stable Yield"
                         asset={pool.assetSymbol}
                         name={pool.name}
@@ -374,26 +412,26 @@ export default function DashboardPage() {
             title="Lock your rate. Skip the volatility."
             subtitle="Fixed-term deposits with guaranteed APY. Choose when you receive interest. Early exit costs you."
             filters={
-              <SelectWrapper>
-                <select
-                  value={activeDuration}
-                  onChange={(e) => setActiveDuration(e.target.value)}
-                  className={selectClass}
-                >
-                  {["All", "90d", "180d", "365d"].map((d) => (
-                    <option key={d} value={d}>
-                      {d === "All" ? "All durations" : d}
-                    </option>
-                  ))}
-                </select>
-              </SelectWrapper>
+              lockedDurationOptions.length > 2 ? (
+                <SelectWrapper>
+                  <select
+                    value={activeDuration}
+                    onChange={(e) => setActiveDuration(e.target.value)}
+                    className={selectClass}
+                  >
+                    {lockedDurationOptions.map((d) => (
+                      <option key={d} value={d}>
+                        {d === "All" ? "All durations" : d}
+                      </option>
+                    ))}
+                  </select>
+                </SelectWrapper>
+              ) : undefined
             }
           >
             <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
               {poolsLoading ? (
-                <div className="col-span-full py-8 text-center text-[#555]">
-                  Loading pools…
-                </div>
+                <PoolCardSkeletonGrid count={2} />
               ) : (
                 <>
                   <EmptyChainState poolType="locked" />
@@ -407,6 +445,7 @@ export default function DashboardPage() {
                       <PoolCard
                         key={pool.id}
                         poolId={pool.poolAddress}
+                    chainId={pool.chainId}
                         type="Locked"
                         asset={pool.assetSymbol}
                         name={pool.name}
@@ -439,9 +478,7 @@ export default function DashboardPage() {
           >
             <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
               {poolsLoading ? (
-                <div className="col-span-full py-8 text-center text-[#555]">
-                  Loading pools…
-                </div>
+                <PoolCardSkeletonGrid count={2} />
               ) : (
                 <>
                   <EmptyChainState poolType="single asset" />
@@ -455,6 +492,7 @@ export default function DashboardPage() {
                       <PoolCard
                         key={pool.id}
                         poolId={pool.poolAddress}
+                    chainId={pool.chainId}
                         type="Single Asset"
                         asset={pool.assetSymbol}
                         name={pool.name}

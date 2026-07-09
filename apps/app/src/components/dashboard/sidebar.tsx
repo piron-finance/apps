@@ -6,6 +6,7 @@ import { usePoolsData } from "@/hooks/usePoolsData";
 import { useUserPositions } from "@/hooks/useUserData";
 import { useUserLockedPositions } from "@/hooks/useLockedPools";
 import { useChainContext } from "@/lib/context/ChainContext";
+import { SidebarRowsSkeleton } from "./skeletons";
 
 
 function formatValue(value: string | number | null | undefined): string {
@@ -71,7 +72,7 @@ function PortfolioSection({ walletAddress }: { walletAddress: string }) {
       </div>
 
       {isLoading ? (
-        <div className="py-4 text-center text-[#666] text-[12px]">Loading...</div>
+        <div className="py-2"><SidebarRowsSkeleton /></div>
       ) : totalValue === 0 && lockedCount === 0 ? (
         <div className="py-4 text-center text-[#666] text-[12px]">
           No positions yet. Deposit into a pool to get started.
@@ -139,7 +140,7 @@ function LiquiditySection() {
       </p>
 
       {isLoading ? (
-        <div className="py-4 text-center text-[#666] text-[12px]">Loading...</div>
+        <div className="py-2"><SidebarRowsSkeleton /></div>
       ) : (
         <>
           <div className="space-y-2.5">
@@ -183,7 +184,7 @@ function RecentPoolsSection() {
         {upcomingPools.length > 0 ? "Upcoming maturities and key dates." : "Active pools and their status."}
       </p>
       {isLoading ? (
-        <div className="py-4 text-center text-[#666] text-[12px]">Loading...</div>
+        <div className="py-2"><SidebarRowsSkeleton /></div>
       ) : displayPools.length === 0 ? (
         <div className="py-4 text-center text-[#666] text-[12px]">No active pools</div>
       ) : (
@@ -247,7 +248,7 @@ function ProtocolHealthSection() {
       </p>
 
       {isLoading ? (
-        <div className="py-4 text-center text-[#666] text-[12px]">Loading...</div>
+        <div className="py-2"><SidebarRowsSkeleton /></div>
       ) : (
         <>
           <div className="space-y-2.5">
