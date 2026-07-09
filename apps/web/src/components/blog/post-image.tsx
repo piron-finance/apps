@@ -94,28 +94,21 @@ export function PostImage({
     );
   }
 
+  // In a card, the image fills a fixed frame — always cover so it crops cleanly
+  // instead of letterboxing wide banners with gray bars.
   return (
     <div
-      className={`relative overflow-hidden rounded-3xl border border-border ${
-        isWideBanner ? "bg-black/30" : "bg-surface-card"
-      } ${className}`}
+      className={`relative overflow-hidden rounded-2xl border border-border bg-surface-secondary ${className}`}
     >
       <Image
         src={url}
         alt={image?.alt || title}
         fill
         priority={priority}
-        className={isWideBanner ? "object-contain" : "object-cover"}
+        className="object-cover"
         sizes="(max-width: 768px) 100vw, 50vw"
         placeholder={image?.asset?.metadata?.lqip ? "blur" : "empty"}
         blurDataURL={image?.asset?.metadata?.lqip}
-      />
-      <Image
-        src={url}
-        alt=""
-        width={width}
-        height={height}
-        className="invisible h-0 w-0"
       />
     </div>
   );

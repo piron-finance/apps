@@ -59,10 +59,11 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
   const resultsTitle = data.activeCategory || data.searchQuery ? "Results" : "Most recent";
 
   return (
-    <div className="relative min-h-screen w-full bg-surface-warm">
+    <div className="relative min-h-screen w-full bg-[#0a0a0b]">
       <Header transparent />
 
       <div className="relative overflow-x-hidden">
+        <div className="dark">
         <section data-header-theme="dark" className="relative bg-[#0a0a0b] pb-12 pt-28">
           <div className="relative mx-auto max-w-7xl px-6">
             <div className="grid gap-8 lg:grid-cols-[1fr_340px] lg:items-end">
@@ -97,7 +98,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
           </div>
         </section>
 
-        <section data-header-theme="light" className="bg-surface-warm pb-20">
+        <section data-header-theme="dark" className="bg-surface-primary pb-20">
           <div className="mx-auto flex max-w-7xl flex-col gap-16 px-6">
             {showEditorialSections && data.heroPost ? (
               <div>
@@ -151,7 +152,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                   ))}
                 </div>
               ) : (
-                <div className="rounded-2xl bg-white p-8 text-content-secondary shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+                <div className="rounded-2xl border border-border bg-surface-card p-8 text-content-secondary">
                   No articles matched this filter yet.
                 </div>
               )}
@@ -165,7 +166,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                     page: data.page,
                     query: data.searchQuery,
                   })}
-                  className="rounded-full bg-white px-6 py-3 text-sm font-medium text-content-secondary shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-shadow hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)]"
+                  className="rounded-full border border-border bg-surface-card px-6 py-3 text-sm font-medium text-content-secondary transition-colors hover:border-border-hover hover:bg-surface-card-hover hover:text-content-primary"
                 >
                   Load more articles
                 </Link>
@@ -175,6 +176,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
             <BlogCTA settings={data.settings} />
           </div>
         </section>
+        </div>
 
         <Footer />
       </div>
