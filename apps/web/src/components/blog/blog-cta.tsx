@@ -11,7 +11,7 @@ export function BlogCTA({ settings }: BlogCTAProps) {
     settings.ctaHref === "/" || !settings.ctaHref ? APP_URL : settings.ctaHref;
 
   return (
-    <section className="rounded-2xl bg-white p-8 shadow-[0_1px_3px_rgba(0,0,0,0.04)] md:p-10">
+    <section className="rounded-2xl border border-border bg-surface-card p-8 md:p-10">
       <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-end">
         <div className="max-w-2xl">
           <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-content-tertiary">

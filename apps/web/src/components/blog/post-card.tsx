@@ -20,12 +20,12 @@ export function PostCard({ post, variant = "grid" }: PostCardProps) {
     return (
       <Link
         href={`/blog/${post.slug}`}
-        className="group grid gap-8 rounded-2xl bg-white p-6 shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-shadow hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] lg:grid-cols-[1.05fr_0.95fr]"
+        className="group grid gap-8 rounded-2xl border border-border bg-surface-card p-6 transition-colors hover:border-border-hover hover:bg-surface-card-hover md:p-8 lg:grid-cols-[1.05fr_0.95fr]"
       >
-        <div className="flex flex-col justify-center">
+        <div className="order-2 flex flex-col justify-center lg:order-1">
           <div className="flex flex-wrap items-center gap-3 text-sm text-content-tertiary">
             {post.category?.title ? (
-              <span className="rounded-full bg-surface-warm px-3 py-1 text-xs font-medium text-content-secondary">
+              <span className="rounded-full bg-white/[0.06] px-3 py-1 text-xs font-medium text-content-secondary">
                 {post.category.title}
               </span>
             ) : null}
@@ -46,7 +46,7 @@ export function PostCard({ post, variant = "grid" }: PostCardProps) {
           </div>
         </div>
 
-        <div className="relative min-h-[280px] lg:min-h-[360px]">
+        <div className="relative order-1 aspect-[16/10] lg:order-2 lg:aspect-auto lg:min-h-[360px]">
           <PostImage
             image={post.image}
             title={post.title}
@@ -75,7 +75,7 @@ export function PostCard({ post, variant = "grid" }: PostCardProps) {
 
       <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-content-tertiary">
         {post.category?.title ? (
-          <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-content-secondary shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+          <span className="rounded-full bg-white/[0.06] px-3 py-1 text-xs font-medium text-content-secondary">
             {post.category.title}
           </span>
         ) : null}
