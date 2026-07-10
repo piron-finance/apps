@@ -25,6 +25,7 @@ import { usePoolTiers, useLockedPoolMetrics, useLockedDepositPreview, useUserLoc
 import type { Pool, Transaction, LockedPosition } from "@/lib/api/types";
 import { getEffectiveApy, getDepositAvailability, type DepositAvailability } from "@/lib/pool-helpers";
 import { getTransactionUrl } from "@/lib/constants/chains";
+import { PoolTrustPanel } from "@/components/dashboard/pool-trust-panel";
 
 function formatValue(value: string | number | null | undefined, decimals = 2): string {
   if (value === null || value === undefined) return "—";
@@ -230,6 +231,7 @@ function PoolDetailContent({ pool }: { pool: Pool }) {
             <APYCard pool={pool} availability={availability} effectiveApy={effectiveApy} onDeposit={openDeposit} />
           )}
           <PoolStatsCard pool={pool} isLockedPool={isLockedPool} lockedMetrics={lockedMetrics} tiers={tiers} effectiveApy={effectiveApy} />
+          <PoolTrustPanel pool={pool} />
           {!isLockedPool && <AllocationCard pool={pool} />}
           <HoldingExitsCard pool={pool} isLockedPool={isLockedPool} tiers={tiers} />
           <RiskCard pool={pool} />
@@ -282,7 +284,15 @@ function PoolHeader({ pool, availability }: { pool: Pool; availability: DepositA
           <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-[#999] line-clamp-2">{pool.description}</p>
         )}
         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[#666]">
-          {pool.issuer && <span>Issued by <span className="text-[#888]">{pool.issuer}</span></span>}
+          {pool.issuer && (
+            <span className="inline-flex items-center gap-1">
+              Issued by <span className="text-[#888]">{pool.issuer}</span>
+              <svg width="12" height="12" viewBox="0 0 14 14" fill="none" className="text-[#00c853]" aria-label="Verified issuer">
+                <circle cx="7" cy="7" r="6.25" stroke="currentColor" strokeWidth="1.2" />
+                <path d="M4.4 7.1L6.1 8.8L9.6 5.2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </span>
+          )}
           {pool.issuer && (pool.region || pool.country) && <span className="text-[#333]">·</span>}
           {(pool.region || pool.country) && <span>{pool.region || pool.country}</span>}
         </div>
