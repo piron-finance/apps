@@ -41,7 +41,7 @@ export function PoolCard({
   return (
     <Link
       href={`/pool/${poolId}`}
-      className="group block rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 transition-colors duration-200 hover:bg-[#0d0d0d] hover:border-[#2a2a2a]"
+      className="group block rounded-2xl border border-[#26262a] bg-[#0d0d0f] p-4 transition-colors duration-200 hover:border-[#3a3a3e] hover:bg-[#121214]"
     >
       <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">

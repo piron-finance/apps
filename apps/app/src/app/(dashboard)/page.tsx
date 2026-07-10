@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { usePlatformMetrics } from "@/hooks/usePlatformData";
 import { usePoolsData, useFeaturedPools } from "@/hooks/usePoolsData";
 import {
@@ -19,7 +20,6 @@ import { useState, useEffect } from "react";
 // to it: the chain dropdown lists only Arbitrum and the active chain is forced to
 // it. This is a UI-only lock — multi-chain support underneath is untouched.
 const PINNED_CHAIN_ID = 421614;
-const DISPLAY_CHAINS = SUPPORTED_CHAINS.filter((c) => c.id === PINNED_CHAIN_ID);
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function formatTVL(value: string | undefined): string {
@@ -245,29 +245,12 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-black p-3 sm:p-4 lg:p-6">
-      {/* ── Chain Selector (dropdown) ───────────────────────────────────── */}
+      {/* ── Chain (pinned to Arbitrum) ─────────────────────────────────── */}
       <div className="mb-4 flex items-center gap-2">
-        <SelectWrapper>
-          <select
-            value={activeChainId ?? "all"}
-            onChange={(e) => {
-              const val = e.target.value;
-              setActiveChainId(
-                val === "all" ? undefined : Number(val),
-              );
-            }}
-            className={selectClass}
-          >
-            {DISPLAY_CHAINS.map((opt) => (
-              <option key={opt.label} value={opt.id ?? "all"}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </SelectWrapper>
-
-        {/* Active chain indicator dot */}
-        {activeChainId !== undefined && <ChainDot chainId={activeChainId} />}
+        <span className="inline-flex items-center gap-2 rounded-lg border border-[#242427] bg-[#0e0e10] px-3 py-1.5 text-[12px] font-medium text-[#d4d4d4]">
+          <Image src="/chains/arbitrum.svg" alt="Arbitrum" width={15} height={15} className="rounded-full" />
+          Arbitrum Sepolia
+        </span>
       </div>
 
       {/* ── First-run onboarding (wallet-aware; auto-hides once done) ────── */}

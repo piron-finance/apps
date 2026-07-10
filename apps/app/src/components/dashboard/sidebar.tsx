@@ -34,7 +34,7 @@ export function Sidebar() {
 
 function SidebarCard({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-[#1a1a1a] bg-black p-4 sm:p-5">
+    <div className="rounded-2xl border border-[#26262a] bg-[#0b0b0d] p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)] sm:p-5">
       {children}
     </div>
   );

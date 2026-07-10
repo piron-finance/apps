@@ -136,29 +136,32 @@ export function TestTokenAnnouncement() {
 
   return (
     <>
-      {/* Banner — one big click target so new users can't miss it, but a neutral
-          surface (not a green wash); the single green accent is the CTA. */}
+      {/* Banner — warm amber "testnet notice" that sticks under the header on scroll,
+          so it's obvious without adding to the app's green. One click target. */}
       <button
         type="button"
         onClick={openClaimModal}
-        className="group block w-full border-b border-[#1c1c1c] bg-[#0b0b0c] text-left transition-colors hover:bg-[#0f0f11]"
+        className="group sticky top-16 z-40 block w-full border-b border-amber-500/25 bg-[#14100a]/95 text-left backdrop-blur-xl transition-colors hover:bg-[#1a1408]/95"
       >
         <div className="flex items-center justify-between gap-4 px-4 py-3 sm:px-6">
           <div className="flex min-w-0 items-center gap-3">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.04]">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 ring-1 ring-amber-500/20">
               <Image src="/pironLogo.png" alt="Piron" width={20} height={20} />
             </span>
             <div className="min-w-0">
-              <p className="text-[13px] font-semibold text-white sm:text-[14px]">
+              <p className="flex items-center gap-2 text-[13px] font-semibold text-white sm:text-[14px]">
                 Get free testnet tokens to try Piron
+                <span className="hidden rounded bg-amber-500/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-amber-300 sm:inline">
+                  Testnet
+                </span>
               </p>
-              <p className="truncate text-[11px] text-[#8a8a8a] sm:text-[12px]">
+              <p className="truncate text-[11px] text-[#9a9488] sm:text-[12px]">
                 Claim 100,000 test tokens on Arbitrum — you&rsquo;ll need them to deposit into any pool.
               </p>
             </div>
           </div>
 
-          <span className="flex shrink-0 items-center gap-1.5 rounded-lg bg-[#00b64a] px-3.5 py-2 text-[12px] font-semibold text-black transition-colors group-hover:bg-[#00c853] sm:px-4">
+          <span className="flex shrink-0 items-center gap-1.5 rounded-lg bg-amber-400 px-3.5 py-2 text-[12px] font-semibold text-black transition-colors group-hover:bg-amber-300 sm:px-4">
             Claim tokens
             <svg
               width="14"

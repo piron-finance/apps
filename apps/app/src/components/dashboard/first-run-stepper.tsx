@@ -83,66 +83,64 @@ export function FirstRunStepper() {
     setDismissed(true);
   };
 
+  const doneCount = steps.filter((s) => s.done).length;
+
   return (
-    <div className="mb-4 rounded-xl border border-[#1a1a1a] bg-[#08090a] p-4 sm:p-5">
-      <div className="mb-4 flex items-center justify-between">
+    <div className="mb-4 overflow-hidden rounded-2xl border border-[#242427] bg-[#0b0b0d]">
+      <div className="flex items-center justify-between px-5 pt-5 sm:px-6">
         <div>
-          <h2 className="text-[14px] font-medium text-white">Get started in 3 steps</h2>
-          <p className="text-[12px] text-[#777]">A quick path to your first deposit on testnet.</p>
+          <h2 className="text-[15px] font-semibold tracking-tight text-white">Get started</h2>
+          <p className="mt-0.5 text-[12px] text-[#7c7c7c]">
+            Three quick steps to your first deposit — {doneCount} of {steps.length} done.
+          </p>
         </div>
         <button
           onClick={dismiss}
-          className="rounded-md px-2 py-1 text-[11px] text-[#666] transition-colors hover:bg-white/5 hover:text-[#aaa]"
+          className="text-[11px] text-[#5f5f5f] transition-colors hover:text-[#9a9a9a]"
         >
           Dismiss
         </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div className="mt-4 grid grid-cols-1 divide-y divide-[#161618] px-5 pb-5 sm:grid-cols-3 sm:divide-x sm:divide-y-0 sm:px-0 sm:pb-0">
         {steps.map((step, i) => {
           const isCurrent = i === currentIndex;
           return (
             <div
               key={i}
-              className={`rounded-lg border p-3.5 transition-colors ${
-                step.done
-                  ? "border-[#1a1a1a] bg-[#0a0a0b]"
-                  : isCurrent
-                    ? "border-[#00c853]/30 bg-[#00c853]/[0.04]"
-                    : "border-[#1a1a1a] bg-[#0a0a0b]"
-              }`}
+              className="flex items-start gap-3.5 py-4 first:pt-0 last:pb-0 sm:px-6 sm:py-5 sm:first:pt-5 sm:last:pb-5"
             >
-              <div className="mb-2 flex items-center gap-2">
-                <span
-                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-medium ${
-                    step.done
-                      ? "bg-[#00c853] text-black"
-                      : isCurrent
-                        ? "border border-[#00c853]/50 text-[#00c853]"
-                        : "border border-[#2a2a2a] text-[#777]"
-                  }`}
-                >
-                  {step.done ? (
-                    <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
-                      <path d="M2.5 6.2L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  ) : (
-                    i + 1
-                  )}
-                </span>
-                <p className={`text-[12px] font-medium ${step.done ? "text-[#888]" : "text-white"}`}>
+              <span
+                className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold transition-colors ${
+                  step.done
+                    ? "bg-[#00c853] text-black"
+                    : isCurrent
+                      ? "text-white ring-2 ring-[#00c853]/60"
+                      : "text-[#666] ring-1 ring-[#2a2a2c]"
+                }`}
+              >
+                {step.done ? (
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M2.5 6.2L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                ) : (
+                  i + 1
+                )}
+              </span>
+              <div className="min-w-0">
+                <p className={`text-[13px] font-medium ${step.done ? "text-[#9a9a9a]" : "text-white"}`}>
                   {step.title}
                 </p>
+                <p className="mt-0.5 text-[11px] leading-relaxed text-[#7c7c7c]">{step.hint}</p>
+                {step.cta && isCurrent && (
+                  <button
+                    onClick={step.cta.onClick}
+                    className="mt-2.5 inline-flex items-center rounded-lg bg-[#00b64a] px-3.5 py-1.5 text-[11px] font-semibold text-black transition-colors hover:bg-[#00c853]"
+                  >
+                    {step.cta.label}
+                  </button>
+                )}
               </div>
-              <p className="text-[11px] leading-relaxed text-[#777]">{step.hint}</p>
-              {step.cta && isCurrent && (
-                <button
-                  onClick={step.cta.onClick}
-                  className="mt-3 rounded-lg bg-[#00b64a] px-3 py-1.5 text-[11px] font-semibold text-black transition-colors hover:bg-[#00c853]"
-                >
-                  {step.cta.label}
-                </button>
-              )}
             </div>
           );
         })}
