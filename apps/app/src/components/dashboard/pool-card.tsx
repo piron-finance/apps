@@ -57,13 +57,7 @@ export function PoolCard({
             {chain && (
               <span className="inline-flex items-center gap-1.5 rounded-lg border border-[#1a1a1a] px-2 py-1 text-[11px] text-[#aaa]">
                 {chain.logo && (
-                  <Image
-                    src={chain.logo}
-                    alt={chain.shortName}
-                    width={13}
-                    height={13}
-                    className="rounded-full"
-                  />
+                  <Image src={chain.logo} alt={chain.shortName} width={14} height={14} />
                 )}
                 {chain.shortName}
               </span>

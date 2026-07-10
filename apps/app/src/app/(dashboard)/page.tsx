@@ -248,7 +248,7 @@ export default function DashboardPage() {
       {/* ── Chain (pinned to Arbitrum) ─────────────────────────────────── */}
       <div className="mb-4 flex items-center gap-2">
         <span className="inline-flex items-center gap-2 rounded-lg border border-[#242427] bg-[#0e0e10] px-3 py-1.5 text-[12px] font-medium text-[#d4d4d4]">
-          <Image src="/chains/arbitrum.svg" alt="Arbitrum" width={15} height={15} className="rounded-full" />
+          <Image src="/chains/arbitrum.svg" alt="Arbitrum" width={16} height={16} />
           Arbitrum Sepolia
         </span>
       </div>
