@@ -3,7 +3,7 @@
 import { useAccount } from "wagmi";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Clock, ExternalLink, Loader2 } from "lucide-react";
+import { Clock, ArrowRight, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usersApi } from "@/lib/api/endpoints";
@@ -291,7 +291,7 @@ export default function PortfolioPage() {
 
                         <div className="flex flex-row lg:flex-col gap-2">
                           <Link
-                            href={`/pools/${position.pool.poolAddress}`}
+                            href={`/pool/${position.pool.poolAddress}`}
                             className="flex-1 lg:flex-initial"
                           >
                             <Button
@@ -299,7 +299,7 @@ export default function PortfolioPage() {
                               className="w-full bg-[#00c48c] hover:bg-[#00d49a] text-black"
                             >
                               View Pool
-                              <ExternalLink className="ml-2 h-3 w-3" />
+                              <ArrowRight className="ml-2 h-3 w-3" />
                             </Button>
                           </Link>
                         </div>

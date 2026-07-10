@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { useAccount } from "wagmi";
 import {
   AreaChart,
@@ -22,6 +24,7 @@ import { useWithdrawalPreview, useWithdrawalQueueStatus, usePoolWithdrawalReques
 import { usePoolTiers, useLockedPoolMetrics, useLockedDepositPreview, useUserLockedPositions, useEarlyExitPreview } from "@/hooks/useLockedPools";
 import type { Pool, Transaction, LockedPosition } from "@/lib/api/types";
 import { getEffectiveApy, getDepositAvailability, type DepositAvailability } from "@/lib/pool-helpers";
+import { getTransactionUrl } from "@/lib/constants/chains";
 
 function formatValue(value: string | number | null | undefined, decimals = 2): string {
   if (value === null || value === undefined) return "—";
@@ -119,6 +122,13 @@ function PoolDetailContent({ pool }: { pool: Pool }) {
 
   return (
     <div className="min-h-screen bg-black p-3 sm:p-4 lg:p-6">
+      <Link
+        href="/"
+        className="mb-4 inline-flex items-center gap-1.5 text-[12px] text-[#888] transition-colors hover:text-white"
+      >
+        <ArrowLeft className="h-3.5 w-3.5" />
+        Back to pools
+      </Link>
       <PoolHeader pool={pool} availability={availability} />
 
       {/* Top Analytics Bar */}
@@ -135,12 +145,12 @@ function PoolDetailContent({ pool }: { pool: Pool }) {
           <div className="hidden h-8 w-px bg-[#1a1a1a] sm:block" />
           {isLockedPool ? (
             <>
-              <div className="rounded-lg border border-[#1a1a1a] bg-[#060607] p-3 sm:border-0 sm:bg-transparent sm:p-0">
+              <div className="rounded-lg border border-[#26262a] bg-[#0b0b0d] p-3 sm:border-0 sm:bg-transparent sm:p-0">
                 <span className="text-[11px] text-[#666]">Active Positions</span>
                 <p className="break-words text-white font-medium">{lockedMetrics?.activePositions ?? "—"}</p>
               </div>
               <div className="hidden h-8 w-px bg-[#1a1a1a] sm:block" />
-              <div className="rounded-lg border border-[#1a1a1a] bg-[#060607] p-3 sm:border-0 sm:bg-transparent sm:p-0">
+              <div className="rounded-lg border border-[#26262a] bg-[#0b0b0d] p-3 sm:border-0 sm:bg-transparent sm:p-0">
                 <span className="text-[11px] text-[#666]">Lock Periods</span>
                 <p className="break-words text-white font-medium">
                   {minLockDays && maxLockDays
@@ -151,9 +161,9 @@ function PoolDetailContent({ pool }: { pool: Pool }) {
                 </p>
               </div>
               <div className="hidden h-8 w-px bg-[#1a1a1a] sm:block" />
-              <div className="rounded-lg border border-[#1a1a1a] bg-[#060607] p-3 sm:border-0 sm:bg-transparent sm:p-0">
+              <div className="rounded-lg border border-[#26262a] bg-[#0b0b0d] p-3 sm:border-0 sm:bg-transparent sm:p-0">
                 <span className="text-[11px] text-[#666]">APY Range</span>
-                <p className="break-words text-[#00c853] font-medium">
+                <p className="break-words text-white font-medium">
                   {minAPY !== undefined && maxAPY !== undefined
                     ? minAPY === maxAPY
                       ? `${minAPY}%`
@@ -164,17 +174,17 @@ function PoolDetailContent({ pool }: { pool: Pool }) {
             </>
           ) : (
             <>
-              <div className="rounded-lg border border-[#1a1a1a] bg-[#060607] p-3 sm:border-0 sm:bg-transparent sm:p-0">
+              <div className="rounded-lg border border-[#26262a] bg-[#0b0b0d] p-3 sm:border-0 sm:bg-transparent sm:p-0">
                 <span className="text-[11px] text-[#666]">{effectiveApy.isFixed ? "Fixed APY" : "Current APY"}</span>
-                <p className="break-words text-[#00c853] font-medium">{effectiveApy.hasValue ? formatAPY(effectiveApy.apy) : "—"}</p>
+                <p className="break-words text-white font-medium">{effectiveApy.hasValue ? formatAPY(effectiveApy.apy) : "—"}</p>
               </div>
               <div className="hidden h-8 w-px bg-[#1a1a1a] sm:block" />
-              <div className="rounded-lg border border-[#1a1a1a] bg-[#060607] p-3 sm:border-0 sm:bg-transparent sm:p-0">
+              <div className="rounded-lg border border-[#26262a] bg-[#0b0b0d] p-3 sm:border-0 sm:bg-transparent sm:p-0">
                 <span className="text-[11px] text-[#666]">Utilization</span>
                 <p className="break-words text-white font-medium">{utilization ? `${parseFloat(utilization).toFixed(0)}%` : "—"}</p>
               </div>
               <div className="hidden h-8 w-px bg-[#1a1a1a] sm:block" />
-              <div className="rounded-lg border border-[#1a1a1a] bg-[#060607] p-3 sm:border-0 sm:bg-transparent sm:p-0">
+              <div className="rounded-lg border border-[#26262a] bg-[#0b0b0d] p-3 sm:border-0 sm:bg-transparent sm:p-0">
                 <span className="text-[11px] text-[#666]">Min hold</span>
                 <p className="break-words text-white font-medium">7 days</p>
               </div>
@@ -352,7 +362,7 @@ function NAVYieldHistory({ pool }: { pool: Pool }) {
   };
 
   return (
-    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
+    <div className="rounded-xl border border-[#26262a] bg-[#0b0b0d] p-4 sm:p-5">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-[14px] font-medium text-white">NAV & yield history</h3>
@@ -485,7 +495,7 @@ function FundingProgress({ pool, availability, onDeposit }: { pool: Pool; availa
   const milestones = [25, 50, 75, 100];
 
   return (
-    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
+    <div className="rounded-xl border border-[#26262a] bg-[#0b0b0d] p-4 sm:p-5">
       <div className="mb-1 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-[14px] font-medium text-white">Funding progress</h3>
@@ -841,7 +851,7 @@ function DepositModal({
           </p>
           {transactionHash && (
             <a
-              href={`https://etherscan.io/tx/${transactionHash}`}
+              href={getTransactionUrl(pool.chainId, transactionHash)}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-3 inline-block text-[12px] text-[#00c853] hover:underline"
@@ -1098,7 +1108,7 @@ function YourPositions({ pool }: { pool: Pool }) {
 
   if (!isConnected) {
     return (
-      <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
+      <div className="rounded-xl border border-[#26262a] bg-[#0b0b0d] p-4 sm:p-5">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <h3 className="text-[13px] font-medium text-white">Your positions</h3>
           <p className="text-[11px] text-[#666]">Connect a wallet to see deposits and exit eligibility.</p>
@@ -1109,7 +1119,7 @@ function YourPositions({ pool }: { pool: Pool }) {
 
   if (isLoading) {
     return (
-      <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
+      <div className="rounded-xl border border-[#26262a] bg-[#0b0b0d] p-4 sm:p-5">
         <h3 className="text-[13px] font-medium text-white mb-4">Your positions</h3>
         <div className="py-4 text-center text-[#666]">Loading positions...</div>
       </div>
@@ -1118,9 +1128,31 @@ function YourPositions({ pool }: { pool: Pool }) {
 
   if (!position || parseFloat(position.totalShares || "0") === 0) {
     return (
-      <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
-        <h3 className="text-[13px] font-medium text-white mb-4">Your positions</h3>
-        <div className="py-4 text-center text-[#666]">No positions in this pool. Deposit above to start earning yield.</div>
+      <div className="rounded-xl border border-[#26262a] bg-[#0b0b0d] p-4 sm:p-5">
+        <h3 className="mb-4 text-[13px] font-medium text-white">Your positions</h3>
+        <div className="rounded-xl border border-[#2a2a2e] bg-[#0d0d10] px-5 py-6 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.03)]">
+          <p className="text-[13px] font-medium text-white">No position here yet — how it works</p>
+          <p className="mt-1 text-[12px] text-[#777]">
+            Your capital is put to work from day one. Get started in three steps.
+          </p>
+          <ol className="mt-5 space-y-3.5">
+            {[
+              ["Claim test tokens", "Use the banner at the top to get free tokens on Arbitrum."],
+              ["Deposit any amount", "You receive NAV-priced shares in the pool."],
+              ["Earn & withdraw", "Yield accrues into the share price — withdraw when you like."],
+            ].map(([title, desc], i) => (
+              <li key={i} className="flex gap-3">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#00c853]/25 bg-[#00c853]/[0.06] text-[10px] font-medium text-[#00c853]/90">
+                  {i + 1}
+                </span>
+                <div className="min-w-0">
+                  <p className="text-[12px] font-medium text-white">{title}</p>
+                  <p className="text-[11px] leading-relaxed text-[#777]">{desc}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
       </div>
     );
   }
@@ -1146,7 +1178,7 @@ function YourPositions({ pool }: { pool: Pool }) {
   const primaryActionLabel = isMaturedSingleAsset ? "Redeem" : "Withdraw";
 
   return (
-    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
+    <div className="rounded-xl border border-[#26262a] bg-[#0b0b0d] p-4 sm:p-5">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-[13px] font-medium text-white">Your positions</h3>
@@ -1349,7 +1381,7 @@ function LockedPositions({ pool }: { pool: Pool }) {
 
   if (!isConnected) {
     return (
-      <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
+      <div className="rounded-xl border border-[#26262a] bg-[#0b0b0d] p-4 sm:p-5">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <h3 className="text-[13px] font-medium text-white">Your locked positions</h3>
           <p className="text-[11px] text-[#666]">Connect a wallet to see your locked deposits.</p>
@@ -1360,7 +1392,7 @@ function LockedPositions({ pool }: { pool: Pool }) {
 
   if (isLoading) {
     return (
-      <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
+      <div className="rounded-xl border border-[#26262a] bg-[#0b0b0d] p-4 sm:p-5">
         <h3 className="text-[13px] font-medium text-white mb-4">Your locked positions</h3>
         <div className="py-4 text-center text-[#666]">Loading positions...</div>
       </div>
@@ -1369,9 +1401,31 @@ function LockedPositions({ pool }: { pool: Pool }) {
 
   if (poolPositions.length === 0) {
     return (
-      <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
-        <h3 className="text-[13px] font-medium text-white mb-4">Your locked positions</h3>
-        <div className="py-4 text-center text-[#666]">No locked positions in this pool. Select a lock tier above to start earning.</div>
+      <div className="rounded-xl border border-[#26262a] bg-[#0b0b0d] p-4 sm:p-5">
+        <h3 className="mb-4 text-[13px] font-medium text-white">Your locked positions</h3>
+        <div className="rounded-xl border border-[#2a2a2e] bg-[#0d0d10] px-5 py-6 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.03)]">
+          <p className="text-[13px] font-medium text-white">No lock here yet — how it works</p>
+          <p className="mt-1 text-[12px] text-[#777]">
+            Lock for a fixed term, earn a fixed APY. Pick a tier on the right to begin.
+          </p>
+          <ol className="mt-5 space-y-3.5">
+            {[
+              ["Claim test tokens", "Use the banner at the top to get free tokens on Arbitrum."],
+              ["Choose a lock tier", "30, 90 or 180 days — each with its own fixed APY."],
+              ["Earn to maturity", "Interest accrues daily and pays out at term end. Early exit carries a penalty."],
+            ].map(([title, desc], i) => (
+              <li key={i} className="flex gap-3">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[#00c853]/25 bg-[#00c853]/[0.06] text-[10px] font-medium text-[#00c853]/90">
+                  {i + 1}
+                </span>
+                <div className="min-w-0">
+                  <p className="text-[12px] font-medium text-white">{title}</p>
+                  <p className="text-[11px] leading-relaxed text-[#777]">{desc}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
       </div>
     );
   }
@@ -1421,7 +1475,7 @@ function LockedPositions({ pool }: { pool: Pool }) {
   };
 
   return (
-    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
+    <div className="rounded-xl border border-[#26262a] bg-[#0b0b0d] p-4 sm:p-5">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-[13px] font-medium text-white">Your locked positions</h3>
@@ -1636,14 +1690,14 @@ function LockedAPYCard({ pool, tiers, lockedMetrics, availability, onDeposit }: 
   const maxAPY = apyValues.length > 0 ? Math.max(...apyValues) : 0;
 
   return (
-    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
+    <div className="rounded-xl border border-[#26262a] bg-[#0b0b0d] p-4 sm:p-5">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <span className="text-[11px] text-[#666]">APY Range</span>
           <p className="text-[11px] text-[#666] mt-1">Fixed rates based on lock duration.</p>
         </div>
         <div className="sm:text-right">
-          <p className="text-2xl font-semibold text-[#00c853] sm:text-3xl">
+          <p className="text-2xl font-semibold text-white sm:text-3xl">
             {minAPY === maxAPY ? `${minAPY}%` : `${minAPY}–${maxAPY}%`}
           </p>
           <p className="text-[11px] text-[#666]">Fixed APY</p>
@@ -1769,7 +1823,7 @@ function APYCard({
     document.getElementById("positions-section")?.scrollIntoView({ behavior: "smooth", block: "center" });
 
   return (
-    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
+    <div className="rounded-xl border border-[#26262a] bg-[#0b0b0d] p-4 sm:p-5">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <span className="text-[11px] text-[#666]">{isFixed ? "Fixed APY" : "Current APY"}</span>
@@ -1874,7 +1928,7 @@ function PoolStatsCard({ pool, isLockedPool, lockedMetrics, tiers, effectiveApy 
   const minDeposit = pool.minInvestment || pool.minDeposit;
 
   return (
-    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
+    <div className="rounded-xl border border-[#26262a] bg-[#0b0b0d] p-4 sm:p-5">
       <h3 className="text-[13px] font-medium text-white mb-0.5">Pool stats</h3>
       <p className="text-[11px] text-[#666] mb-4">Key numbers for {pool.name}.</p>
 
@@ -1980,7 +2034,7 @@ function AllocationCard({ pool }: { pool: Pool }) {
   ];
 
   return (
-    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
+    <div className="rounded-xl border border-[#26262a] bg-[#0b0b0d] p-4 sm:p-5">
       <h3 className="text-[13px] font-medium text-white mb-0.5">Underlying allocation</h3>
       <p className="text-[11px] text-[#666] mb-4">Indicative split across instruments.</p>
 
@@ -2042,7 +2096,7 @@ function HoldingExitsCard({ pool, isLockedPool, tiers: tiersProp }: { pool: Pool
 
   if (isLockedPool) {
     return (
-      <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
+      <div className="rounded-xl border border-[#26262a] bg-[#0b0b0d] p-4 sm:p-5">
         <h3 className="text-[13px] font-medium text-white mb-0.5">Lock periods & exits</h3>
         <p className="text-[11px] text-[#666] mb-4">How deposits work in this locked pool.</p>
 
@@ -2084,7 +2138,7 @@ function HoldingExitsCard({ pool, isLockedPool, tiers: tiersProp }: { pool: Pool
   }
 
   return (
-    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
+    <div className="rounded-xl border border-[#26262a] bg-[#0b0b0d] p-4 sm:p-5">
       <h3 className="text-[13px] font-medium text-white mb-0.5">Holding & exits</h3>
       <p className="text-[11px] text-[#666] mb-4">How capital moves in and out of the pool.</p>
 
@@ -2119,7 +2173,7 @@ function HoldingExitsCard({ pool, isLockedPool, tiers: tiersProp }: { pool: Pool
 
 function RiskCard({ pool }: { pool: Pool }) {
   return (
-    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
+    <div className="rounded-xl border border-[#26262a] bg-[#0b0b0d] p-4 sm:p-5">
       <h3 className="text-[13px] font-medium text-white mb-0.5">Risk & disclosures</h3>
       <p className="text-[11px] text-[#666] mb-4">Understand how this pool behaves under stress.</p>
 
@@ -2152,7 +2206,7 @@ function RiskCard({ pool }: { pool: Pool }) {
 
 function AboutPoolCard({ pool }: { pool: Pool }) {
   return (
-    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
+    <div className="rounded-xl border border-[#26262a] bg-[#0b0b0d] p-4 sm:p-5">
       <h3 className="text-[15px] font-medium text-white mb-1">About this Pool</h3>
       <p className="text-[13px] text-[#999] mb-5">
         {pool.description || "No description available."}
@@ -2220,7 +2274,7 @@ function PoolTransactionsTable({ poolAddress, assetSymbol }: { poolAddress: stri
   };
 
   return (
-    <div className="rounded-xl border border-[#1a1a1a] bg-[#060607] p-4 sm:p-5">
+    <div className="rounded-xl border border-[#26262a] bg-[#0b0b0d] p-4 sm:p-5">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h3 className="text-[13px] font-medium text-white">Pool transactions</h3>
         <div className="flex w-full gap-1 overflow-x-auto sm:w-auto">
@@ -2277,10 +2331,10 @@ function PoolTransactionsTable({ poolAddress, assetSymbol }: { poolAddress: stri
                   <div className="flex justify-between gap-3">
                     <span className="text-[#666]">Hash</span>
                     <a
-                      href={`https://etherscan.io/tx/${tx.txHash}`}
+                      href={getTransactionUrl(tx.chainId ?? 421614, tx.txHash)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-mono text-[#00c853] hover:underline"
+                      className="font-mono text-[#8a8a8a] transition-colors hover:text-white"
                     >
                       {truncateAddress(tx.txHash)}
                     </a>
@@ -2325,10 +2379,10 @@ function PoolTransactionsTable({ poolAddress, assetSymbol }: { poolAddress: stri
                     </td>
                     <td className="py-3">
                       <a
-                        href={`https://etherscan.io/tx/${tx.txHash}`}
+                        href={getTransactionUrl(tx.chainId ?? 421614, tx.txHash)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[12px] text-[#00c853] font-mono hover:underline"
+                        className="text-[12px] text-[#8a8a8a] font-mono transition-colors hover:text-white"
                       >
                         {truncateAddress(tx.txHash)}
                       </a>
