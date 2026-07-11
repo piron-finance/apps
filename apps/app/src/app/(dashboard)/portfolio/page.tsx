@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { usersApi } from "@/lib/api/endpoints";
 import type { PortfolioSummary } from "@/lib/api/types";
 import { useChainContext } from "@/lib/context/ChainContext";
+import { poolTypeLabel } from "@/lib/pool-helpers";
 
 export default function PortfolioPage() {
   const { address } = useAccount();
@@ -208,9 +209,7 @@ export default function PortfolioPage() {
                                 )}
                                 {position.pool.poolType && (
                                   <span className="text-xs text-gray-500 px-2 py-1 bg-white/5 rounded">
-                                    {position.pool.poolType === "STABLE_YIELD"
-                                      ? "Stable Yield"
-                                      : "Single Asset"}
+                                    {poolTypeLabel(position.pool.poolType)}
                                   </span>
                                 )}
                               </div>

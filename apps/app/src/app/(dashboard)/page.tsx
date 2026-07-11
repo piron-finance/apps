@@ -12,6 +12,7 @@ import {
 import { FirstRunStepper } from "@/components/dashboard/first-run-stepper";
 import { PoolCardSkeletonGrid } from "@/components/dashboard/skeletons";
 import type { Pool } from "@/lib/api/types";
+import { poolTypeLabel } from "@/lib/pool-helpers";
 import { CHAIN_INFO } from "@/lib/constants/chains";
 import { useChainContext, SUPPORTED_CHAINS } from "@/lib/context/ChainContext";
 import { useState, useEffect } from "react";
@@ -270,7 +271,7 @@ export default function DashboardPage() {
         <StatCard
           label="LIVE POOLS"
           value={String(pools.length)}
-          subtitle={`${stableYieldPools.length} Stable · ${lockedPools.length} Locked · ${singleAssetPools.length} Single`}
+          subtitle={`${stableYieldPools.length} Flexible · ${lockedPools.length} Fixed · ${singleAssetPools.length} Term`}
         />
         <StatCard
           label="BLENDED APY"
@@ -305,13 +306,7 @@ export default function DashboardPage() {
                     key={pool.id}
                     poolId={pool.poolAddress}
                     chainId={pool.chainId}
-                    type={
-                      pool.poolType === "STABLE_YIELD"
-                        ? "Stable Yield"
-                        : pool.poolType === "LOCKED"
-                          ? "Locked"
-                          : "Single Asset"
-                    }
+                    type={poolTypeLabel(pool.poolType)}
                     asset={pool.assetSymbol}
                     name={pool.name}
                     tvl={getPoolTVL(pool)}
@@ -329,9 +324,9 @@ export default function DashboardPage() {
             </PoolSection>
           )}
 
-          {/* Stable Yield Pools */}
+          {/* Flexible Yield */}
           <PoolSection
-            label="STABLE YIELD"
+            label="FLEXIBLE YIELD"
             title="Withdraw anytime. Earn daily."
             subtitle="NAV-priced pools holding T-bills and money market paper. Your capital works from day one."
             filters={
@@ -369,7 +364,7 @@ export default function DashboardPage() {
                         key={pool.id}
                         poolId={pool.poolAddress}
                     chainId={pool.chainId}
-                        type="Stable Yield"
+                        type={poolTypeLabel(pool.poolType)}
                         asset={pool.assetSymbol}
                         name={pool.name}
                         tvl={getPoolTVL(pool)}
@@ -389,9 +384,9 @@ export default function DashboardPage() {
             </div>
           </PoolSection>
 
-          {/* Locked Pools */}
+          {/* Fixed Yield */}
           <PoolSection
-            label="LOCKED"
+            label="FIXED YIELD"
             title="Lock your rate. Skip the volatility."
             subtitle="Fixed-term deposits with guaranteed APY. Choose when you receive interest. Early exit costs you."
             filters={
@@ -429,7 +424,7 @@ export default function DashboardPage() {
                         key={pool.id}
                         poolId={pool.poolAddress}
                     chainId={pool.chainId}
-                        type="Locked"
+                        type={poolTypeLabel(pool.poolType)}
                         asset={pool.assetSymbol}
                         name={pool.name}
                         tvl={getPoolTVL(pool)}
@@ -453,9 +448,9 @@ export default function DashboardPage() {
             </div>
           </PoolSection>
 
-          {/* Single-Asset Pools */}
+          {/* Term Deals */}
           <PoolSection
-            label="SINGLE ASSET"
+            label="TERM DEALS"
             title="One deal. Full visibility."
             subtitle="Finance a specific receivable or credit facility. SPV-wrapped with documents on-chain."
           >
@@ -476,7 +471,7 @@ export default function DashboardPage() {
                         key={pool.id}
                         poolId={pool.poolAddress}
                     chainId={pool.chainId}
-                        type="Single Asset"
+                        type={poolTypeLabel(pool.poolType)}
                         asset={pool.assetSymbol}
                         name={pool.name}
                         tvl={getPoolTVL(pool)}

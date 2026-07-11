@@ -144,9 +144,9 @@ function LiquiditySection() {
       ) : (
         <>
           <div className="space-y-2.5">
-            <SidebarRow label="Stable Yield" value={`${stablePercent}% · ${formatValue(stableYieldTvl)}`} />
-            <SidebarRow label="Locked" value={`${lockedPercent}% · ${formatValue(lockedTvl)}`} />
-            <SidebarRow label="Single Asset" value={`${singlePercent}% · ${formatValue(singleAssetTvl)}`} />
+            <SidebarRow label="Flexible Yield" value={`${stablePercent}% · ${formatValue(stableYieldTvl)}`} />
+            <SidebarRow label="Fixed Yield" value={`${lockedPercent}% · ${formatValue(lockedTvl)}`} />
+            <SidebarRow label="Term Deals" value={`${singlePercent}% · ${formatValue(singleAssetTvl)}`} />
           </div>
           <div className="bg-[#0a0a0a] rounded-lg mt-4 p-4 space-y-2.5">
             <SidebarRow label="Total pools" value={String(metrics?.totalPools || 0)} muted />

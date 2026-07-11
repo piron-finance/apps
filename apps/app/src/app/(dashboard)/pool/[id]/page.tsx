@@ -23,7 +23,7 @@ import { useFeeCalculation, usePoolFeeRates } from "@/hooks/useFees";
 import { useWithdrawalPreview, useWithdrawalQueueStatus, usePoolWithdrawalRequests } from "@/hooks/useWithdrawals";
 import { usePoolTiers, useLockedPoolMetrics, useLockedDepositPreview, useUserLockedPositions, useEarlyExitPreview } from "@/hooks/useLockedPools";
 import type { Pool, Transaction, LockedPosition } from "@/lib/api/types";
-import { getEffectiveApy, getDepositAvailability, type DepositAvailability } from "@/lib/pool-helpers";
+import { getEffectiveApy, getDepositAvailability, poolTypeLabel, type DepositAvailability } from "@/lib/pool-helpers";
 import { getTransactionUrl } from "@/lib/constants/chains";
 
 function formatValue(value: string | number | null | undefined, decimals = 2): string {
@@ -193,7 +193,7 @@ function PoolDetailContent({ pool }: { pool: Pool }) {
         </div>
         <div className="flex flex-wrap gap-2">
           <span className="px-3 py-1.5 text-[11px] text-[#888] border border-[#1a1a1a] rounded-lg">
-            {pool.poolType?.replace("_", " ")}
+            {poolTypeLabel(pool.poolType)}
           </span>
           {pool.tags?.map((tag) => (
             <span key={tag} className="px-3 py-1.5 text-[11px] text-[#888] border border-[#1a1a1a] rounded-lg">
@@ -2015,7 +2015,7 @@ function PoolStatsCard({ pool, isLockedPool, lockedMetrics, tiers, effectiveApy 
       )}
 
       <div className="flex flex-wrap gap-2 mt-4">
-        <span className="px-2 py-1 text-[10px] text-[#666] border border-[#1a1a1a] rounded">{pool.poolType?.replace("_", " ")}</span>
+        <span className="px-2 py-1 text-[10px] text-[#666] border border-[#1a1a1a] rounded">{poolTypeLabel(pool.poolType)}</span>
         {pool.status && (
           <span className="px-2 py-1 text-[10px] text-[#666] border border-[#1a1a1a] rounded">{pool.status}</span>
         )}
@@ -2215,7 +2215,7 @@ function AboutPoolCard({ pool }: { pool: Pool }) {
       <div className="grid grid-cols-1 gap-y-3 sm:grid-cols-2 sm:gap-x-8">
         <div className="flex justify-between text-[12px]">
           <span className="text-[#666]">Pool Type</span>
-          <span className="text-white">{pool.poolType?.replace("_", " ") || "—"}</span>
+          <span className="text-white">{poolTypeLabel(pool.poolType)}</span>
         </div>
         <div className="flex justify-between text-[12px]">
           <span className="text-[#666]">Security Type</span>

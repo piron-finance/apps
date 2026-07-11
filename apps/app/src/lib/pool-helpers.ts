@@ -1,6 +1,29 @@
 import type { Pool } from "@/lib/api/types";
 
 /**
+ * Public-facing product names for each pool type. The enums (SINGLE_ASSET,
+ * STABLE_YIELD, LOCKED) stay in code/DB/contracts — this is display copy only.
+ *   STABLE_YIELD → Flexible Yield (withdraw anytime)
+ *   LOCKED       → Fixed Yield    (lock a term, fixed APY)
+ *   SINGLE_ASSET → Term Deals     (back one specific deal to maturity)
+ */
+const POOL_TYPE_LABELS: Record<string, string> = {
+  STABLE_YIELD: "Flexible Yield",
+  LOCKED: "Fixed Yield",
+  SINGLE_ASSET: "Term Deals",
+};
+
+export function poolTypeLabel(poolType?: string | null): string {
+  if (!poolType) return "—";
+  return POOL_TYPE_LABELS[poolType] ?? poolType.replace(/_/g, " ");
+}
+
+/** Uppercased variant for section eyebrows/tags. */
+export function poolTypeLabelUpper(poolType?: string | null): string {
+  return poolTypeLabel(poolType).toUpperCase();
+}
+
+/**
  * Effective APY for a pool.
  *
  * Single-asset (discounted) pools carry their fixed promised rate as
