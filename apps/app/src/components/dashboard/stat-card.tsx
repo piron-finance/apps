@@ -9,7 +9,7 @@ interface StatCardProps {
 
 export function StatCard({ label, value, badge, subtitle }: StatCardProps) {
   return (
-    <div className="rounded-2xl border border-[#26262a] bg-[#0b0b0d] p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)] sm:p-5">
+    <div className="rounded-2xl border border-[#292a30] bg-[#08080a] p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.035)] sm:p-5">
       <p className="text-[10px] text-[#8F9B99] tracking-wider mb-2">{label}</p>
       <div className="mb-1 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
         <span className="break-words text-xl font-semibold tabular-nums text-[#F5F7F6] sm:text-2xl">

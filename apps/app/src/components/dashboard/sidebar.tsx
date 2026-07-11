@@ -34,7 +34,7 @@ export function Sidebar() {
 
 function SidebarCard({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-[#26262a] bg-[#0b0b0d] p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)] sm:p-5">
+    <div className="rounded-2xl border border-[#292a30] bg-[#08080a] p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.035)] sm:p-5">
       {children}
     </div>
   );
@@ -144,9 +144,9 @@ function LiquiditySection() {
       ) : (
         <>
           <div className="space-y-2.5">
-            <SidebarRow label="Stable Yield" value={`${stablePercent}% · ${formatValue(stableYieldTvl)}`} />
-            <SidebarRow label="Locked" value={`${lockedPercent}% · ${formatValue(lockedTvl)}`} />
-            <SidebarRow label="Single Asset" value={`${singlePercent}% · ${formatValue(singleAssetTvl)}`} />
+            <SidebarRow label="Flexible Yield" value={`${stablePercent}% · ${formatValue(stableYieldTvl)}`} />
+            <SidebarRow label="Fixed Yield" value={`${lockedPercent}% · ${formatValue(lockedTvl)}`} />
+            <SidebarRow label="Term Deals" value={`${singlePercent}% · ${formatValue(singleAssetTvl)}`} />
           </div>
           <div className="bg-[#0a0a0a] rounded-lg mt-4 p-4 space-y-2.5">
             <SidebarRow label="Total pools" value={String(metrics?.totalPools || 0)} muted />
