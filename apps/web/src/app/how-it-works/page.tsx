@@ -271,8 +271,8 @@ const steps = [
     title: "Pick your pool",
     description:
       "Browse live pools by type, yield, duration, and asset class. Each pool page shows real-time NAV, current APY, maturity date, and full allocation breakdown.",
-    note: "Stable Yield pools are open 24/7. Locked Term and Single Asset pools have defined deposit windows.",
-    tags: ["Stable Yield", "Locked Term", "Single Asset"],
+    note: "Flexible Yield pools are open 24/7. Fixed Yield and Term Deals have defined deposit windows.",
+    tags: ["Flexible Yield", "Fixed Yield", "Term Deals"],
   },
   {
     number: "03",
@@ -286,7 +286,7 @@ const steps = [
     number: "04",
     title: "Earn, then withdraw",
     description:
-      "Yield accrues to your pool token balance daily, reflected in NAV updates. After the minimum holding period, submit a withdrawal request. For Locked Term pools, wait for maturity or early exit with a transparent penalty.",
+      "Yield accrues to your pool token balance daily, reflected in NAV updates. After the minimum holding period, submit a withdrawal request. For Fixed Yield pools, wait for maturity or early exit with a transparent penalty.",
     note: "Every deposit, accrual, and withdrawal is recorded on-chain.",
     tags: ["Daily accrual", "7-day hold", "On-chain receipts"],
   },
@@ -362,7 +362,7 @@ function StepByStep() {
 const pools = [
   {
     id: "stable",
-    type: "Stable Yield",
+    type: "Flexible Yield",
     tagline: "Park and earn.",
     headline: "Daily liquidity. Real returns.",
     description:
@@ -377,7 +377,7 @@ const pools = [
   },
   {
     id: "locked",
-    type: "Locked Term",
+    type: "Fixed Yield",
     tagline: "Fix your rate.",
     headline: "Guaranteed return at maturity.",
     description:
@@ -392,7 +392,7 @@ const pools = [
   },
   {
     id: "single",
-    type: "Single Asset",
+    type: "Term Deals",
     tagline: "Pick the deal.",
     headline: "Defined maturity. Full transparency.",
     description:
@@ -674,7 +674,7 @@ const faqs = [
   },
   {
     q: "How do withdrawals work?",
-    a: "For Stable Yield pools, you can withdraw freely after a 7-day holding period. Locked Term pools pay out at maturity, with an optional early exit at a transparent, pre-disclosed penalty. Single Asset pools follow the payment schedule of the underlying deal. All withdrawal requests and settlements are processed and recorded on-chain.",
+    a: "For Flexible Yield pools, you can withdraw freely after a 7-day holding period. Fixed Yield pools pay out at maturity, with an optional early exit at a transparent, pre-disclosed penalty. Term Deals follow the payment schedule of the underlying deal. All withdrawal requests and settlements are processed and recorded on-chain.",
   },
   {
     q: "What does NAV mean and how is it calculated?",
