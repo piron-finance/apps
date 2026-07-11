@@ -58,7 +58,14 @@ export async function generateMetadata({
       title,
       description,
       url,
-      images: image ? [{ url: image, alt: post.socialImage?.alt || post.image?.alt || title }] : undefined,
+      images: image
+        ? [
+            {
+              url: image,
+              alt: post.socialImage?.alt || post.image?.alt || title,
+            },
+          ]
+        : undefined,
     },
     twitter: {
       card: image ? "summary_large_image" : "summary",
@@ -70,7 +77,9 @@ export async function generateMetadata({
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
-  const { post, relatedPosts, settings } = await getBlogPostPageData(params.slug);
+  const { post, relatedPosts, settings } = await getBlogPostPageData(
+    params.slug,
+  );
 
   if (!post) {
     notFound();
@@ -83,7 +92,10 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       <Header transparent />
 
       <div className="relative overflow-x-hidden">
-        <section data-header-theme="dark" className="relative bg-[#0a0a0b] pb-12 pt-28">
+        <section
+          data-header-theme="dark"
+          className="relative bg-black pb-12 pt-28"
+        >
           <div className="relative mx-auto max-w-4xl px-6">
             <Link
               href="/blog"
