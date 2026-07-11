@@ -37,7 +37,8 @@ export type BlogPost = {
   category?: BlogCategory;
   author?: BlogAuthor;
   image?: BlogImage;
-  body: any[];
+  /** Raw MDX source for the post body (rendered by <MDXContent />). */
+  body: string;
   tags?: string[];
   seoTitle?: string;
   seoDescription?: string;

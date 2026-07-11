@@ -6,11 +6,14 @@ import { Footer } from "@/components/marketing/footer";
 import { BlogCTA } from "@/components/blog/blog-cta";
 import { PostCard } from "@/components/blog/post-card";
 import { PostImage } from "@/components/blog/post-image";
-import { RichText } from "@/components/blog/rich-text";
+import { MarkdownContent } from "@/components/blog/markdown-content";
 import { ShareButtons } from "@/components/blog/share-buttons";
 import { getBlogPostPageData } from "@/lib/blog/data";
-import { resolveBodyImages } from "@/lib/sanity/image";
 import { absoluteUrl } from "@/lib/site";
+
+// Rendered on demand and cached (ISR) — a marketing publish appears within ~a
+// minute without a redeploy.
+export const revalidate = 60;
 
 type BlogPostPageProps = {
   params: {
@@ -121,7 +124,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
             <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_260px]">
               <article className="space-y-8">
-                <RichText value={resolveBodyImages(post.body)} />
+                <MarkdownContent source={post.body} />
               </article>
 
               <aside className="lg:sticky lg:top-24 lg:self-start lg:border-l lg:border-border lg:pl-8">
