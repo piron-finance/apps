@@ -102,7 +102,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               {post.author?.name ? <span>By {post.author.name}</span> : null}
             </div>
 
-            <h1 className="mt-6 text-4xl font-bold leading-tight tracking-tight text-white md:text-6xl">
+            <h1 className="mt-6 font-serif text-4xl font-semibold leading-[1.1] tracking-tight text-white md:text-6xl">
               {post.title}
             </h1>
 

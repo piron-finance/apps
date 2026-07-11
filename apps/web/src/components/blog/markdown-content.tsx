@@ -26,7 +26,7 @@ const components = {
     <h4 className="mt-8 text-lg font-semibold text-content-primary" {...props} />
   ),
   p: ({ node, ...props }: any) => (
-    <p className="text-base leading-8 text-content-secondary" {...props} />
+    <p className="text-[1.0625rem] leading-[1.8] text-content-secondary" {...props} />
   ),
   a: ({ node, href = "#", children, ...rest }: any) => {
     const external = /^https?:\/\//.test(href);
@@ -98,7 +98,9 @@ const components = {
 
 export function MarkdownContent({ source }: { source: string }) {
   return (
-    <div className="space-y-6">
+    // Serif long-form reading on the warm article background, to match the
+    // editorial look. Code/tables keep their mono/sans faces via the components.
+    <div className="space-y-6 font-serif">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeSanitize]}
