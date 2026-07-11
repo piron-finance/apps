@@ -245,7 +245,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black p-3 sm:p-4 lg:p-6">
+    <div className="min-h-screen bg-[#000000] p-3 sm:p-4 lg:p-6">
       {/* ── Chain (pinned to Arbitrum) ─────────────────────────────────── */}
       <div className="mb-4 flex items-center gap-2">
         <span className="inline-flex items-center gap-2 rounded-lg border border-[#242427] bg-[#0e0e10] px-3 py-1.5 text-[12px] font-medium text-[#d4d4d4]">

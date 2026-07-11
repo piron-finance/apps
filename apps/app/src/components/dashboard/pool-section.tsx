@@ -18,7 +18,7 @@ export function PoolSection({
   children,
 }: PoolSectionProps) {
   return (
-    <div className="rounded-2xl border border-[#26262a] bg-[#0b0b0d] p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)] sm:p-5">
+    <div className="rounded-2xl border border-[#292a30] bg-[#08080a] p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.035)] sm:p-5">
       <div className="mb-1 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <p className="text-[11px] text-[#8F9B99] tracking-wider">{label}</p>
         {filters && <div className="w-full overflow-x-auto sm:w-auto">{filters}</div>}

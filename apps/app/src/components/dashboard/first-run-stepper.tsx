@@ -86,7 +86,7 @@ export function FirstRunStepper() {
   const doneCount = steps.filter((s) => s.done).length;
 
   return (
-    <div className="mb-4 overflow-hidden rounded-2xl border border-[#242427] bg-[#0b0b0d]">
+    <div className="mb-4 overflow-hidden rounded-2xl border border-[#292a30] bg-[#08080a] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.035)]">
       <div className="flex items-center justify-between px-5 pt-5 sm:px-6">
         <div>
           <h2 className="text-[15px] font-semibold tracking-tight text-white">Get started</h2>
