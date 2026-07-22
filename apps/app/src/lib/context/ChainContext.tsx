@@ -55,6 +55,14 @@ export const SUPPORTED_CHAINS: ChainOption[] = [
     bgColor: "rgba(40,160,240,0.12)",
     isTestnet: true,
   },
+  {
+    id: 46630,
+    label: "Robinhood Testnet",
+    shortLabel: "Robinhood",
+    color: "#00C805",
+    bgColor: "rgba(0,200,5,0.12)",
+    isTestnet: true,
+  },
 ];
 
 const ALL_CHAINS_OPTION = SUPPORTED_CHAINS[0] as ChainOption;

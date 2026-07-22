@@ -218,7 +218,7 @@ function PoolDetailContent({ pool }: { pool: Pool }) {
               <YourPositions pool={pool} />
             )}
           </div>
-          <PoolTransactionsTable poolAddress={pool.poolAddress} assetSymbol={pool.assetSymbol} />
+          <PoolTransactionsTable poolAddress={pool.poolAddress} assetSymbol={pool.assetSymbol} chainId={pool.chainId} />
           <AboutPoolCard pool={pool} />
         </div>
 
@@ -1137,7 +1137,7 @@ function YourPositions({ pool }: { pool: Pool }) {
           </p>
           <ol className="mt-5 space-y-3.5">
             {[
-              ["Claim test tokens", "Use the banner at the top to get free tokens on Arbitrum."],
+              ["Claim test tokens", "Use the banner at the top to get free test tokens."],
               ["Deposit any amount", "You receive NAV-priced shares in the pool."],
               ["Earn & withdraw", "Yield accrues into the share price — withdraw when you like."],
             ].map(([title, desc], i) => (
@@ -1410,7 +1410,7 @@ function LockedPositions({ pool }: { pool: Pool }) {
           </p>
           <ol className="mt-5 space-y-3.5">
             {[
-              ["Claim test tokens", "Use the banner at the top to get free tokens on Arbitrum."],
+              ["Claim test tokens", "Use the banner at the top to get free test tokens."],
               ["Choose a lock tier", "30, 90 or 180 days — each with its own fixed APY."],
               ["Earn to maturity", "Interest accrues daily and pays out at term end. Early exit carries a penalty."],
             ].map(([title, desc], i) => (
@@ -2250,7 +2250,7 @@ function AboutPoolCard({ pool }: { pool: Pool }) {
   );
 }
 
-function PoolTransactionsTable({ poolAddress, assetSymbol }: { poolAddress: string; assetSymbol: string }) {
+function PoolTransactionsTable({ poolAddress, assetSymbol, chainId }: { poolAddress: string; assetSymbol: string; chainId: number }) {
   const [filter, setFilter] = useState<"all" | "deposits" | "withdrawals">("all");
   const { data: txResponse, isLoading } = usePoolTransactions(poolAddress, { limit: 10 });
 
@@ -2331,7 +2331,7 @@ function PoolTransactionsTable({ poolAddress, assetSymbol }: { poolAddress: stri
                   <div className="flex justify-between gap-3">
                     <span className="text-[#666]">Hash</span>
                     <a
-                      href={getTransactionUrl(tx.chainId ?? 421614, tx.txHash)}
+                      href={getTransactionUrl(tx.chainId ?? chainId, tx.txHash)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="font-mono text-[#8a8a8a] transition-colors hover:text-white"
@@ -2379,7 +2379,7 @@ function PoolTransactionsTable({ poolAddress, assetSymbol }: { poolAddress: stri
                     </td>
                     <td className="py-3">
                       <a
-                        href={getTransactionUrl(tx.chainId ?? 421614, tx.txHash)}
+                        href={getTransactionUrl(tx.chainId ?? chainId, tx.txHash)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-[12px] text-[#8a8a8a] font-mono transition-colors hover:text-white"

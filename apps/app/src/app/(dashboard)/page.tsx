@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { usePlatformMetrics } from "@/hooks/usePlatformData";
 import { usePoolsData, useFeaturedPools } from "@/hooks/usePoolsData";
 import {
@@ -15,12 +14,7 @@ import type { Pool } from "@/lib/api/types";
 import { poolTypeLabel } from "@/lib/pool-helpers";
 import { CHAIN_INFO } from "@/lib/constants/chains";
 import { useChainContext, SUPPORTED_CHAINS } from "@/lib/context/ChainContext";
-import { useState, useEffect } from "react";
-
-// The public testnet runs on Arbitrum Sepolia for now, so the dashboard is pinned
-// to it: the chain dropdown lists only Arbitrum and the active chain is forced to
-// it. This is a UI-only lock — multi-chain support underneath is untouched.
-const PINNED_CHAIN_ID = 421614;
+import { useState } from "react";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function formatTVL(value: string | undefined): string {
@@ -134,11 +128,6 @@ export default function DashboardPage() {
   // Use global ChainContext — persists across navigation + shared with portfolio page
   const { activeChainId, setActiveChainId } = useChainContext();
 
-  // Pin the dashboard to Arbitrum while the public testnet lives there.
-  useEffect(() => {
-    if (activeChainId !== PINNED_CHAIN_ID) setActiveChainId(PINNED_CHAIN_ID);
-  }, [activeChainId, setActiveChainId]);
-
   // All data scoped to the selected chain
   const { data: metrics } = usePlatformMetrics(activeChainId);
   const { data: poolsResponse, isLoading: poolsLoading } = usePoolsData(
@@ -246,12 +235,27 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-[#000000] p-3 sm:p-4 lg:p-6">
-      {/* ── Chain (pinned to Arbitrum) ─────────────────────────────────── */}
+      {/* ── Chain Selector (dropdown) ───────────────────────────────────── */}
       <div className="mb-4 flex items-center gap-2">
-        <span className="inline-flex items-center gap-2 rounded-lg border border-[#242427] bg-[#0e0e10] px-3 py-1.5 text-[12px] font-medium text-[#d4d4d4]">
-          <Image src="/chains/arbitrum.svg" alt="Arbitrum" width={16} height={16} />
-          Arbitrum Sepolia
-        </span>
+        <SelectWrapper>
+          <select
+            value={activeChainId ?? "all"}
+            onChange={(e) => {
+              const val = e.target.value;
+              setActiveChainId(val === "all" ? undefined : Number(val));
+            }}
+            className={selectClass}
+          >
+            {SUPPORTED_CHAINS.map((opt) => (
+              <option key={opt.label} value={opt.id ?? "all"}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </SelectWrapper>
+
+        {/* Active chain indicator dot */}
+        {activeChainId !== undefined && <ChainDot chainId={activeChainId} />}
       </div>
 
       {/* ── First-run onboarding (wallet-aware; auto-hides once done) ────── */}
