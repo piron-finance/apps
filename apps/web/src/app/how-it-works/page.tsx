@@ -379,7 +379,7 @@ const pools = [
     id: "locked",
     type: "Fixed Yield",
     tagline: "Fix your rate.",
-    headline: "Guaranteed return at maturity.",
+    headline: "A fixed rate, set at deposit.",
     description:
       "Commit capital for 3, 6, or 12 months and lock in today's rate. Choose interest upfront or at maturity. Auto-roll when the term ends. Early exit available with a transparent, pre-disclosed penalty.",
     ideal: "Planned expenses, runway extension, treasury laddering",

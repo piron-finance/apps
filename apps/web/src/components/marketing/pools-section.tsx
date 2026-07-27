@@ -23,10 +23,10 @@ const pools = [
     label: "Fixed Yield",
     name: "Fixed Rate Pool",
     description:
-      "Lock in a guaranteed rate for 90, 180, or 365 days. Know exactly what you'll earn before you deposit. At maturity, choose to withdraw or roll over into a new term automatically.",
+      "Lock a fixed rate for 90, 180, or 365 days, set when you deposit. At maturity, choose to withdraw or roll over into a new term automatically. Returns are subject to risk and are not guaranteed.",
     features: [
       { key: "Lock-in periods", value: "90 / 180 / 365 days" },
-      { key: "Your rate", value: "Guaranteed at deposit" },
+      { key: "Your rate", value: "Fixed at deposit" },
       { key: "At maturity", value: "Withdraw or auto-renew" },
       { key: "Early exit", value: "Available with a fee" },
     ],

@@ -66,6 +66,22 @@ export const arcTestnet = defineChain({
   testnet: true,
 });
 
+// Robinhood Testnet — an Arbitrum-Orbit L2 with no public RPC, so the
+// (env-overridable) provider endpoint is its only option here.
+const ROBINHOOD_TESTNET_RPC =
+  process.env.NEXT_PUBLIC_ROBINHOOD_TESTNET_RPC ||
+  "https://robinhood-testnet.g.alchemy.com/v2/oseXvdn8oXOMITWZqEdAn";
+
+export const robinhoodTestnet = defineChain({
+  id: 46630,
+  name: "Robinhood Testnet",
+  nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+  rpcUrls: {
+    default: { http: [ROBINHOOD_TESTNET_RPC] },
+  },
+  testnet: true,
+});
+
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID;
 
 if (!projectId) {
@@ -75,7 +91,7 @@ if (!projectId) {
 }
 
 export const config = createConfig({
-  chains: [baseSepolia, arcTestnet, arbitrumSepolia, morphHolesky, arbitrum],
+  chains: [baseSepolia, arcTestnet, arbitrumSepolia, robinhoodTestnet, morphHolesky, arbitrum],
   connectors: [
     injected(),
     coinbaseWallet({
@@ -111,6 +127,10 @@ export const config = createConfig({
     // Arc has no public RPC — single provider endpoint, batched + low-retry.
     [arcTestnet.id]: fallback([
       http(ARC_TESTNET_RPC, { batch: true, retryCount: 1 }),
+    ]),
+    // Robinhood has no public RPC — single provider endpoint, batched + low-retry.
+    [robinhoodTestnet.id]: fallback([
+      http(ROBINHOOD_TESTNET_RPC, { batch: true, retryCount: 1 }),
     ]),
   },
   ssr: true,
