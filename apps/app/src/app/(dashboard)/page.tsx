@@ -356,11 +356,11 @@ export default function DashboardPage() {
                 <PoolCardSkeletonGrid count={2} />
               ) : (
                 <>
-                  <EmptyChainState poolType="stable yield" />
+                  <EmptyChainState poolType="Flexible Yield" />
                   {filteredStablePools.length === 0 &&
                   !(activeChainId !== undefined && pools.length === 0) ? (
                     <div className="col-span-full py-8 text-center text-[#555]">
-                      No stable yield pools available
+                      No Flexible Yield pools available
                     </div>
                   ) : (
                     filteredStablePools.map((pool) => (
@@ -392,7 +392,7 @@ export default function DashboardPage() {
           <PoolSection
             label="FIXED YIELD"
             title="Lock your rate. Skip the volatility."
-            subtitle="Fixed-term deposits with guaranteed APY. Choose when you receive interest. Early exit costs you."
+            subtitle="Fixed-term deposits with a rate set at deposit. Choose when you receive interest. Early exit costs you."
             filters={
               lockedDurationOptions.length > 2 ? (
                 <SelectWrapper>
@@ -416,11 +416,11 @@ export default function DashboardPage() {
                 <PoolCardSkeletonGrid count={2} />
               ) : (
                 <>
-                  <EmptyChainState poolType="locked" />
+                  <EmptyChainState poolType="Fixed Yield" />
                   {filteredLockedPools.length === 0 &&
                   !(activeChainId !== undefined && pools.length === 0) ? (
                     <div className="col-span-full py-8 text-center text-[#555]">
-                      No locked pools available
+                      No Fixed Yield pools available
                     </div>
                   ) : (
                     filteredLockedPools.map((pool) => (
@@ -463,11 +463,11 @@ export default function DashboardPage() {
                 <PoolCardSkeletonGrid count={2} />
               ) : (
                 <>
-                  <EmptyChainState poolType="single asset" />
+                  <EmptyChainState poolType="Term Deals" />
                   {singleAssetPools.length === 0 &&
                   !(activeChainId !== undefined && pools.length === 0) ? (
                     <div className="col-span-full py-8 text-center text-[#555]">
-                      No single asset pools available
+                      No Term Deals pools available
                     </div>
                   ) : (
                     singleAssetPools.map((pool) => (

@@ -26,12 +26,12 @@ export function poolTypeLabelUpper(poolType?: string | null): string {
 /**
  * Effective APY for a pool.
  *
- * Single-asset (discounted) pools carry their fixed promised rate as
- * `discountRate` in basis points (e.g. 560 bps = 5.60%). This is the rate the
- * protocol promises and the SPV settles against — used directly, NOT annualized
+ * Single-asset (discounted) pools carry their target rate as `discountRate` in
+ * basis points (e.g. 560 bps = 5.60%). This is the rate the deal is structured
+ * against and the SPV settles toward — used directly, NOT annualized
  * (see spv.service `promisedRatePct`: `discountRate / 100 || projectedAPY`).
  * The backend leaves `analytics.apy` at "0" for these pools, so we read the
- * promised rate straight off the pool record.
+ * target rate straight off the pool record.
  */
 export function getEffectiveApy(pool: Pool): {
   apy: number;
@@ -41,7 +41,7 @@ export function getEffectiveApy(pool: Pool): {
   const isSingleAsset = pool.poolType === "SINGLE_ASSET";
   const isLocked = pool.poolType === "LOCKED";
 
-  // Fixed promised rate for single-asset pools — discountRate (bps) → percent.
+  // Fixed target rate for single-asset pools — discountRate (bps) → percent.
   if (isSingleAsset && pool.discountRate != null && pool.discountRate > 0) {
     return { apy: pool.discountRate / 100, isFixed: true, hasValue: true };
   }
