@@ -6,10 +6,11 @@ import { useAccount } from "wagmi";
 import { apiClient } from "@/lib/api/client";
 import { getTransactionUrl, getChainName } from "@/lib/constants/chains";
 
-// The testnet runs on Arbitrum Sepolia for now, so the faucet always mints there —
-// regardless of the chain the dashboard happens to be filtered to. Keeps claiming
-// unambiguous for new users. Change this one constant to move the faucet chain.
-const FAUCET_CHAIN_ID = 421614; // Arbitrum Sepolia
+// Chains the faucet can mint on (must match the backend FAUCET_CHAIN_IDS). The
+// modal lets the user pick which one to receive tokens on; the default follows
+// the connected wallet's chain when it is one of these.
+const FAUCET_CHAINS = [84532, 5042002, 421614, 46630]; // Base Sepolia, Arc Testnet, Arbitrum Sepolia, Robinhood Testnet
+const DEFAULT_FAUCET_CHAIN_ID = 421614;
 
 type ClaimStatus =
   | { canClaim: true }
@@ -36,10 +37,20 @@ function formatTimeUntil(isoDate: string): string {
 }
 
 export function TestTokenAnnouncement() {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected, chainId: connectedChainId } = useAccount();
 
-  // Faucet is pinned to Arbitrum Sepolia (the live testnet) for now.
-  const faucetChainId = FAUCET_CHAIN_ID;
+  // The user chooses which supported chain to receive tokens on. Default to the
+  // connected wallet's chain when it's a faucet chain, else the first one.
+  const [faucetChainId, setFaucetChainId] = useState<number>(
+    DEFAULT_FAUCET_CHAIN_ID,
+  );
+
+  // Follow the connected wallet's chain when it's a supported faucet chain.
+  useEffect(() => {
+    if (connectedChainId && FAUCET_CHAINS.includes(connectedChainId)) {
+      setFaucetChainId(connectedChainId);
+    }
+  }, [connectedChainId]);
 
   const [isOpen, setIsOpen] = useState(false);
   const [recipient, setRecipient] = useState("");
@@ -156,7 +167,7 @@ export function TestTokenAnnouncement() {
                 </span>
               </p>
               <p className="truncate text-[11px] text-[#9a9488] sm:text-[12px]">
-                Claim 100,000 test tokens on Arbitrum — you&rsquo;ll need them to deposit into any pool.
+                Claim 100,000 test tokens — you&rsquo;ll need them to deposit into any pool.
               </p>
             </div>
           </div>
@@ -204,7 +215,7 @@ export function TestTokenAnnouncement() {
                     </h2>
                   </div>
                   <p className="mt-1.5 text-[12px] leading-5 text-[#666]">
-                    Receive 100,000 E20M. One claim per wallet every 7 days.
+                    Receive 100,000 test tokens. One claim per wallet every 7 days.
                   </p>
                 </div>
                 <button
@@ -248,7 +259,7 @@ export function TestTokenAnnouncement() {
                   </div>
                   <div>
                     <p className="text-[15px] font-semibold text-white">
-                      100,000 E20M sent
+                      100,000 test tokens sent
                     </p>
                     <p className="mt-1 text-[12px] text-[#666]">
                       Tokens are on their way to your wallet.
@@ -383,16 +394,24 @@ export function TestTokenAnnouncement() {
                       You will receive
                     </span>
                     <span className="text-[13px] font-semibold text-white">
-                      100,000 E20M
+                      100,000 test tokens
                     </span>
                   </div>
 
-                  {/* Network */}
+                  {/* Network — pick which chain to receive tokens on */}
                   <div className="flex items-center justify-between rounded-lg border border-[#1a1a1a] px-4 py-3">
                     <span className="text-[12px] text-[#666]">Network</span>
-                    <span className="text-[13px] font-medium text-white">
-                      {getChainName(faucetChainId)}
-                    </span>
+                    <select
+                      value={faucetChainId}
+                      onChange={(e) => setFaucetChainId(Number(e.target.value))}
+                      className="cursor-pointer rounded-md border border-[#1a1a1a] bg-black px-2 py-1 text-[13px] font-medium text-white outline-none transition-colors focus:border-[#00c853]/40"
+                    >
+                      {FAUCET_CHAINS.map((id) => (
+                        <option key={id} value={id}>
+                          {getChainName(id)}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 

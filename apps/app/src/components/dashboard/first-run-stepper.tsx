@@ -1,15 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAccount, useReadContract } from "wagmi";
+import { useAccount, useReadContracts } from "wagmi";
 import { erc20Abi } from "viem";
 import { useWeb3Modal } from "@web3modal/wagmi/react";
 import { useUserPositions } from "@/hooks/useUserData";
 
-// App is pinned to Arbitrum Sepolia; this is its test token (E20M) — used only to
-// tell whether the visitor has already claimed. Mirrors the faucet's token.
-const ARBITRUM_CHAIN_ID = 421614;
-const TEST_TOKEN = "0x55Cd228ec5A4AB43FA26Bf404Fe9f687918c8f8b" as const;
+// Faucet test token per chain — used only to tell whether the visitor has
+// already claimed on any supported network. Mirrors the backend faucet's
+// per-chain mockUSDC addresses.
+const TEST_TOKENS = [
+  { chainId: 84532, address: "0x94ac688dEd59cf284274DbD289AC6acfd2d5721C" }, // Base Sepolia
+  { chainId: 5042002, address: "0xa8e1Ac7c693bF6e0Aef8a9D4af674F240dE0d466" }, // Arc Testnet
+  { chainId: 421614, address: "0x55Cd228ec5A4AB43FA26Bf404Fe9f687918c8f8b" }, // Arbitrum Sepolia
+  { chainId: 46630, address: "0xD910E50B04a319e8AF9beeCDCB583864c41b1712" }, // Robinhood Testnet
+] as const;
 const DISMISS_KEY = "piron_firstrun_dismissed";
 
 /** Opens the faucet modal (owned by TestTokenAnnouncement) via a window event. */
@@ -33,15 +38,19 @@ export function FirstRunStepper() {
     setDismissed(localStorage.getItem(DISMISS_KEY) === "1");
   }, []);
 
-  const { data: balance } = useReadContract({
-    address: TEST_TOKEN,
-    abi: erc20Abi,
-    functionName: "balanceOf",
-    args: address ? [address] : undefined,
-    chainId: ARBITRUM_CHAIN_ID,
+  const { data: balances } = useReadContracts({
+    contracts: TEST_TOKENS.map((t) => ({
+      address: t.address,
+      abi: erc20Abi,
+      functionName: "balanceOf" as const,
+      args: address ? ([address] as const) : undefined,
+      chainId: t.chainId,
+    })),
     query: { enabled: !!address },
   });
-  const hasTokens = typeof balance === "bigint" && balance > BigInt(0);
+  const hasTokens = (balances ?? []).some(
+    (r) => r.status === "success" && typeof r.result === "bigint" && r.result > BigInt(0),
+  );
 
   const { data: positions } = useUserPositions(address);
   const active = positions?.analytics?.activePositions ?? 0;
@@ -60,7 +69,7 @@ export function FirstRunStepper() {
     },
     {
       title: "Claim test tokens",
-      hint: "Get 100,000 free tokens on Arbitrum.",
+      hint: "Get 100,000 free tokens on your preferred network.",
       done: hasTokens,
       cta: hasTokens ? undefined : { label: "Claim", onClick: openFaucet },
     },

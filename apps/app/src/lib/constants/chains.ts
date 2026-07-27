@@ -241,6 +241,25 @@ export const CHAIN_INFO: Record<number, ChainInfo> = {
     ],
     color: "#8B5CF6",
   },
+
+  // Robinhood Testnet
+  46630: {
+    id: 46630,
+    name: "Robinhood Testnet",
+    shortName: "Robinhood",
+    network: "robinhood-testnet",
+    nativeCurrency: {
+      name: "Ether",
+      symbol: "ETH",
+      decimals: 18,
+    },
+    rpcUrls: [
+      process.env.NEXT_PUBLIC_ROBINHOOD_TESTNET_RPC ||
+        "https://robinhood-testnet.g.alchemy.com/v2/oseXvdn8oXOMITWZqEdAn",
+    ],
+    blockExplorers: [],
+    color: "#00C805",
+  },
 };
 
 /**
@@ -320,7 +339,7 @@ export function getAddressUrl(chainId: number, address: string): string {
  * Check if chain is a testnet
  */
 export function isTestnet(chainId: number): boolean {
-  const testnets = [84532, 2810, 11155111, 5, 5042002, 421614]; // Base Sepolia, Morph Holesky, Sepolia, Goerli, Arc Testnet, Arbitrum Sepolia
+  const testnets = [84532, 2810, 11155111, 5, 5042002, 421614, 46630]; // Base Sepolia, Morph Holesky, Sepolia, Goerli, Arc Testnet, Arbitrum Sepolia, Robinhood Testnet
   return testnets.includes(chainId);
 }
 
