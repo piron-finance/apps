@@ -8,7 +8,6 @@ import { usePoolsData } from "@/hooks/usePoolsData";
 import { useUserPositions } from "@/hooks/useUserData";
 import { useUserLockedPositions } from "@/hooks/useLockedPools";
 import { useChainContext } from "@/lib/context/ChainContext";
-import { SidebarRowsSkeleton } from "./skeletons";
 import { cn } from "@/lib/utils";
 
 function formatValue(value: string | number | null | undefined): string {
@@ -21,69 +20,71 @@ function formatValue(value: string | number | null | undefined): string {
   return `$${num.toFixed(0)}`;
 }
 
+/**
+ * A rail, not a stack of cards. One vertical rule separates it from the
+ * markets table; its blocks are separated from each other by hairlines, and it
+ * starts on exactly the same baseline as the table beside it.
+ */
 export function Sidebar() {
   const { address, isConnected } = useAccount();
 
   return (
-    <aside className="w-full space-y-4 xl:sticky xl:top-24 xl:w-[340px] xl:shrink-0 xl:self-start">
-      {isConnected && <PortfolioSection walletAddress={address!} />}
-      <LiquiditySection />
-      <RecentPoolsSection />
-      <ProtocolHealthSection />
+    // The aside stretches so its rule runs the full height of the markets
+    // column; the sticky behaviour lives on the inner wrapper.
+    <aside className="w-full shrink-0 xl:w-[286px] xl:border-l xl:border-border xl:pl-8">
+      <div className="xl:sticky xl:top-[76px]">
+        <div className="divide-y divide-border-subtle border-t border-border xl:border-t-0">
+          {isConnected && <PortfolioBlock walletAddress={address!} />}
+          <AllocationBlock />
+          <MaturityBlock />
+          <SystemBlock />
+        </div>
+      </div>
     </aside>
   );
 }
 
-function SidebarCard({
+function Block({
   title,
-  description,
   action,
   children,
+  first = false,
 }: {
   title: string;
-  description?: string;
   action?: React.ReactNode;
   children: React.ReactNode;
+  first?: boolean;
 }) {
   return (
-    <section className="surface-card p-5">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h3 className="text-[13.5px] font-semibold tracking-tight text-foreground">
-            {title}
-          </h3>
-          {description && (
-            <p className="mt-0.5 text-[12px] leading-snug text-muted-foreground">
-              {description}
-            </p>
-          )}
-        </div>
+    <section className={cn("py-5", first && "xl:pt-0")}>
+      <div className="flex items-baseline justify-between gap-3">
+        <h3 className="eyebrow">{title}</h3>
         {action}
       </div>
-      <div className="mt-4">{children}</div>
+      <div className="mt-3.5">{children}</div>
     </section>
   );
 }
 
-function SidebarRow({
+function Row({
   label,
   value,
-  muted = false,
   tone,
   dot,
+  emphasis = false,
 }: {
   label: string;
   value: string;
-  muted?: boolean;
   tone?: "positive" | "negative" | "warning";
   dot?: string;
+  emphasis?: boolean;
 }) {
   return (
-    <div className="flex min-w-0 items-baseline justify-between gap-3 text-[12.5px]">
+    <div className="flex min-w-0 items-baseline justify-between gap-3 py-[5px] text-[12.5px]">
       <span className="flex min-w-0 items-center gap-2 text-muted-foreground">
         {dot && (
           <span
-            className="h-2 w-2 shrink-0 rounded-full"
+            className="h-[7px] w-[7px] shrink-0 rounded-full"
             style={{ background: dot }}
           />
         )}
@@ -92,11 +93,11 @@ function SidebarRow({
       <span
         data-numeric
         className={cn(
-          "shrink-0 text-right font-medium",
+          "shrink-0 text-right",
           tone === "positive" && "text-positive",
           tone === "negative" && "text-negative",
           tone === "warning" && "text-warning",
-          !tone && (muted ? "text-muted-foreground" : "text-foreground"),
+          !tone && (emphasis ? "font-medium text-foreground" : "text-foreground"),
         )}
       >
         {value}
@@ -105,11 +106,20 @@ function SidebarRow({
   );
 }
 
-function InsetPanel({ children }: { children: React.ReactNode }) {
-  return <div className="surface-sunken mt-4 space-y-3 p-4">{children}</div>;
+function LoadingRows({ rows = 3 }: { rows?: number }) {
+  return (
+    <div className="space-y-3 py-1">
+      {Array.from({ length: rows }).map((_, i) => (
+        <div key={i} className="flex items-center justify-between">
+          <span className="h-2.5 w-24 animate-pulse rounded-sm bg-muted" />
+          <span className="h-2.5 w-12 animate-pulse rounded-sm bg-muted" />
+        </div>
+      ))}
+    </div>
+  );
 }
 
-function PortfolioSection({ walletAddress }: { walletAddress: string }) {
+function PortfolioBlock({ walletAddress }: { walletAddress: string }) {
   const { data: positions, isLoading } = useUserPositions(walletAddress);
   const { data: lockedPositions } = useUserLockedPositions(walletAddress);
 
@@ -127,106 +137,75 @@ function PortfolioSection({ walletAddress }: { walletAddress: string }) {
     positions?.analytics?.activeLockedPositions ||
     lockedPositions?.summary?.activePositions ||
     0;
-  const avgAPY = positions?.analytics?.averageAPY;
-
   const lockedValue = positions?.analytics?.lockedPrincipal
     ? parseFloat(positions.analytics.lockedPrincipal)
-    : 0;
-  const lockedPayout = positions?.analytics?.lockedExpectedPayout
-    ? parseFloat(positions.analytics.lockedExpectedPayout)
     : 0;
 
   const isUp = totalReturn >= 0;
 
   return (
-    <SidebarCard
+    <Block
+      first
       title="Your portfolio"
       action={
         <Link
           href="/portfolio"
-          className="focus-ring inline-flex items-center gap-0.5 rounded-lg text-[12px] font-medium text-muted-foreground transition-colors hover:text-brand-ink"
+          className="focus-ring inline-flex items-center gap-0.5 rounded text-[12px] text-muted-foreground transition-colors hover:text-foreground"
         >
           Open
-          <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2} />
+          <ArrowUpRight className="h-3 w-3" strokeWidth={2} />
         </Link>
       }
     >
       {isLoading ? (
-        <SidebarRowsSkeleton />
+        <LoadingRows />
       ) : totalValue === 0 && lockedCount === 0 ? (
-        <p className="py-2 text-[12.5px] leading-relaxed text-muted-foreground">
+        <p className="text-[12.5px] leading-relaxed text-muted-foreground">
           No positions yet. Deposit into a pool to start earning.
         </p>
       ) : (
         <>
-          <div>
-            <p
-              data-numeric
-              className="text-[28px] font-semibold leading-none tracking-[-0.02em] text-foreground"
-            >
-              {formatValue(totalValue)}
-            </p>
-            <p
-              data-numeric
-              className={cn(
-                "mt-2 text-[12.5px] font-medium",
-                isUp ? "text-positive" : "text-negative",
-              )}
-            >
-              {isUp ? "+" : ""}
-              {formatValue(totalReturn)} ({returnPercent >= 0 ? "+" : ""}
-              {returnPercent.toFixed(1)}%)
-            </p>
-          </div>
+          <p
+            data-numeric
+            className="text-[26px] font-semibold leading-none tracking-display text-foreground"
+          >
+            {formatValue(totalValue)}
+          </p>
+          <p
+            data-numeric
+            className={cn(
+              "mt-2 text-[12.5px]",
+              isUp ? "text-positive" : "text-negative",
+            )}
+          >
+            {isUp ? "+" : ""}
+            {formatValue(totalReturn)} ({returnPercent >= 0 ? "+" : ""}
+            {returnPercent.toFixed(1)}%)
+          </p>
 
-          <div className="mt-5 space-y-3">
-            <SidebarRow
-              label="Pool positions"
-              value={String(activePositions)}
-            />
-            <SidebarRow label="Locked positions" value={String(lockedCount)} />
-            {avgAPY && parseFloat(avgAPY) > 0 && (
-              <SidebarRow
-                label="Weighted APY"
-                value={`${parseFloat(avgAPY).toFixed(1)}%`}
+          <div className="mt-4">
+            <Row label="Pool positions" value={String(activePositions)} />
+            <Row label="Locked positions" value={String(lockedCount)} />
+            {totalValue - lockedValue > 0 && (
+              <Row
+                label="Liquid"
+                value={formatValue(totalValue - lockedValue)}
               />
             )}
+            {lockedValue > 0 && (
+              <Row label="Locked principal" value={formatValue(lockedValue)} />
+            )}
           </div>
-
-          {(lockedValue > 0 || totalValue > 0) && (
-            <InsetPanel>
-              {totalValue - lockedValue > 0 && (
-                <SidebarRow
-                  label="Liquid (withdrawable)"
-                  value={formatValue(totalValue - lockedValue)}
-                  muted
-                />
-              )}
-              {lockedValue > 0 && (
-                <SidebarRow
-                  label="Locked principal"
-                  value={formatValue(lockedValue)}
-                  muted
-                />
-              )}
-              {lockedPayout > 0 && (
-                <SidebarRow
-                  label="Expected at maturity"
-                  value={formatValue(lockedPayout)}
-                  muted
-                />
-              )}
-            </InsetPanel>
-          )}
         </>
       )}
-    </SidebarCard>
+    </Block>
   );
 }
 
-function LiquiditySection() {
+function AllocationBlock() {
   const { activeChainId } = useChainContext();
   const { data: metrics, isLoading } = usePlatformMetrics(activeChainId);
+  const { isConnected } = useAccount();
 
   const tvl = metrics?.totalValueLocked
     ? parseFloat(metrics.totalValueLocked)
@@ -235,19 +214,19 @@ function LiquiditySection() {
   const tvlByType = (metrics as any)?.tvlByType;
   const segments = [
     {
-      label: "Flexible Yield",
+      label: "Flexible yield",
       value: tvlByType?.STABLE_YIELD
         ? parseFloat(tvlByType.STABLE_YIELD)
         : tvl * 0.48,
       color: "hsl(var(--chart-1))",
     },
     {
-      label: "Fixed Yield",
+      label: "Fixed yield",
       value: tvlByType?.LOCKED ? parseFloat(tvlByType.LOCKED) : tvl * 0.32,
       color: "hsl(var(--chart-2))",
     },
     {
-      label: "Term Deals",
+      label: "Term deals",
       value: tvlByType?.SINGLE_ASSET
         ? parseFloat(tvlByType.SINGLE_ASSET)
         : tvl * 0.2,
@@ -258,17 +237,13 @@ function LiquiditySection() {
   const total = segments.reduce((sum, s) => sum + s.value, 0);
 
   return (
-    <SidebarCard
-      title="Where the capital sits"
-      description="TVL by pool type — a read on depth."
-    >
+    <Block first={!isConnected} title="Capital allocation">
       {isLoading ? (
-        <SidebarRowsSkeleton />
+        <LoadingRows />
       ) : (
         <>
-          {/* Stacked allocation bar */}
           <div
-            className="flex h-2.5 w-full gap-0.5 overflow-hidden rounded-full bg-surface-sunken"
+            className="flex h-1.5 w-full gap-px overflow-hidden rounded-full bg-border"
             role="img"
             aria-label={segments
               .map(
@@ -279,9 +254,9 @@ function LiquiditySection() {
           >
             {total > 0 &&
               segments.map((segment) => (
-                <div
+                <span
                   key={segment.label}
-                  className="h-full rounded-full transition-[width] duration-700 ease-out"
+                  className="h-full transition-[width] duration-500 ease-out"
                   style={{
                     width: `${(segment.value / total) * 100}%`,
                     background: segment.color,
@@ -290,9 +265,9 @@ function LiquiditySection() {
               ))}
           </div>
 
-          <div className="mt-4 space-y-3">
+          <div className="mt-3.5">
             {segments.map((segment) => (
-              <SidebarRow
+              <Row
                 key={segment.label}
                 label={segment.label}
                 dot={segment.color}
@@ -300,33 +275,20 @@ function LiquiditySection() {
               />
             ))}
           </div>
-
-          <InsetPanel>
-            <SidebarRow
-              label="Total pools"
-              value={String(metrics?.totalPools || 0)}
-              muted
-            />
-            <SidebarRow
-              label="Active pools"
-              value={String(metrics?.activePools || 0)}
-              muted
-            />
-          </InsetPanel>
         </>
       )}
-    </SidebarCard>
+    </Block>
   );
 }
 
-function RecentPoolsSection() {
+function MaturityBlock() {
   const { activeChainId } = useChainContext();
   const { data: poolsResponse, isLoading } = usePoolsData(
     activeChainId !== undefined ? { chainId: activeChainId } : undefined,
   );
   const pools = poolsResponse?.data || [];
 
-  const upcomingPools = pools
+  const upcoming = pools
     .filter((p) => p.maturityDate)
     .sort(
       (a, b) =>
@@ -335,133 +297,91 @@ function RecentPoolsSection() {
     )
     .slice(0, 4);
 
-  const activePools = pools
+  const active = pools
     .filter((p) => p.status === "FUNDING" || p.status === "INVESTED")
     .slice(0, 4);
 
-  const displayPools = upcomingPools.length > 0 ? upcomingPools : activePools;
+  const display = upcoming.length > 0 ? upcoming : active;
 
   return (
-    <SidebarCard
-      title="Pool timeline"
-      description={
-        upcomingPools.length > 0
-          ? "Upcoming maturities and key dates."
-          : "Active pools and their status."
-      }
-    >
+    <Block title={upcoming.length > 0 ? "Upcoming maturities" : "Active pools"}>
       {isLoading ? (
-        <SidebarRowsSkeleton />
-      ) : displayPools.length === 0 ? (
-        <p className="py-2 text-[12.5px] text-muted-foreground">
-          No active pools.
-        </p>
+        <LoadingRows />
+      ) : display.length === 0 ? (
+        <p className="text-[12.5px] text-muted-foreground">No active pools.</p>
       ) : (
-        <div className="space-y-3">
-          {displayPools.map((pool) => {
-            const maturity = pool.maturityDate
-              ? new Date(pool.maturityDate)
-              : null;
-            const daysUntil = maturity
-              ? Math.ceil(
-                  (maturity.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-                )
-              : null;
+        display.map((pool) => {
+          const maturity = pool.maturityDate
+            ? new Date(pool.maturityDate)
+            : null;
+          const days = maturity
+            ? Math.ceil((maturity.getTime() - Date.now()) / 86_400_000)
+            : null;
+          const overdue = days !== null && days <= 0;
+          const soon = days !== null && days > 0 && days <= 7;
 
-            const overdue = daysUntil !== null && daysUntil <= 0;
-            const soon = daysUntil !== null && daysUntil > 0 && daysUntil <= 7;
-
-            return (
-              <SidebarRow
-                key={pool.id}
-                label={pool.name}
-                dot={
-                  overdue
-                    ? "hsl(var(--negative))"
-                    : soon
-                      ? "hsl(var(--warning))"
-                      : "hsl(var(--positive))"
-                }
-                tone={overdue ? "negative" : soon ? "warning" : undefined}
-                muted={!overdue && !soon}
-                value={
-                  daysUntil !== null
-                    ? overdue
-                      ? "Matured"
-                      : `${daysUntil}d left`
-                    : pool.status || ""
-                }
-              />
-            );
-          })}
-        </div>
+          return (
+            <Row
+              key={pool.id}
+              label={pool.name}
+              tone={overdue ? "negative" : soon ? "warning" : undefined}
+              value={
+                days !== null
+                  ? overdue
+                    ? "Matured"
+                    : `${days}d`
+                  : pool.status || ""
+              }
+            />
+          );
+        })
       )}
-    </SidebarCard>
+    </Block>
   );
 }
 
-function ProtocolHealthSection() {
+function SystemBlock() {
   const { activeChainId } = useChainContext();
   const { data: metrics, isLoading } = usePlatformMetrics(activeChainId);
 
   const last24h = (metrics as any)?.last24h;
-  const deposits24h = last24h?.deposits ? formatValue(last24h.deposits) : "—";
-  const withdrawals24h = last24h?.withdrawals
-    ? formatValue(last24h.withdrawals)
-    : "—";
-  const newInvestors24h = last24h?.newInvestors
-    ? String(last24h.newInvestors)
-    : "—";
-
-  const avgAPY = metrics?.averageAPY ? parseFloat(String(metrics.averageAPY)) : 0;
 
   return (
-    <SidebarCard
-      title="System snapshot"
-      description="Quick read on protocol status."
+    <Block
+      title="Protocol"
       action={
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-positive-soft px-2 py-1 text-[10.5px] font-semibold text-positive">
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-positive" />
+        <span className="inline-flex items-center gap-1.5 text-[11.5px] text-muted-foreground">
+          <span className="h-1.5 w-1.5 rounded-full bg-positive" />
           Nominal
         </span>
       }
     >
       {isLoading ? (
-        <SidebarRowsSkeleton />
+        <LoadingRows />
       ) : (
         <>
-          <div className="space-y-3">
-            <SidebarRow
-              label="Total investors"
-              value={String(metrics?.totalUsers || 0)}
-            />
-            <SidebarRow
-              label="Total transactions"
-              value={
-                metrics?.totalTransactions
-                  ? String(metrics.totalTransactions)
-                  : "—"
-              }
-            />
-            {avgAPY > 0 && (
-              <SidebarRow
-                label="Platform APY"
-                value={`${avgAPY.toFixed(1)}%`}
-              />
-            )}
-          </div>
-
-          <InsetPanel>
-            <SidebarRow label="24h deposits" value={deposits24h} muted />
-            <SidebarRow label="24h withdrawals" value={withdrawals24h} muted />
-            <SidebarRow
-              label="New investors (24h)"
-              value={newInvestors24h}
-              muted
-            />
-          </InsetPanel>
+          <Row
+            label="Total investors"
+            value={String(metrics?.totalUsers || 0)}
+          />
+          <Row
+            label="Total transactions"
+            value={
+              metrics?.totalTransactions
+                ? String(metrics.totalTransactions)
+                : "—"
+            }
+          />
+          <Row
+            label="24h deposits"
+            value={last24h?.deposits ? formatValue(last24h.deposits) : "—"}
+          />
+          <Row
+            label="24h withdrawals"
+            value={last24h?.withdrawals ? formatValue(last24h.withdrawals) : "—"}
+          />
         </>
       )}
-    </SidebarCard>
+    </Block>
   );
 }

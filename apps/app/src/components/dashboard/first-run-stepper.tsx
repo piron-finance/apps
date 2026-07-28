@@ -26,7 +26,6 @@ export function openFaucet() {
 
 type Step = {
   title: string;
-  hint: string;
   done: boolean;
   cta?: { label: string; onClick: () => void };
 };
@@ -69,34 +68,29 @@ export function FirstRunStepper() {
 
   const steps: Step[] = [
     {
-      title: "Connect your wallet",
-      hint: "Sign in to deposit and track your positions.",
+      title: "Connect a wallet",
       done: isConnected,
       cta: isConnected ? undefined : { label: "Connect", onClick: () => open() },
     },
     {
       title: "Claim test tokens",
-      hint: "Get 100,000 free tokens on your preferred network.",
       done: hasTokens,
       cta: hasTokens ? undefined : { label: "Claim", onClick: openFaucet },
     },
     {
-      title: "Make your first deposit",
-      hint: "Pick a pool and start earning.",
+      title: "Make a deposit",
       done: hasPosition,
       cta: hasPosition
         ? undefined
-        : { label: "Browse pools", onClick: scrollToPools },
+        : { label: "Browse markets", onClick: scrollToPools },
     },
   ];
 
   const allDone = steps.every((s) => s.done);
   if (dismissed || allDone) return null;
 
-  // The first not-yet-done step is the one we actively prompt.
   const currentIndex = steps.findIndex((s) => !s.done);
   const doneCount = steps.filter((s) => s.done).length;
-  const progress = (doneCount / steps.length) * 100;
 
   const dismiss = () => {
     localStorage.setItem(DISMISS_KEY, "1");
@@ -104,89 +98,71 @@ export function FirstRunStepper() {
   };
 
   return (
-    <div className="surface-card animate-rise overflow-hidden">
-      <div className="flex items-start justify-between gap-4 px-5 pt-5 sm:px-6 sm:pt-6">
-        <div>
-          <h2 className="font-display text-[22px] leading-none tracking-tight text-foreground">
-            Get started
-          </h2>
-          <p className="mt-2 text-[12.5px] text-muted-foreground">
-            Three quick steps to your first deposit —{" "}
-            <span className="font-medium text-foreground">
-              {doneCount} of {steps.length}
-            </span>{" "}
-            done.
-          </p>
-        </div>
-        <button
-          onClick={dismiss}
-          aria-label="Dismiss getting started"
-          className="focus-ring -mr-1 -mt-1 flex h-8 w-8 items-center justify-center rounded-full text-subtle-foreground transition-colors hover:bg-muted hover:text-foreground"
-        >
-          <X className="h-4 w-4" strokeWidth={2} />
-        </button>
-      </div>
+    <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-border py-3.5">
+      <span className="eyebrow">
+        Getting started · {doneCount}/{steps.length}
+      </span>
 
-      {/* Progress rail */}
-      <div className="mx-5 mt-5 h-1 overflow-hidden rounded-full bg-surface-sunken sm:mx-6">
-        <div
-          className="h-full rounded-full bg-brand transition-[width] duration-700 ease-out"
-          style={{ width: `${progress}%` }}
-        />
-      </div>
-
-      <ol className="mt-1 grid grid-cols-1 divide-y divide-border-subtle sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+      <ol className="flex flex-wrap items-center gap-x-5 gap-y-2">
         {steps.map((step, i) => {
           const isCurrent = i === currentIndex;
           return (
             <li
               key={step.title}
               className={cn(
-                "flex items-start gap-3.5 px-5 py-5 sm:px-6",
-                isCurrent && "bg-brand-soft/40",
+                "items-center gap-2",
+                // On phones only the step you can act on is worth the space.
+                isCurrent ? "flex" : "hidden sm:flex",
               )}
             >
               <span
                 className={cn(
-                  "mt-px flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold transition-colors",
+                  "flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full text-[10px] font-semibold",
                   step.done
                     ? "bg-brand text-brand-foreground"
                     : isCurrent
-                      ? "animate-pulse-ring bg-surface text-brand-ink ring-1 ring-brand/50"
-                      : "bg-surface-sunken text-subtle-foreground",
+                      ? "border border-brand/60 text-brand-ink"
+                      : "border border-border text-subtle-foreground",
                 )}
               >
                 {step.done ? (
-                  <Check className="h-3.5 w-3.5" strokeWidth={2.5} />
+                  <Check className="h-2.5 w-2.5" strokeWidth={3} />
                 ) : (
                   i + 1
                 )}
               </span>
-              <div className="min-w-0">
-                <p
-                  className={cn(
-                    "text-[13px] font-medium",
-                    step.done ? "text-muted-foreground" : "text-foreground",
-                  )}
-                >
-                  {step.title}
-                </p>
-                <p className="mt-1 text-[11.5px] leading-relaxed text-muted-foreground">
-                  {step.hint}
-                </p>
-                {step.cta && isCurrent && (
-                  <button
-                    onClick={step.cta.onClick}
-                    className="focus-ring mt-3 inline-flex h-7 items-center rounded-full bg-brand px-3.5 text-[11.5px] font-semibold text-brand-foreground transition-colors hover:bg-brand-strong"
-                  >
-                    {step.cta.label}
-                  </button>
+              <span
+                className={cn(
+                  "text-[12.5px]",
+                  step.done
+                    ? "text-subtle-foreground line-through decoration-border-strong"
+                    : isCurrent
+                      ? "font-medium text-foreground"
+                      : "text-muted-foreground",
                 )}
-              </div>
+              >
+                {step.title}
+              </span>
+              {step.cta && isCurrent && (
+                <button
+                  onClick={step.cta.onClick}
+                  className="focus-ring ml-0.5 rounded px-1.5 py-0.5 text-[12px] font-medium text-brand-ink underline decoration-brand/30 underline-offset-2 transition-colors hover:decoration-brand"
+                >
+                  {step.cta.label}
+                </button>
+              )}
             </li>
           );
         })}
       </ol>
+
+      <button
+        onClick={dismiss}
+        aria-label="Dismiss getting started"
+        className="focus-ring ml-auto flex h-6 w-6 items-center justify-center rounded text-subtle-foreground transition-colors hover:bg-muted hover:text-foreground"
+      >
+        <X className="h-3.5 w-3.5" strokeWidth={2} />
+      </button>
     </div>
   );
 }

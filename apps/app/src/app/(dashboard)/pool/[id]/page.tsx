@@ -25,7 +25,7 @@ import { usePoolTiers, useLockedPoolMetrics, useLockedDepositPreview, useUserLoc
 import type { Pool, Transaction, LockedPosition } from "@/lib/api/types";
 import { getEffectiveApy, getDepositAvailability, poolTypeLabel, type DepositAvailability } from "@/lib/pool-helpers";
 import { getTransactionUrl } from "@/lib/constants/chains";
-import { OverviewStrip } from "@/components/dashboard/stat-card";
+import { MetricRow } from "@/components/dashboard/stat-card";
 
 function formatValue(value: string | number | null | undefined, decimals = 2): string {
   if (value === null || value === undefined) return "—";
@@ -170,7 +170,7 @@ function PoolDetailContent({ pool }: { pool: Pool }) {
       ];
 
   return (
-    <div className="mx-auto max-w-[1440px] px-4 pb-4 pt-6 sm:px-6 lg:px-8 lg:pt-8">
+    <div className="mx-auto max-w-[1320px] px-5 pb-4 pt-6 sm:px-8">
       <Link
         href="/"
         className="focus-ring -ml-1 mb-5 inline-flex items-center gap-1.5 rounded-lg px-1 py-0.5 text-[12.5px] text-muted-foreground transition-colors hover:text-foreground"
@@ -182,13 +182,13 @@ function PoolDetailContent({ pool }: { pool: Pool }) {
       <PoolHeader pool={pool} availability={availability} />
 
       {/* Headline figures */}
-      <div className="mb-8 mt-6">
-        <OverviewStrip items={headlineMetrics} />
+      <div className="mb-10 mt-6">
+        <MetricRow items={headlineMetrics} />
       </div>
 
-      <div className="flex flex-col gap-4 xl:flex-row">
-        {/* Left Column - Main Content */}
-        <div className="w-full min-w-0 space-y-4 xl:w-[65%]">
+      <div className="flex flex-col gap-10 xl:flex-row xl:gap-10">
+        {/* Left column — ruled sections, no boxes */}
+        <div className="w-full min-w-0 space-y-9 xl:flex-1">
           {!isLockedPool && (
             pool.poolType === "STABLE_YIELD"
               ? <NAVYieldHistory pool={pool} />
@@ -205,8 +205,8 @@ function PoolDetailContent({ pool }: { pool: Pool }) {
           <AboutPoolCard pool={pool} />
         </div>
 
-        {/* Right Column - Info Cards */}
-        <div className="w-full space-y-4 xl:w-[35%]">
+        {/* Right rail — one vertical rule separates it from the detail */}
+        <div className="w-full space-y-8 xl:w-[336px] xl:shrink-0 xl:border-l xl:border-border xl:pl-10">
           {isLockedPool ? (
             <LockedAPYCard pool={pool} tiers={tiers} lockedMetrics={lockedMetrics} availability={availability} onDeposit={openDeposit} />
           ) : (
@@ -273,15 +273,15 @@ function PoolHeader({ pool, availability }: { pool: Pool; availability: DepositA
           <img
             src={pool.issuerLogo}
             alt={pool.issuer || pool.name}
-            className="mt-1 h-10 w-10 shrink-0 rounded-full border border-border object-cover"
+            className="mt-0.5 h-9 w-9 shrink-0 rounded-full border border-border object-cover"
           />
         ) : (
-          <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-soft font-display text-[17px] text-brand-ink">
+          <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-soft text-[14px] font-semibold text-brand-ink">
             {pool.name?.[0]?.toUpperCase() || "P"}
           </div>
         )}
         <div className="min-w-0">
-          <h1 className="font-display text-[32px] leading-[1.1] tracking-tight text-foreground sm:text-[38px]">
+          <h1 className="text-[26px] font-semibold leading-tight tracking-display text-foreground sm:text-[30px]">
             {pool.name}
           </h1>
           <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12.5px] text-muted-foreground">
@@ -383,7 +383,7 @@ function NAVYieldHistory({ pool }: { pool: Pool }) {
   };
 
   return (
-    <div className="surface-card p-5 sm:p-6">
+    <div className="section-block">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-[14px] font-semibold tracking-tight text-foreground">NAV & yield history</h3>
@@ -399,14 +399,14 @@ function NAVYieldHistory({ pool }: { pool: Pool }) {
             <span className="text-[11px] text-muted-foreground">{displayDate}</span>
           )}
         </div>
-        <div className="inline-flex items-center gap-0.5 rounded-full border border-border bg-surface-sunken p-0.5">
+        <div className="inline-flex items-center gap-0.5 rounded border border-border bg-surface-sunken p-0.5">
           {(["30D", "90D", "1Y"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`focus-ring rounded-full px-3 py-1 text-[11.5px] font-medium transition-colors ${
+              className={`focus-ring rounded-sm px-2.5 py-1 text-[11.5px] font-medium transition-colors ${
                 activeTab === tab
-                  ? "bg-surface text-foreground shadow-card"
+                  ? "bg-surface text-foreground"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -518,7 +518,7 @@ function FundingProgress({ pool, availability, onDeposit }: { pool: Pool; availa
   const milestones = [25, 50, 75, 100];
 
   return (
-    <div className="surface-card p-5 sm:p-6">
+    <div className="section-block">
       <div className="mb-1 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-[14px] font-semibold tracking-tight text-foreground">Funding progress</h3>
@@ -845,7 +845,7 @@ function DepositModal({
       onClick={onClose}
     >
       <div
-        className="max-h-[92vh] w-full max-w-lg animate-rise overflow-y-auto rounded-t-3xl border border-border bg-surface p-5 shadow-pop sm:rounded-3xl sm:p-6"
+        className="max-h-[92vh] w-full max-w-lg animate-rise overflow-y-auto rounded-t-xl border border-border bg-surface p-5 shadow-pop sm:rounded-xl sm:p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-start justify-between gap-3">
@@ -1131,7 +1131,7 @@ function YourPositions({ pool }: { pool: Pool }) {
 
   if (!isConnected) {
     return (
-      <div className="surface-card p-5 sm:p-6">
+      <div className="section-block">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <h3 className="text-[13.5px] font-semibold tracking-tight text-foreground">Your positions</h3>
           <p className="text-[11px] text-muted-foreground">Connect a wallet to see deposits and exit eligibility.</p>
@@ -1142,7 +1142,7 @@ function YourPositions({ pool }: { pool: Pool }) {
 
   if (isLoading) {
     return (
-      <div className="surface-card p-5 sm:p-6">
+      <div className="section-block">
         <h3 className="mb-4 text-[13.5px] font-semibold tracking-tight text-foreground">Your positions</h3>
         <div className="py-4 text-center text-muted-foreground">Loading positions...</div>
       </div>
@@ -1151,9 +1151,9 @@ function YourPositions({ pool }: { pool: Pool }) {
 
   if (!position || parseFloat(position.totalShares || "0") === 0) {
     return (
-      <div className="surface-card p-5 sm:p-6">
+      <div className="section-block">
         <h3 className="mb-4 text-[13.5px] font-semibold tracking-tight text-foreground">Your positions</h3>
-        <div className="surface-card px-5 py-6 sm:px-6">
+        <div className="panel px-5 py-6 sm:px-6">
           <p className="text-[13px] font-medium text-foreground">No position here yet — how it works</p>
           <p className="mt-1 text-[12px] text-muted-foreground">
             Your capital is put to work from day one. Get started in three steps.
@@ -1201,7 +1201,7 @@ function YourPositions({ pool }: { pool: Pool }) {
   const primaryActionLabel = isMaturedSingleAsset ? "Redeem" : "Withdraw";
 
   return (
-    <div className="surface-card p-5 sm:p-6">
+    <div className="section-block">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-[13.5px] font-semibold tracking-tight text-foreground">Your positions</h3>
@@ -1404,7 +1404,7 @@ function LockedPositions({ pool }: { pool: Pool }) {
 
   if (!isConnected) {
     return (
-      <div className="surface-card p-5 sm:p-6">
+      <div className="section-block">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <h3 className="text-[13.5px] font-semibold tracking-tight text-foreground">Your locked positions</h3>
           <p className="text-[11px] text-muted-foreground">Connect a wallet to see your locked deposits.</p>
@@ -1415,7 +1415,7 @@ function LockedPositions({ pool }: { pool: Pool }) {
 
   if (isLoading) {
     return (
-      <div className="surface-card p-5 sm:p-6">
+      <div className="section-block">
         <h3 className="mb-4 text-[13.5px] font-semibold tracking-tight text-foreground">Your locked positions</h3>
         <div className="py-4 text-center text-muted-foreground">Loading positions...</div>
       </div>
@@ -1424,9 +1424,9 @@ function LockedPositions({ pool }: { pool: Pool }) {
 
   if (poolPositions.length === 0) {
     return (
-      <div className="surface-card p-5 sm:p-6">
+      <div className="section-block">
         <h3 className="mb-4 text-[13.5px] font-semibold tracking-tight text-foreground">Your locked positions</h3>
-        <div className="surface-card px-5 py-6 sm:px-6">
+        <div className="panel px-5 py-6 sm:px-6">
           <p className="text-[13px] font-medium text-foreground">No lock here yet — how it works</p>
           <p className="mt-1 text-[12px] text-muted-foreground">
             Lock for a fixed term, earn a fixed APY. Pick a tier on the right to begin.
@@ -1498,7 +1498,7 @@ function LockedPositions({ pool }: { pool: Pool }) {
   };
 
   return (
-    <div className="surface-card p-5 sm:p-6">
+    <div className="section-block">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-[13.5px] font-semibold tracking-tight text-foreground">Your locked positions</h3>
@@ -1713,7 +1713,7 @@ function LockedAPYCard({ pool, tiers, lockedMetrics, availability, onDeposit }: 
   const maxAPY = apyValues.length > 0 ? Math.max(...apyValues) : 0;
 
   return (
-    <div className="surface-card p-5 sm:p-6">
+    <div className="section-block">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <span className="text-[11px] text-muted-foreground">APY Range</span>
@@ -1846,7 +1846,7 @@ function APYCard({
     document.getElementById("positions-section")?.scrollIntoView({ behavior: "smooth", block: "center" });
 
   return (
-    <div className="surface-card p-5 sm:p-6">
+    <div className="section-block">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <span className="text-[11px] text-muted-foreground">{isFixed ? "Fixed APY" : "Current APY"}</span>
@@ -1951,7 +1951,7 @@ function PoolStatsCard({ pool, isLockedPool, lockedMetrics, tiers, effectiveApy 
   const minDeposit = pool.minInvestment || pool.minDeposit;
 
   return (
-    <div className="surface-card p-5 sm:p-6">
+    <div className="section-block">
       <h3 className="mb-0.5 text-[13.5px] font-semibold tracking-tight text-foreground">Pool stats</h3>
       <p className="text-[11px] text-muted-foreground mb-4">Key numbers for {pool.name}.</p>
 
@@ -2057,7 +2057,7 @@ function AllocationCard({ pool }: { pool: Pool }) {
   ];
 
   return (
-    <div className="surface-card p-5 sm:p-6">
+    <div className="section-block">
       <h3 className="mb-0.5 text-[13.5px] font-semibold tracking-tight text-foreground">Underlying allocation</h3>
       <p className="text-[11px] text-muted-foreground mb-4">Indicative split across instruments.</p>
 
@@ -2119,7 +2119,7 @@ function HoldingExitsCard({ pool, isLockedPool, tiers: tiersProp }: { pool: Pool
 
   if (isLockedPool) {
     return (
-      <div className="surface-card p-5 sm:p-6">
+      <div className="section-block">
         <h3 className="mb-0.5 text-[13.5px] font-semibold tracking-tight text-foreground">Lock periods & exits</h3>
         <p className="text-[11px] text-muted-foreground mb-4">How deposits work in this locked pool.</p>
 
@@ -2161,7 +2161,7 @@ function HoldingExitsCard({ pool, isLockedPool, tiers: tiersProp }: { pool: Pool
   }
 
   return (
-    <div className="surface-card p-5 sm:p-6">
+    <div className="section-block">
       <h3 className="mb-0.5 text-[13.5px] font-semibold tracking-tight text-foreground">Holding & exits</h3>
       <p className="text-[11px] text-muted-foreground mb-4">How capital moves in and out of the pool.</p>
 
@@ -2196,7 +2196,7 @@ function HoldingExitsCard({ pool, isLockedPool, tiers: tiersProp }: { pool: Pool
 
 function RiskCard({ pool }: { pool: Pool }) {
   return (
-    <div className="surface-card p-5 sm:p-6">
+    <div className="section-block">
       <h3 className="mb-0.5 text-[13.5px] font-semibold tracking-tight text-foreground">Risk & disclosures</h3>
       <p className="text-[11px] text-muted-foreground mb-4">Understand how this pool behaves under stress.</p>
 
@@ -2229,7 +2229,7 @@ function RiskCard({ pool }: { pool: Pool }) {
 
 function AboutPoolCard({ pool }: { pool: Pool }) {
   return (
-    <div className="surface-card p-5 sm:p-6">
+    <div className="section-block">
       <h3 className="mb-1 text-[15px] font-semibold tracking-tight text-foreground">About this Pool</h3>
       <p className="text-[13px] text-muted-foreground mb-5">
         {pool.description || "No description available."}
@@ -2297,17 +2297,17 @@ function PoolTransactionsTable({ poolAddress, assetSymbol, chainId }: { poolAddr
   };
 
   return (
-    <div className="surface-card p-5 sm:p-6">
+    <div className="section-block">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h3 className="text-[13.5px] font-semibold tracking-tight text-foreground">Pool transactions</h3>
-        <div className="inline-flex items-center gap-0.5 self-start rounded-full border border-border bg-surface-sunken p-0.5">
+        <div className="inline-flex items-center gap-0.5 self-start rounded border border-border bg-surface-sunken p-0.5">
           {(["all", "deposits", "withdrawals"] as const).map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`focus-ring rounded-full px-3 py-1 text-[11.5px] font-medium capitalize transition-colors ${
+              className={`focus-ring rounded-sm px-2.5 py-1 text-[11.5px] font-medium capitalize transition-colors ${
                 filter === f
-                  ? "bg-surface text-foreground shadow-card"
+                  ? "bg-surface text-foreground"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >

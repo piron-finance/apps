@@ -13,16 +13,13 @@ export interface StatCardProps {
 }
 
 const badgeTones = {
-  positive: "bg-positive-soft text-positive",
-  negative: "bg-negative-soft text-negative",
-  neutral: "bg-muted text-muted-foreground",
+  positive: "text-positive",
+  negative: "text-negative",
+  neutral: "text-subtle-foreground",
 } as const;
 
-/**
- * A single figure. Used standalone (portfolio) and as the cell of
- * `<OverviewStrip>` on the pools dashboard.
- */
-export function StatCard({
+/** The bare figure: label above, value, footnote below. */
+export function Stat({
   label,
   value,
   badge,
@@ -31,49 +28,26 @@ export function StatCard({
   className,
 }: StatCardProps) {
   return (
-    <div className={cn("surface-card p-5", className)}>
-      <Stat
-        label={label}
-        value={value}
-        badge={badge}
-        badgeTone={badgeTone}
-        subtitle={subtitle}
-      />
-    </div>
-  );
-}
-
-/** The bare figure, without a surface of its own. */
-export function Stat({
-  label,
-  value,
-  badge,
-  badgeTone = "positive",
-  subtitle,
-}: Omit<StatCardProps, "className">) {
-  return (
-    <div>
+    <div className={cn("min-w-0", className)}>
       <p className="eyebrow">{label}</p>
-      <div className="mt-2.5 flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
+      <div className="mt-2.5 flex items-baseline gap-2">
         <span
           data-numeric
-          className="text-[26px] font-semibold leading-none tracking-[-0.02em] text-foreground"
+          className="text-[25px] font-semibold leading-none tracking-display text-foreground"
         >
           {value}
         </span>
         {badge && (
           <span
-            className={cn(
-              "rounded-full px-1.5 py-0.5 text-[10px] font-semibold leading-none",
-              badgeTones[badgeTone],
-            )}
+            data-numeric
+            className={cn("text-[12px] font-medium", badgeTones[badgeTone])}
           >
             {badge}
           </span>
         )}
       </div>
       {subtitle && (
-        <p className="mt-2 text-[12px] leading-snug text-muted-foreground">
+        <p className="mt-2 truncate text-[12px] text-muted-foreground">
           {subtitle}
         </p>
       )}
@@ -82,17 +56,48 @@ export function Stat({
 }
 
 /**
- * Four platform figures read as one instrument, divided by hairlines, rather
- * than four disconnected boxes floating on the canvas.
+ * Headline figures, ruled top and bottom and divided by hairlines. Deliberately
+ * not a card — these are the page's own numbers, not a widget sitting on it.
  */
-export function OverviewStrip({ items }: { items: StatCardProps[] }) {
+export function MetricRow({ items }: { items: StatCardProps[] }) {
   return (
-    <div className="surface-card grid grid-cols-1 gap-px overflow-hidden bg-border-subtle sm:grid-cols-2 lg:grid-cols-4">
-      {items.map((item) => (
-        <div key={item.label} className="bg-surface p-5 sm:p-6">
-          <Stat {...item} />
-        </div>
-      ))}
+    <div className="grid grid-cols-2 border-y border-border lg:grid-cols-4">
+      {items.map((item, i) => {
+        // Two columns below lg, four at lg. A cell gets a left rule unless it
+        // starts its row, and a top rule only when it wraps onto a second row.
+        const startsMobileRow = i % 2 === 0;
+        const startsWideRow = i === 0;
+        return (
+          <div
+            key={item.label}
+            className={cn(
+              "py-5 lg:py-6",
+              startsMobileRow ? "pr-5" : "pl-5",
+              !startsMobileRow && "border-l border-border-subtle",
+              i > 1 && "border-t border-border-subtle",
+              // At four-up, only the first cell is flush and rule-free.
+              "lg:border-t-0",
+              startsWideRow
+                ? "lg:pl-0 lg:pr-5"
+                : "lg:border-l lg:border-border-subtle lg:pl-5 lg:pr-5",
+            )}
+          >
+            <Stat {...item} />
+          </div>
+        );
+      })}
     </div>
   );
 }
+
+/** Kept for callers that still want a single bordered figure. */
+export function StatCard({ className, ...props }: StatCardProps) {
+  return (
+    <div className={cn("rounded-lg border border-border p-5", className)}>
+      <Stat {...props} />
+    </div>
+  );
+}
+
+/** @deprecated use `MetricRow` */
+export const OverviewStrip = MetricRow;

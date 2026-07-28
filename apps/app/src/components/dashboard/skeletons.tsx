@@ -21,7 +21,7 @@ export function Skeleton({ className = "" }: { className?: string }) {
 
 export function PoolCardSkeleton() {
   return (
-    <div className="surface-card p-5">
+    <div className="border-b border-border-subtle py-4">
       <div className="mb-5 flex items-center justify-between gap-4">
         <Skeleton className="h-5 w-28" />
         <Skeleton className="h-5 w-16" />

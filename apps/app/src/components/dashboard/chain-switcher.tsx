@@ -66,15 +66,15 @@ export function ChainSwitcher({ className }: { className?: string }) {
     <DropdownMenu>
       <DropdownMenuTrigger
         className={cn(
-          "focus-ring inline-flex h-9 items-center gap-2 rounded-full border border-border bg-surface pl-2.5 pr-2 text-[12px] font-medium text-foreground shadow-card transition-colors hover:border-border-strong hover:bg-surface-raised data-[state=open]:border-border-strong",
+          "focus-ring inline-flex h-8 items-center gap-2 rounded px-2 text-[12.5px] font-medium text-foreground transition-colors hover:bg-muted data-[state=open]:bg-muted",
           className,
         )}
         aria-label={`Network: ${activeChain.label}`}
       >
-        <ChainMark chainId={activeChainId} color={activeChain.color} />
+        <ChainMark chainId={activeChainId} color={activeChain.color} size={15} />
         <span className="hidden sm:inline">{activeChain.shortLabel}</span>
         <ChevronDown
-          className="h-3.5 w-3.5 text-subtle-foreground"
+          className="h-3 w-3 text-subtle-foreground"
           strokeWidth={2}
         />
       </DropdownMenuTrigger>

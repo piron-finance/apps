@@ -3,49 +3,43 @@
 import { ReactNode } from "react";
 
 interface PoolSectionProps {
-  label: string;
   title: string;
-  subtitle: string;
+  description: string;
   filters?: ReactNode;
-  /** Shown next to the eyebrow, e.g. "4 pools". */
   count?: number;
   children: ReactNode;
 }
 
 /**
- * Sections sit directly on the canvas — no card wrapping other cards. The
- * eyebrow / serif title / lede stack does the separating work that a border
- * used to do, which stops the page reading as boxes inside boxes.
+ * A section is a heading, a line of explanation and a table. No container, no
+ * border of its own — the table's own rules do the separating.
  */
 export function PoolSection({
-  label,
   title,
-  subtitle,
+  description,
   filters,
   count,
   children,
 }: PoolSectionProps) {
   return (
     <section className="scroll-mt-24">
-      <div className="flex flex-col gap-4 border-b border-border pb-5 sm:flex-row sm:items-end sm:justify-between">
-        <div className="max-w-xl">
-          <div className="flex items-center gap-2.5">
-            <span className="eyebrow">{label}</span>
-            {count !== undefined && count > 0 && (
-              <span className="rounded-full bg-surface-sunken px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
-                {count}
-              </span>
-            )}
-          </div>
-          <h2 className="mt-2 font-display text-[26px] leading-[1.1] tracking-tight text-foreground sm:text-[30px]">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 pb-3">
+        <div className="flex items-baseline gap-2.5">
+          <h2 className="text-[17px] font-semibold tracking-title text-foreground">
             {title}
           </h2>
-          <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">
-            {subtitle}
-          </p>
+          {count !== undefined && (
+            <span data-numeric className="text-[12.5px] text-subtle-foreground">
+              {count} {count === 1 ? "pool" : "pools"}
+            </span>
+          )}
         </div>
-        {filters && <div className="shrink-0">{filters}</div>}
+        {filters}
       </div>
+
+      <p className="max-w-2xl pb-4 text-[13px] leading-relaxed text-muted-foreground">
+        {description}
+      </p>
 
       {children}
     </section>

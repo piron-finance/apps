@@ -22,7 +22,7 @@ export function SelectField({
   return (
     <div
       className={cn(
-        "group relative inline-flex h-8 items-center gap-1.5 rounded-full border border-border bg-surface pl-3 pr-2 text-[12px] shadow-card transition-colors focus-within:border-brand/45 hover:border-border-strong",
+        "group relative inline-flex h-7 items-center gap-1.5 rounded border border-border pl-2.5 pr-2 text-[12px] transition-colors focus-within:border-brand/45 hover:border-border-strong",
         wrapperClassName,
       )}
     >

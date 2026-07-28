@@ -5,54 +5,54 @@
 /* ============================================================================
    Piron design tokens
    ----------------------------------------------------------------------------
-   Light is the default theme: a warm bone/parchment canvas, pure-white surfaces
-   and a deep evergreen brand — the palette of a printed term sheet rather than
-   a trading terminal. Dark is a deliberate second skin (near-black with a
-   luminous green), not an afterthought.
+   The system is built on rules and whitespace, not on boxes. Elevation exists
+   only where something genuinely floats above the page (menus, dialogs);
+   everything else is separated by a 1px hairline. Radii stay small — this is a
+   ledger, not a landing page.
 
    Every value is an HSL triplet so Tailwind can compose opacity via
    `hsl(var(--token) / <alpha-value>)`.
    ========================================================================== */
 
 :root {
-  --radius: 0.875rem;
+  --radius: 0.5rem;
 
   /* Canvas & ink */
-  --background: 42 32% 96%;
-  --foreground: 30 10% 11%;
+  --background: 40 24% 97%;
+  --foreground: 30 8% 10%;
 
   /* Surfaces */
   --surface: 0 0% 100%;
-  --surface-sunken: 42 26% 94%;
-  --surface-raised: 45 50% 99%;
+  --surface-sunken: 40 20% 95%;
+  --surface-raised: 0 0% 100%;
 
-  /* Lines */
-  --border: 38 20% 87%;
-  --border-subtle: 40 24% 91%;
-  --border-strong: 36 14% 76%;
+  /* Rules — the primary structural device */
+  --border: 38 14% 88%;
+  --border-subtle: 40 16% 92%;
+  --border-strong: 36 12% 78%;
 
   /* Text ramp */
-  --muted: 40 22% 93%;
-  --muted-foreground: 32 7% 42%;
-  --subtle-foreground: 32 6% 56%;
+  --muted: 40 18% 94%;
+  --muted-foreground: 32 5% 40%;
+  --subtle-foreground: 32 5% 53%;
 
-  /* Brand — deep evergreen */
-  --brand: 158 82% 20%;
-  --brand-strong: 158 88% 14%;
-  --brand-foreground: 45 50% 98%;
-  --brand-ink: 158 74% 23%;
-  --brand-soft: 158 40% 93%;
-  --brand-line: 158 34% 82%;
+  /* Brand — deep evergreen, taken from the Piron mark */
+  --brand: 160 84% 17%;
+  --brand-strong: 162 88% 12%;
+  --brand-foreground: 45 40% 98%;
+  --brand-ink: 160 76% 21%;
+  --brand-soft: 158 34% 94%;
+  --brand-line: 158 28% 84%;
 
   /* Semantics */
-  --positive: 152 62% 27%;
-  --positive-soft: 152 44% 93%;
-  --negative: 2 66% 46%;
-  --negative-soft: 6 68% 95%;
-  --warning: 30 86% 36%;
-  --warning-soft: 40 82% 92%;
-  --info: 214 68% 38%;
-  --info-soft: 212 68% 94%;
+  --positive: 152 62% 26%;
+  --positive-soft: 152 40% 94%;
+  --negative: 2 64% 44%;
+  --negative-soft: 6 64% 96%;
+  --warning: 30 84% 34%;
+  --warning-soft: 40 76% 93%;
+  --info: 214 64% 36%;
+  --info-soft: 212 64% 95%;
 
   /* shadcn compatibility layer */
   --card: var(--surface);
@@ -61,96 +61,88 @@
   --popover-foreground: var(--foreground);
   --primary: var(--brand);
   --primary-foreground: var(--brand-foreground);
-  --secondary: 40 24% 92%;
-  --secondary-foreground: 30 10% 14%;
-  --accent: 40 26% 91%;
-  --accent-foreground: 30 10% 14%;
+  --secondary: 40 20% 93%;
+  --secondary-foreground: 30 8% 12%;
+  --accent: 40 22% 92%;
+  --accent-foreground: 30 8% 12%;
   --destructive: var(--negative);
-  --destructive-foreground: 45 50% 98%;
-  --input: 38 20% 85%;
-  --ring: 158 70% 30%;
+  --destructive-foreground: 45 40% 98%;
+  --input: 38 14% 84%;
+  --ring: 160 70% 26%;
 
-  /* Data viz — tuned to sit on cream without vibrating */
-  --chart-1: 158 72% 26%;
-  --chart-2: 199 62% 36%;
-  --chart-3: 32 74% 46%;
-  --chart-4: 268 40% 50%;
-  --chart-5: 344 56% 48%;
-  --chart-grid: 38 18% 88%;
-  --chart-axis: 32 6% 52%;
+  /* Data viz — tuned to sit on warm white without vibrating */
+  --chart-1: 160 72% 24%;
+  --chart-2: 199 58% 34%;
+  --chart-3: 32 70% 44%;
+  --chart-4: 268 34% 48%;
+  --chart-5: 344 52% 46%;
+  --chart-grid: 38 14% 90%;
+  --chart-axis: 32 5% 50%;
 
-  /* Elevation — warm-tinted so shadows read as paper, not soot */
-  --shadow-card:
-    0 1px 2px -1px hsl(32 20% 24% / 0.06), 0 1px 3px hsl(32 20% 24% / 0.04);
-  --shadow-lift:
-    0 2px 4px -2px hsl(32 20% 24% / 0.06), 0 14px 28px -12px hsl(32 20% 24% / 0.16);
+  /* Elevation — reserved for things that actually float */
   --shadow-pop:
-    0 1px 2px hsl(32 20% 24% / 0.06), 0 32px 64px -16px hsl(32 24% 20% / 0.28);
-  --shadow-inset: inset 0 1px 0 0 hsl(0 0% 100% / 0.6);
+    0 0 0 1px hsl(32 14% 82% / 0.6), 0 12px 32px -12px hsl(32 20% 20% / 0.18),
+    0 2px 6px -2px hsl(32 20% 20% / 0.08);
 }
 
 .dark {
   /* Canvas & ink */
-  --background: 240 7% 4%;
-  --foreground: 40 14% 96%;
+  --background: 240 6% 5%;
+  --foreground: 40 12% 95%;
 
   /* Surfaces */
-  --surface: 240 7% 7%;
-  --surface-sunken: 240 6% 10%;
-  --surface-raised: 240 6% 11%;
+  --surface: 240 6% 7.5%;
+  --surface-sunken: 240 5% 10.5%;
+  --surface-raised: 240 5% 12%;
 
-  /* Lines */
-  --border: 240 5% 16%;
-  --border-subtle: 240 6% 12%;
-  --border-strong: 240 5% 24%;
+  /* Rules */
+  --border: 240 5% 15%;
+  --border-subtle: 240 5% 12%;
+  --border-strong: 240 4% 26%;
 
   /* Text ramp */
-  --muted: 240 5% 14%;
-  --muted-foreground: 40 5% 62%;
+  --muted: 240 5% 13%;
+  --muted-foreground: 40 4% 62%;
   --subtle-foreground: 40 4% 46%;
 
   /* Brand — luminous green */
-  --brand: 150 96% 41%;
-  --brand-strong: 150 96% 48%;
+  --brand: 150 90% 40%;
+  --brand-strong: 150 92% 46%;
   --brand-foreground: 150 90% 5%;
-  --brand-ink: 150 88% 48%;
-  --brand-soft: 152 58% 11%;
-  --brand-line: 152 44% 22%;
+  --brand-ink: 150 82% 50%;
+  --brand-soft: 152 50% 10%;
+  --brand-line: 152 38% 20%;
 
   /* Semantics */
-  --positive: 150 78% 45%;
-  --positive-soft: 152 54% 11%;
-  --negative: 2 80% 63%;
-  --negative-soft: 2 46% 14%;
-  --warning: 38 92% 58%;
-  --warning-soft: 38 54% 12%;
-  --info: 210 88% 64%;
-  --info-soft: 212 54% 14%;
+  --positive: 150 72% 46%;
+  --positive-soft: 152 48% 10%;
+  --negative: 2 76% 63%;
+  --negative-soft: 2 42% 13%;
+  --warning: 38 88% 58%;
+  --warning-soft: 38 48% 11%;
+  --info: 210 84% 64%;
+  --info-soft: 212 48% 13%;
 
   /* shadcn compatibility layer */
-  --secondary: 240 5% 14%;
-  --secondary-foreground: 40 14% 96%;
-  --accent: 240 5% 15%;
-  --accent-foreground: 40 14% 96%;
-  --destructive-foreground: 40 14% 96%;
-  --input: 240 5% 18%;
-  --ring: 150 80% 38%;
+  --secondary: 240 5% 13%;
+  --secondary-foreground: 40 12% 95%;
+  --accent: 240 5% 14%;
+  --accent-foreground: 40 12% 95%;
+  --destructive-foreground: 40 12% 95%;
+  --input: 240 5% 17%;
+  --ring: 150 72% 36%;
 
   /* Data viz */
-  --chart-1: 150 88% 46%;
-  --chart-2: 190 78% 52%;
-  --chart-3: 38 90% 58%;
-  --chart-4: 268 66% 66%;
-  --chart-5: 344 74% 62%;
-  --chart-grid: 240 5% 16%;
-  --chart-axis: 40 4% 52%;
+  --chart-1: 150 82% 46%;
+  --chart-2: 190 72% 52%;
+  --chart-3: 38 86% 58%;
+  --chart-4: 268 60% 66%;
+  --chart-5: 344 70% 62%;
+  --chart-grid: 240 5% 15%;
+  --chart-axis: 40 4% 50%;
 
-  /* Elevation — depth comes from light edges, not drop shadows */
-  --shadow-card: inset 0 1px 0 0 hsl(0 0% 100% / 0.035);
-  --shadow-lift:
-    inset 0 1px 0 0 hsl(0 0% 100% / 0.05), 0 16px 32px -16px hsl(0 0% 0% / 0.8);
-  --shadow-pop: 0 32px 64px -16px hsl(0 0% 0% / 0.75);
-  --shadow-inset: inset 0 1px 0 0 hsl(0 0% 100% / 0.035);
+  --shadow-pop:
+    0 0 0 1px hsl(240 5% 20%), 0 16px 40px -12px hsl(0 0% 0% / 0.7);
 }
 
 @layer base {
@@ -171,93 +163,70 @@
 
   body {
     @apply bg-background font-sans text-foreground antialiased;
-    font-feature-settings: "cv02" 1, "cv03" 1, "cv04" 1, "ss01" 1;
+    font-synthesis-weight: none;
+    /* Straight-sided 1, disambiguated l — the numerals have to be unambiguous. */
+    font-feature-settings:
+      "cv05" 1,
+      "cv08" 1,
+      "ss03" 1;
   }
 
-  /* A whisper of warmth in the corners so the cream canvas has depth
-     instead of reading as flat #fff-adjacent paint. */
-  body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    pointer-events: none;
-    background:
-      radial-gradient(
-        60rem 40rem at 12% -10%,
-        hsl(var(--brand) / 0.05),
-        transparent 60%
-      ),
-      radial-gradient(
-        50rem 34rem at 92% 0%,
-        hsl(32 80% 60% / 0.06),
-        transparent 60%
-      );
-  }
-
-  .dark body::before {
-    background:
-      radial-gradient(
-        60rem 40rem at 12% -10%,
-        hsl(var(--brand) / 0.07),
-        transparent 60%
-      ),
-      radial-gradient(
-        50rem 34rem at 92% 0%,
-        hsl(214 90% 50% / 0.05),
-        transparent 60%
-      );
-  }
-
-  /* Numbers should never dance as they tick. */
-  .tabular,
+  /* Figures never reflow as they tick. */
   [data-numeric] {
     font-variant-numeric: tabular-nums;
-    letter-spacing: -0.01em;
+    font-feature-settings:
+      "tnum" 1,
+      "cv05" 1;
+    letter-spacing: -0.015em;
   }
 
   ::selection {
-    background: hsl(var(--brand) / 0.18);
+    background: hsl(var(--brand) / 0.16);
   }
 
-  /* Scrollbars that match the paper rather than the OS */
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: hsl(var(--border-strong)) transparent;
-  }
   ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 11px;
+    height: 11px;
   }
   ::-webkit-scrollbar-track {
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
     background-color: hsl(var(--border-strong));
-    border: 3px solid transparent;
+    border: 3.5px solid transparent;
     border-radius: 999px;
     background-clip: content-box;
   }
 }
 
 @layer components {
-  /* The one card recipe every surface in the app inherits from. */
-  .surface-card {
-    @apply rounded-2xl border border-border bg-surface shadow-card;
-  }
-
-  .surface-sunken {
-    @apply rounded-xl border border-border-subtle bg-surface-sunken;
-  }
-
-  /* Small uppercase eyebrow used above section titles. */
+  /* The label above a heading. Sized so its cap-height matches the body text
+     baseline it sits on. */
   .eyebrow {
-    @apply text-[10px] font-semibold uppercase tracking-[0.16em] text-subtle-foreground;
+    @apply text-[10.5px] font-semibold uppercase leading-none tracking-[0.13em] text-subtle-foreground;
   }
 
-  /* Focus ring shared by every interactive element. */
+  /* Shared by every interactive element so focus is consistent. */
   .focus-ring {
-    @apply outline-none focus-visible:ring-2 focus-visible:ring-ring/45 focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+    @apply outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+
+  /* A data row: hairline-separated, highlights on hover, no border of its own. */
+  .ledger-row {
+    @apply border-b border-border-subtle transition-colors last:border-b-0;
+  }
+
+  /* A section of a detail page. Separated by a rule, not boxed.
+     Deliberately NOT named `.block` — that collides with Tailwind's
+     `display: block` utility and silently rules/pads every element using it. */
+  .section-block {
+    @apply border-t border-border pt-6;
+  }
+
+  /* Reserved for the few things that genuinely are containers: the primary
+     action, and panels nested inside a block. */
+  .panel {
+    @apply rounded-lg border border-border bg-surface;
   }
 }
 
@@ -266,15 +235,21 @@
     text-wrap: balance;
   }
 
-  /* Hairline dividers that stay crisp on both themes. */
-  .divide-hairline > * + * {
-    border-color: hsl(var(--border-subtle));
+  /* Headings carry their weight through tracking, not ornament. */
+  .tracking-display {
+    letter-spacing: -0.028em;
+  }
+  .tracking-title {
+    letter-spacing: -0.018em;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .animate-rise,
-    .animate-shimmer {
-      animation: none !important;
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
     }
   }
 }

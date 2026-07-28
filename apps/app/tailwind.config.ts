@@ -107,7 +107,6 @@ const config: Config = {
           "SFMono-Regular",
           "monospace",
         ],
-        display: ["var(--font-display)", "Georgia", "ui-serif", "serif"],
       },
 
       fontSize: {
@@ -115,18 +114,17 @@ const config: Config = {
       },
 
       borderRadius: {
+        DEFAULT: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
+        md: "calc(var(--radius) - 2px)",
         lg: "var(--radius)",
-        md: "calc(var(--radius) - 4px)",
-        sm: "calc(var(--radius) - 6px)",
+        xl: "calc(var(--radius) + 2px)",
         "2xl": "calc(var(--radius) + 4px)",
-        "3xl": "calc(var(--radius) + 12px)",
       },
 
       boxShadow: {
-        card: "var(--shadow-card)",
-        lift: "var(--shadow-lift)",
         pop: "var(--shadow-pop)",
-        inset: "var(--shadow-inset)",
+        none: "none",
       },
 
       keyframes: {

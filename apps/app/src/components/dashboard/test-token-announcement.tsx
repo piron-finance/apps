@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { useAccount } from "wagmi";
 import { apiClient } from "@/lib/api/client";
 import { getTransactionUrl, getChainName } from "@/lib/constants/chains";
@@ -152,53 +151,28 @@ export function TestTokenAnnouncement() {
       <button
         type="button"
         onClick={openClaimModal}
-        className="group block w-full border-b border-warning/25 bg-warning-soft text-left transition-colors hover:bg-warning-soft/70"
+        className="group block w-full border-b border-border bg-surface-sunken text-left transition-colors hover:bg-muted"
       >
-        <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
-          <div className="flex min-w-0 items-center gap-3">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-surface shadow-card ring-1 ring-warning/20">
-              <Image
-                src="/pironMark.png"
-                alt=""
-                width={20}
-                height={20}
-                className="dark:brightness-[1.9] dark:saturate-[1.1]"
-              />
+        <div className="mx-auto flex max-w-[1320px] items-center gap-3 px-5 py-2.5 sm:px-8">
+          <span className="shrink-0 rounded-sm border border-warning/30 px-1.5 py-0.5 text-[9.5px] font-semibold uppercase tracking-[0.1em] text-warning">
+            Testnet
+          </span>
+          <p className="min-w-0 truncate text-[12.5px] text-muted-foreground">
+            <span className="font-medium text-foreground">
+              Claim 100,000 free test tokens
             </span>
-            <div className="min-w-0">
-              <p className="text-[13px] font-semibold text-foreground sm:text-[13.5px]">
-                Get free testnet tokens
-                <span className="hidden sm:inline"> to try Piron</span>
-                <span className="ml-2 hidden rounded-full bg-warning/15 px-1.5 py-0.5 align-middle text-[9px] font-semibold uppercase tracking-wide text-warning sm:inline-block">
-                  Testnet
-                </span>
-              </p>
-              {/* The second line is detail, not instruction — drop it rather
-                  than truncate it mid-sentence on small screens. */}
-              <p className="hidden text-[12px] text-muted-foreground sm:block">
-                Claim 100,000 test tokens — you&rsquo;ll need them to deposit
-                into any pool.
-              </p>
-              <p className="text-[11.5px] text-muted-foreground sm:hidden">
-                100,000 tokens, free.
-              </p>
-            </div>
-          </div>
-
-          <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-warning px-3 py-2 text-[12px] font-semibold text-background transition-transform group-hover:translate-x-0.5 sm:px-4">
-            <span className="hidden sm:inline">Claim tokens</span>
-            <span className="sm:hidden">Claim</span>
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 14 14"
-              fill="none"
-              aria-hidden
-            >
+            <span className="hidden sm:inline">
+              {" "}
+              — you&rsquo;ll need them to deposit into any pool.
+            </span>
+          </p>
+          <span className="ml-auto flex shrink-0 items-center gap-1 text-[12.5px] font-medium text-foreground underline decoration-border-strong underline-offset-2 transition-colors group-hover:decoration-foreground">
+            Claim
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden>
               <path
                 d="M3 7h8M7.5 3.5L11 7l-3.5 3.5"
                 stroke="currentColor"
-                strokeWidth="1.6"
+                strokeWidth="1.7"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
@@ -218,7 +192,7 @@ export function TestTokenAnnouncement() {
             if (e.target === e.currentTarget) closeModal();
           }}
         >
-          <div className="w-full max-w-lg animate-rise overflow-hidden rounded-3xl border border-border bg-surface shadow-pop">
+          <div className="w-full max-w-lg animate-rise overflow-hidden rounded-xl border border-border bg-surface shadow-pop">
             {/* Header */}
             <div className="border-b border-border-subtle px-5 py-5 sm:px-6">
               <div className="flex items-start justify-between gap-4">
@@ -299,7 +273,7 @@ export function TestTokenAnnouncement() {
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="focus-ring mt-2 h-9 rounded-full border border-border bg-surface px-6 text-[12.5px] font-medium text-foreground shadow-card transition-colors hover:bg-surface-raised"
+                    className="focus-ring mt-2 h-9 rounded border border-border px-6 text-[12.5px] font-medium text-foreground transition-colors hover:bg-surface-raised"
                   >
                     Done
                   </button>
@@ -311,7 +285,7 @@ export function TestTokenAnnouncement() {
                 <div className="space-y-4 px-5 py-5 sm:px-6">
                   {/* Cooldown notice */}
                   {claimState.type === "cooldown" && (
-                    <div className="flex items-start gap-3 rounded-xl border border-warning/20 bg-warning-soft p-3.5">
+                    <div className="flex items-start gap-3 rounded border border-warning/25 bg-warning-soft p-3.5">
                       <svg
                         width="15"
                         height="15"
@@ -344,7 +318,7 @@ export function TestTokenAnnouncement() {
 
                   {/* Error notice */}
                   {claimState.type === "error" && (
-                    <div className="flex items-start gap-3 rounded-xl border border-negative/20 bg-negative-soft p-3.5">
+                    <div className="flex items-start gap-3 rounded border border-negative/25 bg-negative-soft p-3.5">
                       <svg
                         width="15"
                         height="15"
@@ -396,7 +370,7 @@ export function TestTokenAnnouncement() {
                           : "Paste recipient wallet address"
                       }
                       spellCheck={false}
-                      className="h-11 w-full rounded-xl border border-input bg-surface px-3.5 font-mono text-[13px] text-foreground shadow-card outline-none transition-[border-color,box-shadow] placeholder:font-sans placeholder:text-subtle-foreground focus:border-brand/50 focus:ring-2 focus:ring-ring/25"
+                      className="h-11 w-full rounded border border-input bg-surface px-3.5 font-mono text-[13px] text-foreground outline-none transition-[border-color,box-shadow] placeholder:font-sans placeholder:text-subtle-foreground focus:border-brand/50 focus:ring-2 focus:ring-ring/25"
                     />
                     <p className="mt-2 text-[11.5px] text-subtle-foreground">
                       {address
@@ -406,7 +380,7 @@ export function TestTokenAnnouncement() {
                   </div>
 
                   {/* Amount */}
-                  <div className="surface-sunken flex items-center justify-between px-4 py-3">
+                  <div className="flex items-center justify-between rounded border border-border-subtle bg-surface-sunken px-4 py-3">
                     <span className="text-[12.5px] text-muted-foreground">
                       You will receive
                     </span>
@@ -419,7 +393,7 @@ export function TestTokenAnnouncement() {
                   </div>
 
                   {/* Network — pick which chain to receive tokens on */}
-                  <div className="surface-sunken flex items-center justify-between px-4 py-3">
+                  <div className="flex items-center justify-between rounded border border-border-subtle bg-surface-sunken px-4 py-3">
                     <span className="text-[12.5px] text-muted-foreground">
                       Network
                     </span>
@@ -442,7 +416,7 @@ export function TestTokenAnnouncement() {
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="focus-ring h-9 rounded-full border border-border px-4 text-[12.5px] font-medium text-muted-foreground transition-colors hover:border-border-strong hover:text-foreground"
+                    className="focus-ring h-9 rounded border border-border px-4 text-[12.5px] font-medium text-muted-foreground transition-colors hover:border-border-strong hover:text-foreground"
                   >
                     Cancel
                   </button>
@@ -450,7 +424,7 @@ export function TestTokenAnnouncement() {
                     type="button"
                     onClick={handleClaim}
                     disabled={isDisabled}
-                    className={`focus-ring h-9 rounded-full px-5 text-[12.5px] font-semibold transition-colors ${
+                    className={`focus-ring h-9 rounded px-5 text-[12.5px] font-semibold transition-colors ${
                       canSubmit
                         ? "bg-brand text-brand-foreground hover:bg-brand-strong"
                         : "cursor-not-allowed bg-muted text-subtle-foreground"

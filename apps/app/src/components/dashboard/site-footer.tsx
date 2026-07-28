@@ -15,8 +15,8 @@ const FOOTER_LINKS = [
 
 export function SiteFooter() {
   return (
-    <footer className="mt-14 border-t border-border bg-surface/60">
-      <div className="mx-auto max-w-[1440px] px-4 py-10 sm:px-6 lg:px-8">
+    <footer className="mt-16 border-t border-border">
+      <div className="mx-auto max-w-[1320px] px-5 py-9 sm:px-8">
         <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
           <div className="max-w-sm">
             <Link href="/" className="inline-flex items-center gap-2">
@@ -27,8 +27,8 @@ export function SiteFooter() {
                 height={24}
                 className="dark:brightness-[1.9] dark:saturate-[1.1]"
               />
-              <span className="font-display text-[17px] leading-none tracking-tight text-foreground">
-                Piron<span className="text-brand-ink">.</span>
+              <span className="text-[14px] font-semibold tracking-title text-foreground">
+                Piron
               </span>
             </Link>
             <p className="mt-3 text-[12.5px] leading-relaxed text-muted-foreground">

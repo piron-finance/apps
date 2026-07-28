@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAccount } from "wagmi";
 import { useWeb3Modal } from "@web3modal/wagmi/react";
-import { ArrowRight, Clock, Loader2, Wallet } from "lucide-react";
+import { ChevronRight, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { OverviewStrip } from "@/components/dashboard/stat-card";
+import { MetricRow } from "@/components/dashboard/stat-card";
 import { usersApi } from "@/lib/api/endpoints";
 import type { PortfolioSummary } from "@/lib/api/types";
 import { useChainContext } from "@/lib/context/ChainContext";
@@ -36,34 +36,25 @@ function returnTone(value: string | number | undefined) {
   const num = typeof value === "string" ? parseFloat(value) : (value ?? 0);
   if (num > 0) return "text-positive";
   if (num < 0) return "text-negative";
-  return "text-muted-foreground";
+  return "text-foreground";
 }
 
-/** A full-width state card — used for disconnected, loading, error and empty. */
-function PanelState({
-  icon,
+/** Disconnected / loading / error / empty all read the same way. */
+function EmptyState({
   title,
   description,
   action,
 }: {
-  icon?: React.ReactNode;
   title: string;
   description?: string;
   action?: React.ReactNode;
 }) {
   return (
-    <div className="surface-card flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
-      {icon && (
-        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-sunken text-muted-foreground">
-          {icon}
-        </div>
-      )}
+    <div className="flex flex-col items-start gap-3 border-y border-border py-14">
       <div>
-        <p className="text-[15px] font-semibold tracking-tight text-foreground">
-          {title}
-        </p>
+        <p className="text-[14px] font-medium text-foreground">{title}</p>
         {description && (
-          <p className="mt-1.5 max-w-sm text-[13px] leading-relaxed text-muted-foreground">
+          <p className="mt-1.5 max-w-md text-[13px] leading-relaxed text-muted-foreground">
             {description}
           </p>
         )}
@@ -72,6 +63,9 @@ function PanelState({
     </div>
   );
 }
+
+const GRID =
+  "grid grid-cols-[minmax(0,1fr)_120px_120px_130px_80px_20px] items-center gap-4";
 
 export default function PortfolioPage() {
   const { address } = useAccount();
@@ -91,8 +85,8 @@ export default function PortfolioPage() {
       setLoading(true);
       setError(null);
       try {
-        // Pass activeChainId so positions are scoped to the selected chain.
-        // undefined = all chains (default "All Chains" view).
+        // Scope positions to the chain selected in the header.
+        // undefined = all chains.
         const data = await usersApi.getPositions(address, activeChainId);
         setPortfolio(data);
       } catch (err: any) {
@@ -104,259 +98,223 @@ export default function PortfolioPage() {
     };
 
     fetchPortfolio();
-    // Re-fetch when wallet or selected chain changes
   }, [address, activeChainId]);
 
   const analytics = portfolio?.analytics;
-  const totalReturn = analytics?.totalReturn || "0";
+  const positions = portfolio?.positions ?? [];
 
   return (
-    <div className="mx-auto max-w-[1440px] px-4 pb-4 pt-8 sm:px-6 lg:px-8 lg:pt-12">
-      <header className="max-w-2xl">
-        <p className="eyebrow">Portfolio · {activeChain.label}</p>
-        <h1 className="mt-3 font-display text-[38px] leading-[1.05] tracking-[-0.015em] text-foreground sm:text-[44px]">
-          Your positions
-        </h1>
-        <p className="mt-4 text-[14px] leading-relaxed text-muted-foreground sm:text-[15px]">
-          Every deposit, its current value and what it has returned — scoped to
-          the network selected in the header.
+    <div className="mx-auto max-w-[1320px] px-5 sm:px-8">
+      <header className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3 pb-6 pt-8">
+        <div className="max-w-2xl">
+          <h1 className="text-[27px] font-semibold leading-none tracking-display text-foreground">
+            Portfolio
+          </h1>
+          <p className="mt-3 text-[13.5px] leading-relaxed text-muted-foreground">
+            Every deposit, its current value and what it has returned.
+          </p>
+        </div>
+        <p className="text-[12.5px] text-subtle-foreground">
+          Showing{" "}
+          <span className="font-medium text-foreground">
+            {activeChain.label}
+          </span>
         </p>
       </header>
 
-      <div className="mt-8 space-y-4">
-        {!address ? (
-          <PanelState
-            icon={<Wallet className="h-5 w-5" strokeWidth={1.75} />}
-            title="Connect your wallet"
-            description="Your positions are read straight from the chain. Connect to see them."
-            action={
-              <Button onClick={() => open()} className="mt-1">
-                Connect wallet
-              </Button>
-            }
+      {!address ? (
+        <EmptyState
+          title="Connect a wallet"
+          description="Your positions are read straight from the chain. Connect to see them."
+          action={
+            <Button onClick={() => open()} size="sm">
+              Connect wallet
+            </Button>
+          }
+        />
+      ) : loading ? (
+        <EmptyState title="Loading your portfolio" description="Fetching positions and current valuations." />
+      ) : error ? (
+        <EmptyState
+          title="We couldn't load your portfolio"
+          description={error}
+          action={
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => window.location.reload()}
+            >
+              Try again
+            </Button>
+          }
+        />
+      ) : (
+        <>
+          <MetricRow
+            items={[
+              {
+                label: "Portfolio value",
+                value:
+                  analytics?.totalValueFormatted ||
+                  formatCurrency(analytics?.totalValue || "0"),
+                subtitle: `${formatCurrency(analytics?.totalDeposited || "0")} deposited`,
+              },
+              {
+                label: "Total return",
+                value: formatCurrency(analytics?.totalReturn || "0"),
+                badge: analytics?.totalReturnPercentage
+                  ? `${parseFloat(analytics.totalReturnPercentage) >= 0 ? "+" : ""}${parseFloat(analytics.totalReturnPercentage).toFixed(2)}%`
+                  : undefined,
+                badgeTone:
+                  parseFloat(String(analytics?.totalReturn ?? 0)) < 0
+                    ? "negative"
+                    : "positive",
+                subtitle: "Realised and unrealised, net of fees",
+              },
+              {
+                label: "Open positions",
+                value: String(analytics?.activePositions || 0),
+                subtitle: "Across pools on this network",
+              },
+              {
+                label: "Weighted APY",
+                value: `${analytics?.averageAPY || "0.00"}%`,
+                subtitle: "Weighted by position size",
+              },
+            ]}
           />
-        ) : loading ? (
-          <PanelState
-            icon={<Loader2 className="h-5 w-5 animate-spin" strokeWidth={1.75} />}
-            title="Loading your portfolio"
-            description="Fetching positions and current valuations."
-          />
-        ) : error ? (
-          <PanelState
-            title="We couldn't load your portfolio"
-            description={error}
-            action={
-              <Button
-                variant="secondary"
-                onClick={() => window.location.reload()}
-                className="mt-1"
-              >
-                Try again
-              </Button>
-            }
-          />
-        ) : (
-          <>
-            <OverviewStrip
-              items={[
-                {
-                  label: "Portfolio value",
-                  value:
-                    analytics?.totalValueFormatted ||
-                    formatCurrency(analytics?.totalValue || "0"),
-                  subtitle: `${formatCurrency(analytics?.totalDeposited || "0")} deposited`,
-                },
-                {
-                  label: "Total returns",
-                  value: formatCurrency(totalReturn),
-                  badge: analytics?.totalReturnPercentage
-                    ? `${parseFloat(analytics.totalReturnPercentage) >= 0 ? "+" : ""}${parseFloat(analytics.totalReturnPercentage).toFixed(2)}%`
-                    : undefined,
-                  badgeTone:
-                    parseFloat(String(totalReturn)) < 0
-                      ? "negative"
-                      : "positive",
-                  subtitle: "Realised and unrealised, net of fees",
-                },
-                {
-                  label: "Active positions",
-                  value: String(analytics?.activePositions || 0),
-                  subtitle: "Across pools on this network",
-                },
-                {
-                  label: "Weighted APY",
-                  value: `${analytics?.averageAPY || "0.00"}%`,
-                  subtitle: "Weighted by position size",
-                },
-              ]}
-            />
 
-            <section className="pt-6">
-              <div className="flex items-end justify-between gap-4 border-b border-border pb-5">
-                <div>
-                  <span className="eyebrow">Holdings</span>
-                  <h2 className="mt-2 font-display text-[26px] leading-none tracking-tight text-foreground">
-                    Position detail
-                  </h2>
-                </div>
-                {portfolio?.positions?.length ? (
-                  <span className="text-[12.5px] text-muted-foreground">
-                    {portfolio.positions.length} position
-                    {portfolio.positions.length === 1 ? "" : "s"}
-                  </span>
-                ) : null}
-              </div>
+          <section className="pb-4 pt-10">
+            <div className="flex items-baseline justify-between gap-4 pb-4">
+              <h2 className="text-[17px] font-semibold tracking-title text-foreground">
+                Positions
+              </h2>
+              {positions.length > 0 && (
+                <span data-numeric className="text-[12.5px] text-subtle-foreground">
+                  {positions.length}{" "}
+                  {positions.length === 1 ? "position" : "positions"}
+                </span>
+              )}
+            </div>
 
-              {!portfolio?.positions?.length ? (
-                <div className="mt-6">
-                  <PanelState
-                    title="No positions yet"
-                    description="Once you deposit into a pool it will show up here with live valuation and returns."
-                    action={
-                      <Button asChild className="mt-1">
-                        <Link href="/">
-                          Explore pools
-                          <ArrowRight className="h-3.5 w-3.5" />
-                        </Link>
-                      </Button>
-                    }
-                  />
+            {positions.length === 0 ? (
+              <EmptyState
+                title="No positions yet"
+                description="Once you deposit into a pool it will appear here with live valuation and returns."
+                action={
+                  <Button asChild size="sm">
+                    <Link href="/">Browse markets</Link>
+                  </Button>
+                }
+              />
+            ) : (
+              <div>
+                {/* Column headings — desktop only. */}
+                <div className={cn(GRID, "hidden border-y border-border px-1 py-2 sm:grid")}>
+                  <span className="eyebrow">Pool</span>
+                  <span className="eyebrow text-right">Value</span>
+                  <span className="eyebrow text-right">Deposited</span>
+                  <span className="eyebrow text-right">Return</span>
+                  <span className="eyebrow text-right">APY</span>
+                  <span />
                 </div>
-              ) : (
-                <div className="mt-6 space-y-3">
-                  {portfolio.positions.map((position) => (
-                    <article
-                      key={position.id}
-                      className="surface-card p-5 transition-colors hover:border-border-strong sm:p-6"
-                    >
-                      <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-                        <div className="min-w-0 flex-1 space-y-5">
-                          {/* Identity */}
-                          <div className="flex flex-wrap items-start justify-between gap-3">
-                            <div className="min-w-0">
-                              <h3 className="text-[15px] font-semibold tracking-tight text-foreground">
+
+                <div className="border-b border-border sm:border-b-0">
+                  {positions.map((position) => {
+                    const tone = returnTone(position.totalReturn);
+                    const meta = [
+                      position.pool.assetSymbol,
+                      position.pool.poolType
+                        ? poolTypeLabel(position.pool.poolType)
+                        : null,
+                      position.daysHeld !== undefined
+                        ? `Held ${position.daysHeld}d`
+                        : null,
+                      position.pool.maturityDate
+                        ? `Matures ${formatDate(position.pool.maturityDate)}`
+                        : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ");
+
+                    return (
+                      <Link
+                        key={position.id}
+                        href={`/pool/${position.pool.poolAddress}`}
+                        className="ledger-row focus-ring group block px-1 py-3.5 hover:bg-surface-sunken/70"
+                      >
+                        {/* Desktop */}
+                        <div className={cn(GRID, "hidden sm:grid")}>
+                          <div className="min-w-0">
+                            <div className="flex items-baseline gap-2">
+                              <span className="truncate text-[13.5px] font-medium text-foreground">
                                 {position.pool.name}
-                              </h3>
-                              <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                                {[
-                                  position.pool.assetSymbol,
-                                  position.pool.country,
-                                  position.pool.poolType
-                                    ? poolTypeLabel(position.pool.poolType)
-                                    : null,
-                                ]
-                                  .filter(Boolean)
-                                  .map((chip) => (
-                                    <span
-                                      key={chip as string}
-                                      className="rounded-full bg-surface-sunken px-2.5 py-1 text-[11px] font-medium text-muted-foreground"
-                                    >
-                                      {chip}
-                                    </span>
-                                  ))}
-                              </div>
+                              </span>
+                              <span className="shrink-0 text-[11px] text-subtle-foreground">
+                                {position.pool.status}
+                              </span>
                             </div>
-                            <span className="rounded-full bg-brand-soft px-2.5 py-1 text-[11px] font-semibold text-brand-ink">
-                              {position.pool.status}
+                            <p className="mt-0.5 truncate text-[12px] text-muted-foreground">
+                              {meta}
+                            </p>
+                          </div>
+                          <span data-numeric className="text-right text-[13.5px] font-medium text-foreground">
+                            {formatCurrency(position.currentValue)}
+                          </span>
+                          <span data-numeric className="text-right text-[13.5px] text-muted-foreground">
+                            {formatCurrency(position.totalDeposited)}
+                          </span>
+                          <div className="text-right">
+                            <span data-numeric className={cn("block text-[13.5px]", tone)}>
+                              {formatCurrency(position.totalReturn)}
+                            </span>
+                            <span data-numeric className={cn("mt-0.5 block text-[11.5px]", tone)}>
+                              {position.totalReturnPercentage}%
                             </span>
                           </div>
-
-                          {/* Figures */}
-                          <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border-subtle bg-border-subtle sm:grid-cols-4">
-                            <div className="bg-surface-sunken px-3.5 py-3">
-                              <p className="text-[10px] uppercase tracking-[0.1em] text-subtle-foreground">
-                                Current value
-                              </p>
-                              <p
-                                data-numeric
-                                className="mt-1.5 text-[15px] font-semibold text-foreground"
-                              >
-                                {formatCurrency(position.currentValue)}
-                              </p>
-                            </div>
-                            <div className="bg-surface-sunken px-3.5 py-3">
-                              <p className="text-[10px] uppercase tracking-[0.1em] text-subtle-foreground">
-                                Deposited
-                              </p>
-                              <p
-                                data-numeric
-                                className="mt-1.5 text-[15px] font-semibold text-foreground"
-                              >
-                                {formatCurrency(position.totalDeposited)}
-                              </p>
-                            </div>
-                            <div className="bg-surface-sunken px-3.5 py-3">
-                              <p className="text-[10px] uppercase tracking-[0.1em] text-subtle-foreground">
-                                Total return
-                              </p>
-                              <p
-                                data-numeric
-                                className={cn(
-                                  "mt-1.5 text-[15px] font-semibold",
-                                  returnTone(position.totalReturn),
-                                )}
-                              >
-                                {formatCurrency(position.totalReturn)}
-                                <span className="ml-1.5 text-[11.5px] font-medium">
-                                  {position.totalReturnPercentage}%
-                                </span>
-                              </p>
-                            </div>
-                            <div className="bg-surface-sunken px-3.5 py-3">
-                              <p className="text-[10px] uppercase tracking-[0.1em] text-subtle-foreground">
-                                APY
-                              </p>
-                              <p
-                                data-numeric
-                                className="mt-1.5 text-[15px] font-semibold text-brand-ink"
-                              >
-                                {position.pool.apy || "0.00"}%
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* Timeline */}
-                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11.5px] text-muted-foreground">
-                            {position.daysHeld !== undefined && (
-                              <span className="flex items-center gap-1.5">
-                                <Clock className="h-3 w-3" strokeWidth={2} />
-                                Held for {position.daysHeld} days
-                              </span>
-                            )}
-                            {position.pool.maturityDate && (
-                              <span>
-                                Matures {formatDate(position.pool.maturityDate)}
-                              </span>
-                            )}
-                            {position.lastActivityDate && (
-                              <span>
-                                Last {position.lastActivityType?.toLowerCase()}{" "}
-                                {formatDate(position.lastActivityDate)}
-                              </span>
-                            )}
-                          </div>
+                          <span data-numeric className="text-right text-[13.5px] text-foreground">
+                            {position.pool.apy || "0.00"}%
+                          </span>
+                          <ChevronRight
+                            className="h-4 w-4 text-subtle-foreground/50 transition-colors group-hover:text-foreground"
+                            strokeWidth={1.75}
+                          />
                         </div>
 
-                        <Button
-                          asChild
-                          variant="secondary"
-                          size="sm"
-                          className="shrink-0"
-                        >
-                          <Link href={`/pool/${position.pool.poolAddress}`}>
-                            View pool
-                            <ArrowRight className="h-3.5 w-3.5" />
-                          </Link>
-                        </Button>
-                      </div>
-                    </article>
-                  ))}
+                        {/* Mobile */}
+                        <div className="sm:hidden">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <p className="truncate text-[13.5px] font-medium text-foreground">
+                                {position.pool.name}
+                              </p>
+                              <p className="mt-0.5 truncate text-[12px] text-muted-foreground">
+                                {meta}
+                              </p>
+                            </div>
+                            <span data-numeric className="shrink-0 text-[15px] font-medium text-foreground">
+                              {formatCurrency(position.currentValue)}
+                            </span>
+                          </div>
+                          <div className="mt-2 flex items-center gap-4 text-[11.5px]">
+                            <span data-numeric className={tone}>
+                              {formatCurrency(position.totalReturn)} (
+                              {position.totalReturnPercentage}%)
+                            </span>
+                            <span data-numeric className="text-subtle-foreground">
+                              APY {position.pool.apy || "0.00"}%
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  })}
                 </div>
-              )}
-            </section>
-          </>
-        )}
-      </div>
+              </div>
+            )}
+          </section>
+        </>
+      )}
     </div>
   );
 }
