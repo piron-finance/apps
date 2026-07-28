@@ -72,8 +72,11 @@ const ALL_CHAINS_OPTION = SUPPORTED_CHAINS[0] as ChainOption;
 // visitor lands before they pick, or choose to persist, something else.
 const DEFAULT_CHAIN_ID = 84532; // Base Sepolia
 
-// Separate storage key from admin/SPV so each app persists independently
-const STORAGE_KEY = "piron_app_active_chain";
+// Separate storage key from admin/SPV so each app persists independently.
+// v2: the old key was polluted by the earlier Arbitrum "pin" (every visitor had
+// 421614 force-written), so bumping the key discards those stale values and lets
+// the Base default below take effect. Genuine choices persist under the new key.
+const STORAGE_KEY = "piron_app_active_chain_v2";
 
 // ─── Context ──────────────────────────────────────────────────────────────────
 
