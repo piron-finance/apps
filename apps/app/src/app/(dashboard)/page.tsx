@@ -1,20 +1,20 @@
 "use client";
 
+import { useState } from "react";
 import { usePlatformMetrics } from "@/hooks/usePlatformData";
 import { usePoolsData, useFeaturedPools } from "@/hooks/usePoolsData";
 import {
-  StatCard,
+  OverviewStrip,
   PoolCard,
   PoolSection,
   Sidebar,
 } from "@/components/dashboard";
 import { FirstRunStepper } from "@/components/dashboard/first-run-stepper";
 import { PoolCardSkeletonGrid } from "@/components/dashboard/skeletons";
+import { SelectField } from "@/components/ui/select-field";
 import type { Pool } from "@/lib/api/types";
 import { poolTypeLabel } from "@/lib/pool-helpers";
-import { CHAIN_INFO } from "@/lib/constants/chains";
 import { useChainContext, SUPPORTED_CHAINS } from "@/lib/context/ChainContext";
-import { useState } from "react";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function formatTVL(value: string | undefined): string {
@@ -42,12 +42,9 @@ function getPoolTVL(pool: Pool): string {
 function getPoolSubtitle(pool: Pool): string | undefined {
   if (pool.poolType === "STABLE_YIELD") {
     const nav = pool.analytics?.navPerShare;
-    return nav ? `NAV Price: ${parseFloat(nav).toFixed(4)} / share` : undefined;
+    return nav ? `NAV ${parseFloat(nav).toFixed(4)} per share` : undefined;
   }
-  if (pool.poolType === "SINGLE_ASSET") {
-    const rate = pool.discountRate ? pool.discountRate / 100 : null;
-    return rate ? `Target APY: ${rate.toFixed(1)}%` : undefined;
-  }
+  if (pool.issuer) return `Issued by ${pool.issuer}`;
   return undefined;
 }
 
@@ -61,62 +58,88 @@ function getPoolTiers(
   }));
 }
 
-function getPoolInfo(pool: Pool): string {
-  if (pool.poolType === "SINGLE_ASSET") {
-    const raised = pool.analytics?.totalValueLocked
-      ? parseFloat(pool.analytics.totalValueLocked)
-      : 0;
-    const target = pool.targetRaise ? parseFloat(pool.targetRaise) : 0;
-    const progress = target > 0 ? Math.round((raised / target) * 100) : 0;
-    return `${formatTVL(pool.analytics?.totalValueLocked)} of ${formatTVL(pool.targetRaise || undefined)} (${progress}%)`;
+/** The headline rate an investor shops on, per pool type. */
+function getPoolRate(pool: Pool): { rate: string; rateLabel: string } {
+  if (pool.poolType === "LOCKED" && pool.lockTiers?.length) {
+    const rates = pool.lockTiers.map((t) => parseFloat(t.interestRatePercent));
+    const min = Math.min(...rates);
+    const max = Math.max(...rates);
+    return {
+      rate: min === max ? `${max.toFixed(1)}%` : `${min.toFixed(1)}–${max.toFixed(1)}%`,
+      rateLabel: "Fixed rate",
+    };
   }
-  const utilization = pool.analytics?.utilizationRate
-    ? `${parseFloat(pool.analytics.utilizationRate).toFixed(0)}% at work`
-    : "";
-  return utilization || "";
+  if (pool.poolType === "SINGLE_ASSET" && pool.discountRate) {
+    return {
+      rate: `${(pool.discountRate / 100).toFixed(1)}%`,
+      rateLabel: "Target APY",
+    };
+  }
+  const apy = pool.projectedAPY ?? pool.analytics?.apy;
+  return { rate: formatAPY(apy), rateLabel: "Current APY" };
 }
 
-function getPoolTags(pool: Pool): string[] {
-  return pool.tags?.slice(0, 2) || [];
+function getFundingProgress(pool: Pool): number | undefined {
+  if (pool.poolType !== "SINGLE_ASSET") return undefined;
+  const target = pool.targetRaise ? parseFloat(pool.targetRaise) : 0;
+  if (target <= 0) return undefined;
+  const raised = parseFloat(pool.analytics?.totalValueLocked || "0");
+  return Math.round((raised / target) * 100);
 }
 
-// ── Chain colour dot ─────────────────────────────────────────────────────────
-function ChainDot({ chainId }: { chainId?: number }) {
-  if (!chainId) return null;
-  const color = CHAIN_INFO[chainId]?.color;
-  if (!color) return null;
+function getPoolMeta(pool: Pool): { label: string; value: string } | undefined {
+  if (pool.maturityDate) {
+    const days = Math.ceil(
+      (new Date(pool.maturityDate).getTime() - Date.now()) /
+        (1000 * 60 * 60 * 24),
+    );
+    if (days > 0) return { label: "Tenor", value: `${days}d` };
+  }
+  if (pool.analytics?.utilizationRate) {
+    return {
+      label: "At work",
+      value: `${parseFloat(pool.analytics.utilizationRate).toFixed(0)}%`,
+    };
+  }
+  return undefined;
+}
+
+/** Everything the card needs, derived once so the JSX below stays readable. */
+function poolCardProps(pool: Pool, link: string) {
+  const { rate, rateLabel } = getPoolRate(pool);
+  const progress = getFundingProgress(pool);
+
+  return {
+    key: pool.id,
+    poolId: pool.poolAddress,
+    chainId: pool.chainId,
+    type: poolTypeLabel(pool.poolType),
+    asset: pool.assetSymbol,
+    name: pool.name,
+    rate,
+    rateLabel,
+    tvl: getPoolTVL(pool),
+    tvlLabel: pool.poolType === "SINGLE_ASSET" ? "Raised" : "TVL",
+    subtitle: getPoolSubtitle(pool),
+    tiers: getPoolTiers(pool),
+    meta: getPoolMeta(pool),
+    progress,
+    progressLabel:
+      progress !== undefined
+        ? `${formatTVL(pool.analytics?.totalValueLocked)} of ${formatTVL(pool.targetRaise || undefined)} raised · ${progress}%`
+        : undefined,
+    minInvestment: pool.minInvestment,
+    tags: pool.tags?.slice(0, 2) || [],
+    link,
+  };
+}
+
+const GRID = "mt-6 grid grid-cols-1 gap-4 md:grid-cols-2";
+
+function EmptyState({ children }: { children: React.ReactNode }) {
   return (
-    <span
-      className="inline-block w-2 h-2 rounded-full flex-shrink-0"
-      style={{ background: color }}
-    />
-  );
-}
-
-// ── Shared dropdown style ─────────────────────────────────────────────────────
-const selectClass =
-  "appearance-none bg-[#0d0d0d] border border-[#222] text-[11px] text-[#aaa] rounded-lg pl-3 pr-7 py-1.5 cursor-pointer focus:outline-none focus:border-[#444] transition-colors hover:border-[#333]";
-
-// Chevron overlay for selects
-function SelectWrapper({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="relative inline-flex items-center">
-      {children}
-      <svg
-        className="pointer-events-none absolute right-2 text-[#555]"
-        width="9"
-        height="6"
-        viewBox="0 0 9 6"
-        fill="none"
-      >
-        <path
-          d="M1 1L4.5 5L8 1"
-          stroke="currentColor"
-          strokeWidth="1.4"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
+    <div className="col-span-full rounded-2xl border border-dashed border-border py-12 text-center">
+      <p className="text-[13px] text-muted-foreground">{children}</p>
     </div>
   );
 }
@@ -125,10 +148,9 @@ function SelectWrapper({ children }: { children: React.ReactNode }) {
 export default function DashboardPage() {
   const [activeDuration, setActiveDuration] = useState("All");
   const [activeAsset, setActiveAsset] = useState("All");
-  // Use global ChainContext — persists across navigation + shared with portfolio page
-  const { activeChainId, setActiveChainId } = useChainContext();
+  // Global ChainContext — set from the header, shared with the portfolio page.
+  const { activeChainId } = useChainContext();
 
-  // All data scoped to the selected chain
   const { data: metrics } = usePlatformMetrics(activeChainId);
   const { data: poolsResponse, isLoading: poolsLoading } = usePoolsData(
     activeChainId !== undefined ? { chainId: activeChainId } : undefined,
@@ -149,8 +171,7 @@ export default function DashboardPage() {
   const singleAssetPools = pools.filter((p) => p.poolType === "SINGLE_ASSET");
 
   // Filter options derived from the pools actually present, so a selection can
-  // never lead to an empty "No pools" dead-end (the old hardcoded USDC/USDT/DAI
-  // and 90d/180d/365d lists didn't match the real assets/tiers on-chain).
+  // never lead to an empty "No pools" dead-end.
   const stableAssetOptions = [
     "All",
     ...Array.from(
@@ -218,110 +239,91 @@ export default function DashboardPage() {
   const activeChainLabel =
     SUPPORTED_CHAINS.find((o) => o.id === activeChainId)?.label ?? "All Chains";
 
-  // Empty state component for pool sections when chain has no pools
-  function EmptyChainState({ poolType }: { poolType: string }) {
-    if (!poolsLoading && activeChainId !== undefined && pools.length === 0) {
-      return (
-        <div className="col-span-full flex flex-col items-center gap-2 py-10 text-center">
-          <ChainDot chainId={activeChainId} />
-          <p className="text-[13px] text-[#555]">
-            No {poolType} pools deployed on {activeChainLabel} yet.
-          </p>
-        </div>
-      );
-    }
-    return null;
+  const chainHasNoPools =
+    !poolsLoading && activeChainId !== undefined && pools.length === 0;
+
+  function emptyFor(poolType: string) {
+    return chainHasNoPools
+      ? `No ${poolType} pools are deployed on ${activeChainLabel} yet. Switch networks from the header to see more.`
+      : `No ${poolType} pools match this filter.`;
   }
 
   return (
-    <div className="min-h-screen bg-[#000000] p-3 sm:p-4 lg:p-6">
-      {/* ── Chain Selector (dropdown) ───────────────────────────────────── */}
-      <div className="mb-4 flex items-center gap-2">
-        <SelectWrapper>
-          <select
-            value={activeChainId ?? "all"}
-            onChange={(e) => {
-              const val = e.target.value;
-              setActiveChainId(val === "all" ? undefined : Number(val));
-            }}
-            className={selectClass}
-          >
-            {SUPPORTED_CHAINS.map((opt) => (
-              <option key={opt.label} value={opt.id ?? "all"}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </SelectWrapper>
+    <div className="mx-auto max-w-[1440px] px-4 pb-4 pt-8 sm:px-6 lg:px-8 lg:pt-12">
+      {/* ── Hero ─────────────────────────────────────────────────────────── */}
+      <header className="max-w-2xl">
+        <p className="eyebrow">Piron markets · {activeChainLabel}</p>
+        <h1 className="mt-3 font-display text-[38px] leading-[1.05] tracking-[-0.015em] text-foreground sm:text-[46px]">
+          Fixed income,
+          <span className="text-brand-ink"> settled onchain</span>.
+        </h1>
+        <p className="mt-4 text-[14px] leading-relaxed text-muted-foreground sm:text-[15px]">
+          Tokenized T-bills, fixed-rate deposits and single-deal credit — each
+          with published terms, live NAV and wallet-native custody.
+        </p>
+      </header>
 
-        {/* Active chain indicator dot */}
-        {activeChainId !== undefined && <ChainDot chainId={activeChainId} />}
-      </div>
-
-      {/* ── First-run onboarding (wallet-aware; auto-hides once done) ────── */}
-      <FirstRunStepper />
-
-      {/* ── Stats Row ──────────────────────────────────────────────────── */}
-      <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:gap-4">
-        <StatCard
-          label="TOTAL VALUE LOCKED"
-          value={
-            metrics?.totalValueLockedFormatted ||
-            formatTVL(metrics?.totalValueLocked) ||
-            "$0"
-          }
-          badge={tvlChange}
-        />
-        <StatCard
-          label="LIVE POOLS"
-          value={String(pools.length)}
-          subtitle={`${stableYieldPools.length} Flexible · ${lockedPools.length} Fixed · ${singleAssetPools.length} Term`}
-        />
-        <StatCard
-          label="BLENDED APY"
-          value={blendedAPY}
-          subtitle="TVL-weighted, net of fees"
-        />
-        <StatCard
-          label="24H FLOW"
-          value={metrics?.netFlows24h ? formatTVL(metrics.netFlows24h) : "$0"}
-          subtitle={
-            metrics?.volume24h
-              ? `Volume: ${formatTVL(metrics.volume24h)}`
-              : undefined
-          }
+      {/* ── Platform overview ────────────────────────────────────────────── */}
+      <div className="mt-8">
+        <OverviewStrip
+          items={[
+            {
+              label: "Total value locked",
+              value:
+                metrics?.totalValueLockedFormatted ||
+                formatTVL(metrics?.totalValueLocked) ||
+                "$0",
+              badge: tvlChange,
+              badgeTone:
+                tvlChangeNum !== null && tvlChangeNum < 0
+                  ? "negative"
+                  : "positive",
+              subtitle: "Across every live pool on this network",
+            },
+            {
+              label: "Live pools",
+              value: String(pools.length),
+              subtitle: `${stableYieldPools.length} Flexible · ${lockedPools.length} Fixed · ${singleAssetPools.length} Term`,
+            },
+            {
+              label: "Blended APY",
+              value: blendedAPY,
+              subtitle: "TVL-weighted, net of fees",
+            },
+            {
+              label: "24h flow",
+              value: metrics?.netFlows24h
+                ? formatTVL(metrics.netFlows24h)
+                : "$0",
+              subtitle: metrics?.volume24h
+                ? `Volume: ${formatTVL(metrics.volume24h)}`
+                : "Net deposits less withdrawals",
+            },
+          ]}
         />
       </div>
 
-      <div className="flex flex-col gap-4 xl:flex-row">
-        {/* ── Main Content ─────────────────────────────────────────────── */}
-        <div id="pools-start" className="w-full space-y-4 xl:w-[68%]">
+      {/* ── First-run onboarding (wallet-aware; auto-hides once done) ─────── */}
+      <div className="mt-4">
+        <FirstRunStepper />
+      </div>
 
-          {/* Featured Pools — only shown when pools exist for this chain */}
+      <div className="mt-10 flex flex-col gap-10 xl:flex-row xl:gap-8">
+        {/* ── Main column ──────────────────────────────────────────────── */}
+        <div id="pools-start" className="min-w-0 flex-1 space-y-12">
+          {/* Featured */}
           {featuredPools.length > 0 && (
             <PoolSection
-              label="FEATURED"
+              label="Featured"
               title="Top picks this week."
-              subtitle="Curated pools with strong performance and high liquidity."
+              subtitle="Curated pools with strong performance and deep liquidity."
             >
-              <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className={GRID}>
                 {featuredPools.slice(0, 2).map((pool) => (
                   <PoolCard
+                    {...poolCardProps(pool, "Enter pool")}
                     key={pool.id}
-                    poolId={pool.poolAddress}
-                    chainId={pool.chainId}
-                    type={poolTypeLabel(pool.poolType)}
-                    asset={pool.assetSymbol}
-                    name={pool.name}
-                    tvl={getPoolTVL(pool)}
-                    subtitle={getPoolSubtitle(pool)}
-                    tiers={getPoolTiers(pool)}
-                    info={getPoolInfo(pool)}
-                    right=""
-                    tags={getPoolTags(pool)}
-                    link="Enter pool →"
-                    minInvestment={pool.minInvestment}
-                    currency={pool.assetSymbol}
+                    featured
                   />
                 ))}
               </div>
@@ -330,171 +332,96 @@ export default function DashboardPage() {
 
           {/* Flexible Yield */}
           <PoolSection
-            label="FLEXIBLE YIELD"
+            label="Flexible yield"
             title="Withdraw anytime. Earn daily."
             subtitle="NAV-priced pools holding T-bills and money market paper. Your capital works from day one."
+            count={filteredStablePools.length}
             filters={
               stableAssetOptions.length > 2 ? (
-                <SelectWrapper>
-                  <select
-                    value={activeAsset}
-                    onChange={(e) => setActiveAsset(e.target.value)}
-                    className={selectClass}
-                  >
-                    {stableAssetOptions.map((c) => (
-                      <option key={c} value={c}>
-                        {c === "All" ? "All assets" : c}
-                      </option>
-                    ))}
-                  </select>
-                </SelectWrapper>
+                <SelectField
+                  prefix="Asset"
+                  value={activeAsset}
+                  onChange={(e) => setActiveAsset(e.target.value)}
+                >
+                  {stableAssetOptions.map((c) => (
+                    <option key={c} value={c}>
+                      {c === "All" ? "All" : c}
+                    </option>
+                  ))}
+                </SelectField>
               ) : undefined
             }
           >
-            <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className={GRID}>
               {poolsLoading ? (
                 <PoolCardSkeletonGrid count={2} />
+              ) : filteredStablePools.length === 0 ? (
+                <EmptyState>{emptyFor("Flexible Yield")}</EmptyState>
               ) : (
-                <>
-                  <EmptyChainState poolType="Flexible Yield" />
-                  {filteredStablePools.length === 0 &&
-                  !(activeChainId !== undefined && pools.length === 0) ? (
-                    <div className="col-span-full py-8 text-center text-[#555]">
-                      No Flexible Yield pools available
-                    </div>
-                  ) : (
-                    filteredStablePools.map((pool) => (
-                      <PoolCard
-                        key={pool.id}
-                        poolId={pool.poolAddress}
-                    chainId={pool.chainId}
-                        type={poolTypeLabel(pool.poolType)}
-                        asset={pool.assetSymbol}
-                        name={pool.name}
-                        tvl={getPoolTVL(pool)}
-                        subtitle={getPoolSubtitle(pool)}
-                        tiers={getPoolTiers(pool)}
-                        info={getPoolInfo(pool)}
-                        right=""
-                        tags={getPoolTags(pool)}
-                        link="Enter pool →"
-                        minInvestment={pool.minInvestment}
-                        currency={pool.assetSymbol}
-                      />
-                    ))
-                  )}
-                </>
+                filteredStablePools.map((pool) => (
+                  <PoolCard {...poolCardProps(pool, "Enter pool")} key={pool.id} />
+                ))
               )}
             </div>
           </PoolSection>
 
           {/* Fixed Yield */}
           <PoolSection
-            label="FIXED YIELD"
+            label="Fixed yield"
             title="Lock your rate. Skip the volatility."
-            subtitle="Fixed-term deposits with a rate set at deposit. Choose when you receive interest. Early exit costs you."
+            subtitle="Fixed-term deposits with the rate set at deposit. Choose when you receive interest — early exit costs you."
+            count={filteredLockedPools.length}
             filters={
               lockedDurationOptions.length > 2 ? (
-                <SelectWrapper>
-                  <select
-                    value={activeDuration}
-                    onChange={(e) => setActiveDuration(e.target.value)}
-                    className={selectClass}
-                  >
-                    {lockedDurationOptions.map((d) => (
-                      <option key={d} value={d}>
-                        {d === "All" ? "All durations" : d}
-                      </option>
-                    ))}
-                  </select>
-                </SelectWrapper>
+                <SelectField
+                  prefix="Duration"
+                  value={activeDuration}
+                  onChange={(e) => setActiveDuration(e.target.value)}
+                >
+                  {lockedDurationOptions.map((d) => (
+                    <option key={d} value={d}>
+                      {d === "All" ? "All" : d}
+                    </option>
+                  ))}
+                </SelectField>
               ) : undefined
             }
           >
-            <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className={GRID}>
               {poolsLoading ? (
                 <PoolCardSkeletonGrid count={2} />
+              ) : filteredLockedPools.length === 0 ? (
+                <EmptyState>{emptyFor("Fixed Yield")}</EmptyState>
               ) : (
-                <>
-                  <EmptyChainState poolType="Fixed Yield" />
-                  {filteredLockedPools.length === 0 &&
-                  !(activeChainId !== undefined && pools.length === 0) ? (
-                    <div className="col-span-full py-8 text-center text-[#555]">
-                      No Fixed Yield pools available
-                    </div>
-                  ) : (
-                    filteredLockedPools.map((pool) => (
-                      <PoolCard
-                        key={pool.id}
-                        poolId={pool.poolAddress}
-                    chainId={pool.chainId}
-                        type={poolTypeLabel(pool.poolType)}
-                        asset={pool.assetSymbol}
-                        name={pool.name}
-                        tvl={getPoolTVL(pool)}
-                        subtitle={getPoolSubtitle(pool)}
-                        tiers={getPoolTiers(pool)}
-                        info={getPoolInfo(pool)}
-                        right={
-                          pool.maturityDate
-                            ? `${Math.ceil((new Date(pool.maturityDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))}d tenor`
-                            : ""
-                        }
-                        tags={getPoolTags(pool)}
-                        link="Review terms →"
-                        minInvestment={pool.minInvestment}
-                        currency={pool.assetSymbol}
-                      />
-                    ))
-                  )}
-                </>
+                filteredLockedPools.map((pool) => (
+                  <PoolCard
+                    {...poolCardProps(pool, "Review terms")}
+                    key={pool.id}
+                  />
+                ))
               )}
             </div>
           </PoolSection>
 
           {/* Term Deals */}
           <PoolSection
-            label="TERM DEALS"
+            label="Term deals"
             title="One deal. Full visibility."
-            subtitle="Finance a specific receivable or credit facility. SPV-wrapped with documents on-chain."
+            subtitle="Finance a specific receivable or credit facility. SPV-wrapped with documents onchain."
+            count={singleAssetPools.length}
           >
-            <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className={GRID}>
               {poolsLoading ? (
                 <PoolCardSkeletonGrid count={2} />
+              ) : singleAssetPools.length === 0 ? (
+                <EmptyState>{emptyFor("Term Deal")}</EmptyState>
               ) : (
-                <>
-                  <EmptyChainState poolType="Term Deals" />
-                  {singleAssetPools.length === 0 &&
-                  !(activeChainId !== undefined && pools.length === 0) ? (
-                    <div className="col-span-full py-8 text-center text-[#555]">
-                      No Term Deals pools available
-                    </div>
-                  ) : (
-                    singleAssetPools.map((pool) => (
-                      <PoolCard
-                        key={pool.id}
-                        poolId={pool.poolAddress}
-                    chainId={pool.chainId}
-                        type={poolTypeLabel(pool.poolType)}
-                        asset={pool.assetSymbol}
-                        name={pool.name}
-                        tvl={getPoolTVL(pool)}
-                        subtitle={getPoolSubtitle(pool)}
-                        tiers={getPoolTiers(pool)}
-                        info={getPoolInfo(pool)}
-                        right={
-                          pool.maturityDate
-                            ? `${Math.ceil((new Date(pool.maturityDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))}d tenor`
-                            : ""
-                        }
-                        tags={getPoolTags(pool)}
-                        link="View deal memo →"
-                        minInvestment={pool.minInvestment}
-                        currency={pool.assetSymbol}
-                      />
-                    ))
-                  )}
-                </>
+                singleAssetPools.map((pool) => (
+                  <PoolCard
+                    {...poolCardProps(pool, "View deal memo")}
+                    key={pool.id}
+                  />
+                ))
               )}
             </div>
           </PoolSection>

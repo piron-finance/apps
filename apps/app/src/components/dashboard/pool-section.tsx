@@ -7,25 +7,47 @@ interface PoolSectionProps {
   title: string;
   subtitle: string;
   filters?: ReactNode;
+  /** Shown next to the eyebrow, e.g. "4 pools". */
+  count?: number;
   children: ReactNode;
 }
 
+/**
+ * Sections sit directly on the canvas — no card wrapping other cards. The
+ * eyebrow / serif title / lede stack does the separating work that a border
+ * used to do, which stops the page reading as boxes inside boxes.
+ */
 export function PoolSection({
   label,
   title,
   subtitle,
   filters,
+  count,
   children,
 }: PoolSectionProps) {
   return (
-    <div className="rounded-2xl border border-[#292a30] bg-[#08080a] p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.035)] sm:p-5">
-      <div className="mb-1 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <p className="text-[11px] text-[#8F9B99] tracking-wider">{label}</p>
-        {filters && <div className="w-full overflow-x-auto sm:w-auto">{filters}</div>}
+    <section className="scroll-mt-24">
+      <div className="flex flex-col gap-4 border-b border-border pb-5 sm:flex-row sm:items-end sm:justify-between">
+        <div className="max-w-xl">
+          <div className="flex items-center gap-2.5">
+            <span className="eyebrow">{label}</span>
+            {count !== undefined && count > 0 && (
+              <span className="rounded-full bg-surface-sunken px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                {count}
+              </span>
+            )}
+          </div>
+          <h2 className="mt-2 font-display text-[26px] leading-[1.1] tracking-tight text-foreground sm:text-[30px]">
+            {title}
+          </h2>
+          <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">
+            {subtitle}
+          </p>
+        </div>
+        {filters && <div className="shrink-0">{filters}</div>}
       </div>
-      <h2 className="text-[16px] font-medium text-[#F5F7F6]">{title}</h2>
-      <p className="text-[12px] text-[#8F9B99] mt-1">{subtitle}</p>
+
       {children}
-    </div>
+    </section>
   );
 }

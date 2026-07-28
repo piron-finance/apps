@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import { useAccount, useReadContracts } from "wagmi";
 import { erc20Abi } from "viem";
 import { useWeb3Modal } from "@web3modal/wagmi/react";
+import { Check, X } from "lucide-react";
 import { useUserPositions } from "@/hooks/useUserData";
+import { cn } from "@/lib/utils";
 
 // Faucet test token per chain — used only to tell whether the visitor has
 // already claimed on any supported network. Mirrors the backend faucet's
@@ -49,7 +51,10 @@ export function FirstRunStepper() {
     query: { enabled: !!address },
   });
   const hasTokens = (balances ?? []).some(
-    (r) => r.status === "success" && typeof r.result === "bigint" && r.result > BigInt(0),
+    (r) =>
+      r.status === "success" &&
+      typeof r.result === "bigint" &&
+      r.result > BigInt(0),
   );
 
   const { data: positions } = useUserPositions(address);
@@ -58,7 +63,9 @@ export function FirstRunStepper() {
   const hasPosition = active + activeLocked > 0;
 
   const scrollToPools = () =>
-    document.getElementById("pools-start")?.scrollIntoView({ behavior: "smooth" });
+    document
+      .getElementById("pools-start")
+      ?.scrollIntoView({ behavior: "smooth" });
 
   const steps: Step[] = [
     {
@@ -77,7 +84,9 @@ export function FirstRunStepper() {
       title: "Make your first deposit",
       hint: "Pick a pool and start earning.",
       done: hasPosition,
-      cta: hasPosition ? undefined : { label: "Browse pools", onClick: scrollToPools },
+      cta: hasPosition
+        ? undefined
+        : { label: "Browse pools", onClick: scrollToPools },
     },
   ];
 
@@ -86,74 +95,98 @@ export function FirstRunStepper() {
 
   // The first not-yet-done step is the one we actively prompt.
   const currentIndex = steps.findIndex((s) => !s.done);
+  const doneCount = steps.filter((s) => s.done).length;
+  const progress = (doneCount / steps.length) * 100;
 
   const dismiss = () => {
     localStorage.setItem(DISMISS_KEY, "1");
     setDismissed(true);
   };
 
-  const doneCount = steps.filter((s) => s.done).length;
-
   return (
-    <div className="mb-4 overflow-hidden rounded-2xl border border-[#292a30] bg-[#08080a] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.035)]">
-      <div className="flex items-center justify-between px-5 pt-5 sm:px-6">
+    <div className="surface-card animate-rise overflow-hidden">
+      <div className="flex items-start justify-between gap-4 px-5 pt-5 sm:px-6 sm:pt-6">
         <div>
-          <h2 className="text-[15px] font-semibold tracking-tight text-white">Get started</h2>
-          <p className="mt-0.5 text-[12px] text-[#7c7c7c]">
-            Three quick steps to your first deposit — {doneCount} of {steps.length} done.
+          <h2 className="font-display text-[22px] leading-none tracking-tight text-foreground">
+            Get started
+          </h2>
+          <p className="mt-2 text-[12.5px] text-muted-foreground">
+            Three quick steps to your first deposit —{" "}
+            <span className="font-medium text-foreground">
+              {doneCount} of {steps.length}
+            </span>{" "}
+            done.
           </p>
         </div>
         <button
           onClick={dismiss}
-          className="text-[11px] text-[#5f5f5f] transition-colors hover:text-[#9a9a9a]"
+          aria-label="Dismiss getting started"
+          className="focus-ring -mr-1 -mt-1 flex h-8 w-8 items-center justify-center rounded-full text-subtle-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
-          Dismiss
+          <X className="h-4 w-4" strokeWidth={2} />
         </button>
       </div>
 
-      <div className="mt-4 grid grid-cols-1 divide-y divide-[#161618] px-5 pb-5 sm:grid-cols-3 sm:divide-x sm:divide-y-0 sm:px-0 sm:pb-0">
+      {/* Progress rail */}
+      <div className="mx-5 mt-5 h-1 overflow-hidden rounded-full bg-surface-sunken sm:mx-6">
+        <div
+          className="h-full rounded-full bg-brand transition-[width] duration-700 ease-out"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+
+      <ol className="mt-1 grid grid-cols-1 divide-y divide-border-subtle sm:grid-cols-3 sm:divide-x sm:divide-y-0">
         {steps.map((step, i) => {
           const isCurrent = i === currentIndex;
           return (
-            <div
-              key={i}
-              className="flex items-start gap-3.5 py-4 first:pt-0 last:pb-0 sm:px-6 sm:py-5 sm:first:pt-5 sm:last:pb-5"
+            <li
+              key={step.title}
+              className={cn(
+                "flex items-start gap-3.5 px-5 py-5 sm:px-6",
+                isCurrent && "bg-brand-soft/40",
+              )}
             >
               <span
-                className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold transition-colors ${
+                className={cn(
+                  "mt-px flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold transition-colors",
                   step.done
-                    ? "bg-[#00c853] text-black"
+                    ? "bg-brand text-brand-foreground"
                     : isCurrent
-                      ? "text-white ring-2 ring-[#00c853]/60"
-                      : "text-[#666] ring-1 ring-[#2a2a2c]"
-                }`}
+                      ? "animate-pulse-ring bg-surface text-brand-ink ring-1 ring-brand/50"
+                      : "bg-surface-sunken text-subtle-foreground",
+                )}
               >
                 {step.done ? (
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path d="M2.5 6.2L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  <Check className="h-3.5 w-3.5" strokeWidth={2.5} />
                 ) : (
                   i + 1
                 )}
               </span>
               <div className="min-w-0">
-                <p className={`text-[13px] font-medium ${step.done ? "text-[#9a9a9a]" : "text-white"}`}>
+                <p
+                  className={cn(
+                    "text-[13px] font-medium",
+                    step.done ? "text-muted-foreground" : "text-foreground",
+                  )}
+                >
                   {step.title}
                 </p>
-                <p className="mt-0.5 text-[11px] leading-relaxed text-[#7c7c7c]">{step.hint}</p>
+                <p className="mt-1 text-[11.5px] leading-relaxed text-muted-foreground">
+                  {step.hint}
+                </p>
                 {step.cta && isCurrent && (
                   <button
                     onClick={step.cta.onClick}
-                    className="mt-2.5 inline-flex items-center rounded-lg bg-[#00b64a] px-3.5 py-1.5 text-[11px] font-semibold text-black transition-colors hover:bg-[#00c853]"
+                    className="focus-ring mt-3 inline-flex h-7 items-center rounded-full bg-brand px-3.5 text-[11.5px] font-semibold text-brand-foreground transition-colors hover:bg-brand-strong"
                   >
                     {step.cta.label}
                   </button>
                 )}
               </div>
-            </div>
+            </li>
           );
         })}
-      </div>
+      </ol>
     </div>
   );
 }
