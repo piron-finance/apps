@@ -2,84 +2,279 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================================
+   Piron design tokens
+   ----------------------------------------------------------------------------
+   Light is the default theme: a warm bone/parchment canvas, pure-white surfaces
+   and a deep evergreen brand — the palette of a printed term sheet rather than
+   a trading terminal. Dark is a deliberate second skin (near-black with a
+   luminous green), not an afterthought.
+
+   Every value is an HSL triplet so Tailwind can compose opacity via
+   `hsl(var(--token) / <alpha-value>)`.
+   ========================================================================== */
+
 :root {
-  --radius: 0.625rem;
-  --background: 0 0% 100%;
-  --foreground: 0 0% 3.9%;
-  --card: 0 0% 100%;
-  --card-foreground: 0 0% 3.9%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 0 0% 3.9%;
-  --primary: 0 0% 9%;
-  --primary-foreground: 0 0% 98%;
-  --secondary: 0 0% 96.1%;
-  --secondary-foreground: 0 0% 9%;
-  --muted: 0 0% 96.1%;
-  --muted-foreground: 0 0% 45.1%;
-  --accent: 0 0% 96.1%;
-  --accent-foreground: 0 0% 9%;
-  --destructive: 0 84.2% 60.2%;
-  --border: 0 0% 89.8%;
-  --input: 0 0% 89.8%;
-  --ring: 0 0% 3.9%;
-  --chart-1: 12 76% 61%;
-  --chart-2: 173 58% 39%;
-  --chart-3: 197 37% 24%;
-  --chart-4: 43 74% 66%;
-  --chart-5: 27 87% 67%;
-  --sidebar: 0 0% 98%;
-  --sidebar-foreground: 0 0% 9%;
-  --sidebar-primary: 0 0% 9%;
-  --sidebar-primary-foreground: 0 0% 98%;
-  --sidebar-accent: 0 0% 96.1%;
-  --sidebar-accent-foreground: 0 0% 9%;
-  --sidebar-border: 0 0% 89.8%;
-  --sidebar-ring: 0 0% 3.9%;
+  --radius: 0.875rem;
+
+  /* Canvas & ink */
+  --background: 42 32% 96%;
+  --foreground: 30 10% 11%;
+
+  /* Surfaces */
+  --surface: 0 0% 100%;
+  --surface-sunken: 42 26% 94%;
+  --surface-raised: 45 50% 99%;
+
+  /* Lines */
+  --border: 38 20% 87%;
+  --border-subtle: 40 24% 91%;
+  --border-strong: 36 14% 76%;
+
+  /* Text ramp */
+  --muted: 40 22% 93%;
+  --muted-foreground: 32 7% 42%;
+  --subtle-foreground: 32 6% 56%;
+
+  /* Brand — deep evergreen */
+  --brand: 158 82% 20%;
+  --brand-strong: 158 88% 14%;
+  --brand-foreground: 45 50% 98%;
+  --brand-ink: 158 74% 23%;
+  --brand-soft: 158 40% 93%;
+  --brand-line: 158 34% 82%;
+
+  /* Semantics */
+  --positive: 152 62% 27%;
+  --positive-soft: 152 44% 93%;
+  --negative: 2 66% 46%;
+  --negative-soft: 6 68% 95%;
+  --warning: 30 86% 36%;
+  --warning-soft: 40 82% 92%;
+  --info: 214 68% 38%;
+  --info-soft: 212 68% 94%;
+
+  /* shadcn compatibility layer */
+  --card: var(--surface);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface);
+  --popover-foreground: var(--foreground);
+  --primary: var(--brand);
+  --primary-foreground: var(--brand-foreground);
+  --secondary: 40 24% 92%;
+  --secondary-foreground: 30 10% 14%;
+  --accent: 40 26% 91%;
+  --accent-foreground: 30 10% 14%;
+  --destructive: var(--negative);
+  --destructive-foreground: 45 50% 98%;
+  --input: 38 20% 85%;
+  --ring: 158 70% 30%;
+
+  /* Data viz — tuned to sit on cream without vibrating */
+  --chart-1: 158 72% 26%;
+  --chart-2: 199 62% 36%;
+  --chart-3: 32 74% 46%;
+  --chart-4: 268 40% 50%;
+  --chart-5: 344 56% 48%;
+  --chart-grid: 38 18% 88%;
+  --chart-axis: 32 6% 52%;
+
+  /* Elevation — warm-tinted so shadows read as paper, not soot */
+  --shadow-card:
+    0 1px 2px -1px hsl(32 20% 24% / 0.06), 0 1px 3px hsl(32 20% 24% / 0.04);
+  --shadow-lift:
+    0 2px 4px -2px hsl(32 20% 24% / 0.06), 0 14px 28px -12px hsl(32 20% 24% / 0.16);
+  --shadow-pop:
+    0 1px 2px hsl(32 20% 24% / 0.06), 0 32px 64px -16px hsl(32 24% 20% / 0.28);
+  --shadow-inset: inset 0 1px 0 0 hsl(0 0% 100% / 0.6);
 }
 
 .dark {
-  --background: 0 0% 0%;
-  --foreground: 0 0% 98%;
-  --card: 0 0% 3.9%;
-  --card-foreground: 0 0% 98%;
-  --popover: 0 0% 3.9%;
-  --popover-foreground: 0 0% 98%;
-  --primary: 0 0% 98%;
-  --primary-foreground: 0 0% 9%;
-  --secondary: 0 0% 14.9%;
-  --secondary-foreground: 0 0% 98%;
-  --muted: 0 0% 14.9%;
-  --muted-foreground: 0 0% 63.9%;
-  --accent: 0 0% 14.9%;
-  --accent-foreground: 0 0% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --border: 0 0% 14.9%;
-  --input: 0 0% 14.9%;
-  --ring: 0 0% 83.1%;
-  --chart-1: 220 70% 50%;
-  --chart-2: 160 60% 45%;
-  --chart-3: 30 80% 55%;
-  --chart-4: 280 65% 60%;
-  --chart-5: 340 75% 55%;
-  --sidebar: 0 0% 0%;
-  --sidebar-foreground: 0 0% 98%;
-  --sidebar-primary: 0 0% 98%;
-  --sidebar-primary-foreground: 0 0% 9%;
-  --sidebar-accent: 0 0% 14.9%;
-  --sidebar-accent-foreground: 0 0% 98%;
-  --sidebar-border: 0 0% 14.9%;
-  --sidebar-ring: 0 0% 83.1%;
+  /* Canvas & ink */
+  --background: 240 7% 4%;
+  --foreground: 40 14% 96%;
+
+  /* Surfaces */
+  --surface: 240 7% 7%;
+  --surface-sunken: 240 6% 10%;
+  --surface-raised: 240 6% 11%;
+
+  /* Lines */
+  --border: 240 5% 16%;
+  --border-subtle: 240 6% 12%;
+  --border-strong: 240 5% 24%;
+
+  /* Text ramp */
+  --muted: 240 5% 14%;
+  --muted-foreground: 40 5% 62%;
+  --subtle-foreground: 40 4% 46%;
+
+  /* Brand — luminous green */
+  --brand: 150 96% 41%;
+  --brand-strong: 150 96% 48%;
+  --brand-foreground: 150 90% 5%;
+  --brand-ink: 150 88% 48%;
+  --brand-soft: 152 58% 11%;
+  --brand-line: 152 44% 22%;
+
+  /* Semantics */
+  --positive: 150 78% 45%;
+  --positive-soft: 152 54% 11%;
+  --negative: 2 80% 63%;
+  --negative-soft: 2 46% 14%;
+  --warning: 38 92% 58%;
+  --warning-soft: 38 54% 12%;
+  --info: 210 88% 64%;
+  --info-soft: 212 54% 14%;
+
+  /* shadcn compatibility layer */
+  --secondary: 240 5% 14%;
+  --secondary-foreground: 40 14% 96%;
+  --accent: 240 5% 15%;
+  --accent-foreground: 40 14% 96%;
+  --destructive-foreground: 40 14% 96%;
+  --input: 240 5% 18%;
+  --ring: 150 80% 38%;
+
+  /* Data viz */
+  --chart-1: 150 88% 46%;
+  --chart-2: 190 78% 52%;
+  --chart-3: 38 90% 58%;
+  --chart-4: 268 66% 66%;
+  --chart-5: 344 74% 62%;
+  --chart-grid: 240 5% 16%;
+  --chart-axis: 40 4% 52%;
+
+  /* Elevation — depth comes from light edges, not drop shadows */
+  --shadow-card: inset 0 1px 0 0 hsl(0 0% 100% / 0.035);
+  --shadow-lift:
+    inset 0 1px 0 0 hsl(0 0% 100% / 0.05), 0 16px 32px -16px hsl(0 0% 0% / 0.8);
+  --shadow-pop: 0 32px 64px -16px hsl(0 0% 0% / 0.75);
+  --shadow-inset: inset 0 1px 0 0 hsl(0 0% 100% / 0.035);
 }
 
 @layer base {
-  html.dark {
+  :root {
+    color-scheme: light;
+  }
+  .dark {
     color-scheme: dark;
-    background: #000000;
   }
+
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
   body {
-    @apply bg-black text-foreground;
+    @apply bg-background font-sans text-foreground antialiased;
+    font-feature-settings: "cv02" 1, "cv03" 1, "cv04" 1, "ss01" 1;
+  }
+
+  /* A whisper of warmth in the corners so the cream canvas has depth
+     instead of reading as flat #fff-adjacent paint. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(
+        60rem 40rem at 12% -10%,
+        hsl(var(--brand) / 0.05),
+        transparent 60%
+      ),
+      radial-gradient(
+        50rem 34rem at 92% 0%,
+        hsl(32 80% 60% / 0.06),
+        transparent 60%
+      );
+  }
+
+  .dark body::before {
+    background:
+      radial-gradient(
+        60rem 40rem at 12% -10%,
+        hsl(var(--brand) / 0.07),
+        transparent 60%
+      ),
+      radial-gradient(
+        50rem 34rem at 92% 0%,
+        hsl(214 90% 50% / 0.05),
+        transparent 60%
+      );
+  }
+
+  /* Numbers should never dance as they tick. */
+  .tabular,
+  [data-numeric] {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+
+  ::selection {
+    background: hsl(var(--brand) / 0.18);
+  }
+
+  /* Scrollbars that match the paper rather than the OS */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border-strong)) transparent;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--border-strong));
+    border: 3px solid transparent;
+    border-radius: 999px;
+    background-clip: content-box;
+  }
+}
+
+@layer components {
+  /* The one card recipe every surface in the app inherits from. */
+  .surface-card {
+    @apply rounded-2xl border border-border bg-surface shadow-card;
+  }
+
+  .surface-sunken {
+    @apply rounded-xl border border-border-subtle bg-surface-sunken;
+  }
+
+  /* Small uppercase eyebrow used above section titles. */
+  .eyebrow {
+    @apply text-[10px] font-semibold uppercase tracking-[0.16em] text-subtle-foreground;
+  }
+
+  /* Focus ring shared by every interactive element. */
+  .focus-ring {
+    @apply outline-none focus-visible:ring-2 focus-visible:ring-ring/45 focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Hairline dividers that stay crisp on both themes. */
+  .divide-hairline > * + * {
+    border-color: hsl(var(--border-subtle));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-rise,
+    .animate-shimmer {
+      animation: none !important;
+    }
   }
 }
