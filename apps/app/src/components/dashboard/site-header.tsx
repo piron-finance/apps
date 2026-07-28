@@ -36,14 +36,14 @@ export function SiteHeader() {
           className="focus-ring flex shrink-0 items-center gap-2 rounded-lg"
         >
           <Image
-            src="/pironLogo.png"
+            src="/pironMark.png"
             alt=""
-            width={30}
-            height={30}
+            width={26}
+            height={26}
             priority
-            className="dark:brightness-[1.85] dark:saturate-[1.1]"
+            className="dark:brightness-[1.9] dark:saturate-[1.1]"
           />
-          <span className="hidden font-display text-[19px] leading-none tracking-tight text-foreground sm:inline">
+          <span className="font-display text-[19px] leading-none tracking-tight text-foreground">
             Piron
             <span className="text-brand-ink">.</span>
           </span>

@@ -21,11 +21,11 @@ export function SiteFooter() {
           <div className="max-w-sm">
             <Link href="/" className="inline-flex items-center gap-2">
               <Image
-                src="/pironLogo.png"
+                src="/pironMark.png"
                 alt=""
-                width={26}
-                height={26}
-                className="dark:brightness-[1.85] dark:saturate-[1.1]"
+                width={24}
+                height={24}
+                className="dark:brightness-[1.9] dark:saturate-[1.1]"
               />
               <span className="font-display text-[17px] leading-none tracking-tight text-foreground">
                 Piron<span className="text-brand-ink">.</span>

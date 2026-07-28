@@ -158,29 +158,36 @@ export function TestTokenAnnouncement() {
           <div className="flex min-w-0 items-center gap-3">
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-surface shadow-card ring-1 ring-warning/20">
               <Image
-                src="/pironLogo.png"
+                src="/pironMark.png"
                 alt=""
                 width={20}
                 height={20}
-                className="dark:brightness-[1.85] dark:saturate-[1.1]"
+                className="dark:brightness-[1.9] dark:saturate-[1.1]"
               />
             </span>
             <div className="min-w-0">
-              <p className="flex items-center gap-2 text-[13px] font-semibold text-foreground sm:text-[13.5px]">
-                Get free testnet tokens to try Piron
-                <span className="hidden rounded-full bg-warning/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-warning sm:inline">
+              <p className="text-[13px] font-semibold text-foreground sm:text-[13.5px]">
+                Get free testnet tokens
+                <span className="hidden sm:inline"> to try Piron</span>
+                <span className="ml-2 hidden rounded-full bg-warning/15 px-1.5 py-0.5 align-middle text-[9px] font-semibold uppercase tracking-wide text-warning sm:inline-block">
                   Testnet
                 </span>
               </p>
-              <p className="truncate text-[11.5px] text-muted-foreground sm:text-[12px]">
+              {/* The second line is detail, not instruction — drop it rather
+                  than truncate it mid-sentence on small screens. */}
+              <p className="hidden text-[12px] text-muted-foreground sm:block">
                 Claim 100,000 test tokens — you&rsquo;ll need them to deposit
                 into any pool.
+              </p>
+              <p className="text-[11.5px] text-muted-foreground sm:hidden">
+                100,000 tokens, free.
               </p>
             </div>
           </div>
 
-          <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-warning px-3.5 py-2 text-[12px] font-semibold text-background transition-transform group-hover:translate-x-0.5 sm:px-4">
-            Claim tokens
+          <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-warning px-3 py-2 text-[12px] font-semibold text-background transition-transform group-hover:translate-x-0.5 sm:px-4">
+            <span className="hidden sm:inline">Claim tokens</span>
+            <span className="sm:hidden">Claim</span>
             <svg
               width="14"
               height="14"
