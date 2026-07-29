@@ -243,6 +243,52 @@ export interface PoolsResponse {
   };
 }
 
+// ── Products (one product = 1..N per-chain pool instances) ────────────────────
+// Shares are NOT fungible across chains — `aggregates` is a labeled roll-up,
+// `instances` is the per-chain truth (the unit you actually deposit into).
+export interface ProductInstance {
+  chainId: number;
+  poolAddress: string;
+  status: string;
+  tvl: string;
+  apy: number | null;
+  navPerShare: string | null;
+  assetSymbol: string;
+  minInvestment: string;
+}
+
+export interface ProductAggregates {
+  totalTvl: string;
+  chains: number[];
+  instanceCount: number;
+  blendedApy: number | null;
+  /** null for SINGLE_ASSET — read statusByChain instead. */
+  combinedStatus: string | null;
+  statusByChain: Record<number, string>;
+}
+
+export interface Product {
+  productKey: string;
+  name: string;
+  description: string | null;
+  poolType: PoolType;
+  issuer: string | null;
+  issuerLogo: string | null;
+  securityType: string | null;
+  riskRating: string | null;
+  country: string | null;
+  region: string | null;
+  tags: string[];
+  isFeatured: boolean;
+  synthesized: boolean;
+  aggregates: ProductAggregates;
+  instances: ProductInstance[];
+}
+
+export interface ProductsResponse {
+  data: Product[];
+}
+
 export interface PoolFilters {
   poolType?: PoolType;
   type?: PoolType; // alias

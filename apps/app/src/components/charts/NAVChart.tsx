@@ -98,10 +98,10 @@ export default function NAVChart({ data, timeframe }: NAVChartProps) {
   return (
     <div className="w-full h-full flex flex-col overflow-hidden">
       <div className="mb-3 flex-shrink-0">
-        <div className="text-xl sm:text-2xl font-bold text-white">
+        <div className="text-xl sm:text-2xl font-bold text-foreground">
           ${currentNAV.toFixed(4)}
         </div>
-        <div className={`text-xs sm:text-sm ${isPositive ? "text-[#00c48c]" : "text-red-400"}`}>
+        <div className={`text-xs sm:text-sm ${isPositive ? "text-positive" : "text-negative"}`}>
           {isPositive ? "+" : ""}
           {navChangePercent}% ({timeframe})
         </div>
@@ -115,8 +115,8 @@ export default function NAVChart({ data, timeframe }: NAVChartProps) {
         >
           <defs>
             <linearGradient id="navGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#00c48c" stopOpacity="0.3" />
-              <stop offset="100%" stopColor="#00c48c" stopOpacity="0" />
+              <stop offset="0%" stopColor="hsl(var(--chart-1))" stopOpacity="0.3" />
+              <stop offset="100%" stopColor="hsl(var(--chart-1))" stopOpacity="0" />
             </linearGradient>
           </defs>
 
@@ -128,7 +128,7 @@ export default function NAVChart({ data, timeframe }: NAVChartProps) {
               y1={y}
               x2={width - padding}
               y2={y}
-              stroke="rgba(255,255,255,0.05)"
+              stroke="hsl(var(--chart-grid))"
               strokeWidth="0.2"
             />
           ))}
@@ -143,7 +143,7 @@ export default function NAVChart({ data, timeframe }: NAVChartProps) {
           <path
             d={pathData}
             fill="none"
-            stroke="#00c48c"
+            stroke="hsl(var(--chart-1))"
             strokeWidth="0.5"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -155,13 +155,13 @@ export default function NAVChart({ data, timeframe }: NAVChartProps) {
               cx={(width - padding)}
               cy={height - padding - ((currentNAV - minNAV) / (maxNAV - minNAV)) * (height - padding * 2)}
               r="1"
-              fill="#00c48c"
+              fill="hsl(var(--chart-1))"
             />
           )}
         </svg>
 
         {/* Y-axis labels */}
-        <div className="absolute left-0 top-0 bottom-0 flex flex-col justify-between text-[10px] sm:text-xs text-gray-500 pr-2">
+        <div className="absolute left-0 top-0 bottom-0 flex flex-col justify-between text-[10px] sm:text-xs text-subtle-foreground pr-2">
           <span>${maxNAV.toFixed(4)}</span>
           <span>${((maxNAV + minNAV) / 2).toFixed(4)}</span>
           <span>${minNAV.toFixed(4)}</span>
@@ -169,7 +169,7 @@ export default function NAVChart({ data, timeframe }: NAVChartProps) {
       </div>
 
       {/* X-axis labels */}
-      <div className="flex justify-between text-[10px] sm:text-xs text-gray-500 mt-2 flex-shrink-0">
+      <div className="flex justify-between text-[10px] sm:text-xs text-subtle-foreground mt-2 flex-shrink-0">
         <span>
           {new Date(chartData[0]?.timestamp).toLocaleDateString("en-US", {
             month: "short",
