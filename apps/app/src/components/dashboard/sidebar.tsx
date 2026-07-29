@@ -31,7 +31,7 @@ export function Sidebar() {
   return (
     // The aside stretches so its rule runs the full height of the markets
     // column; the sticky behaviour lives on the inner wrapper.
-    <aside className="w-full shrink-0 xl:w-[286px] xl:border-l xl:border-border xl:pl-8">
+    <aside className="w-full shrink-0 xl:w-[290px] xl:border-l xl:border-border xl:pl-10">
       <div className="xl:sticky xl:top-[76px]">
         <div className="divide-y divide-border-subtle border-t border-border xl:border-t-0">
           {isConnected && <PortfolioBlock walletAddress={address!} />}
@@ -56,12 +56,14 @@ function Block({
   first?: boolean;
 }) {
   return (
-    <section className={cn("py-5", first && "xl:pt-0")}>
+    <section className={cn("py-7", first && "xl:pt-0")}>
       <div className="flex items-baseline justify-between gap-3">
-        <h3 className="eyebrow">{title}</h3>
+        <h3 className="text-[13px] font-semibold tracking-title text-foreground">
+          {title}
+        </h3>
         {action}
       </div>
-      <div className="mt-3.5">{children}</div>
+      <div className="mt-4">{children}</div>
     </section>
   );
 }
@@ -80,7 +82,7 @@ function Row({
   emphasis?: boolean;
 }) {
   return (
-    <div className="flex min-w-0 items-baseline justify-between gap-3 py-[5px] text-[12.5px]">
+    <div className="flex min-w-0 items-baseline justify-between gap-3 py-[7px] text-[12.5px]">
       <span className="flex min-w-0 items-center gap-2 text-muted-foreground">
         {dot && (
           <span
@@ -183,7 +185,7 @@ function PortfolioBlock({ walletAddress }: { walletAddress: string }) {
             {returnPercent.toFixed(1)}%)
           </p>
 
-          <div className="mt-4">
+          <div className="mt-5">
             <Row label="Pool positions" value={String(activePositions)} />
             <Row label="Locked positions" value={String(lockedCount)} />
             {totalValue - lockedValue > 0 && (
@@ -265,7 +267,7 @@ function AllocationBlock() {
               ))}
           </div>
 
-          <div className="mt-3.5">
+          <div className="mt-4">
             {segments.map((segment) => (
               <Row
                 key={segment.label}

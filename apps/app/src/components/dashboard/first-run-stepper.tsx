@@ -98,7 +98,7 @@ export function FirstRunStepper() {
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-border py-3.5">
+    <div className="flex flex-wrap items-center gap-x-7 gap-y-3 border-b border-border py-4">
       <span className="eyebrow">
         Getting started · {doneCount}/{steps.length}
       </span>

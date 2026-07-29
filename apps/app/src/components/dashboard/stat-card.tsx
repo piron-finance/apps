@@ -30,7 +30,7 @@ export function Stat({
   return (
     <div className={cn("min-w-0", className)}>
       <p className="eyebrow">{label}</p>
-      <div className="mt-2.5 flex items-baseline gap-2">
+      <div className="mt-3.5 flex items-baseline gap-2">
         <span
           data-numeric
           className="text-[25px] font-semibold leading-none tracking-display text-foreground"
@@ -47,7 +47,7 @@ export function Stat({
         )}
       </div>
       {subtitle && (
-        <p className="mt-2 truncate text-[12px] text-muted-foreground">
+        <p className="mt-2.5 truncate text-[12.5px] text-muted-foreground">
           {subtitle}
         </p>
       )}
@@ -71,15 +71,15 @@ export function MetricRow({ items }: { items: StatCardProps[] }) {
           <div
             key={item.label}
             className={cn(
-              "py-5 lg:py-6",
-              startsMobileRow ? "pr-5" : "pl-5",
+              "py-7 lg:py-8",
+              startsMobileRow ? "pr-8" : "pl-8",
               !startsMobileRow && "border-l border-border-subtle",
               i > 1 && "border-t border-border-subtle",
               // At four-up, only the first cell is flush and rule-free.
               "lg:border-t-0",
               startsWideRow
-                ? "lg:pl-0 lg:pr-5"
-                : "lg:border-l lg:border-border-subtle lg:pl-5 lg:pr-5",
+                ? "lg:pl-0 lg:pr-8"
+                : "lg:border-l lg:border-border-subtle lg:pl-8 lg:pr-8",
             )}
           >
             <Stat {...item} />

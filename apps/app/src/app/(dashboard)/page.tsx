@@ -233,12 +233,12 @@ export default function DashboardPage() {
       <FirstRunStepper />
 
       {/* ── Page header ────────────────────────────────────────────────── */}
-      <header className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3 pb-6 pt-8">
+      <header className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4 pb-10 pt-14">
         <div className="max-w-2xl">
           <h1 className="text-[27px] font-semibold leading-none tracking-display text-foreground">
             Markets
           </h1>
-          <p className="mt-3 text-[13.5px] leading-relaxed text-muted-foreground">
+          <p className="mt-4 max-w-xl text-[14px] leading-relaxed text-muted-foreground">
             Tokenized treasuries, fixed-rate deposits and single-deal credit.
             Published terms, live NAV, wallet-native custody.
           </p>
@@ -286,8 +286,8 @@ export default function DashboardPage() {
       />
 
       {/* ── Markets + rail, both starting on the same baseline ─────────── */}
-      <div className="flex flex-col gap-10 pb-4 pt-10 xl:flex-row xl:gap-8">
-        <div id="pools-start" className="min-w-0 flex-1 space-y-12">
+      <div className="flex flex-col gap-14 pb-6 pt-14 xl:flex-row xl:gap-12">
+        <div id="pools-start" className="min-w-0 flex-1 space-y-16">
           {featuredPools.length > 0 && (
             <PoolSection
               title="Featured"
