@@ -276,7 +276,7 @@ export default function PortfolioPage() {
                             {position.pool.apy || "0.00"}%
                           </span>
                           <ChevronRight
-                            className="h-4 w-4 text-subtle-foreground/50 transition-colors group-hover:text-foreground"
+                            className="h-4 w-4 text-subtle-foreground/50 group-hover:text-foreground"
                             strokeWidth={1.75}
                           />
                         </div>

@@ -151,7 +151,7 @@ export function TestTokenAnnouncement() {
       <button
         type="button"
         onClick={openClaimModal}
-        className="group block w-full border-b border-border bg-surface-sunken text-left transition-colors hover:bg-muted"
+        className="group block w-full border-b border-border bg-surface-sunken text-left hover:bg-muted"
       >
         <div className="mx-auto flex max-w-[1320px] items-center gap-3 px-5 py-2.5 sm:px-8">
           <span className="shrink-0 rounded-sm border border-warning/30 px-1.5 py-0.5 text-[9.5px] font-semibold uppercase tracking-[0.1em] text-warning">
@@ -166,7 +166,7 @@ export function TestTokenAnnouncement() {
               — you&rsquo;ll need them to deposit into any pool.
             </span>
           </p>
-          <span className="ml-auto flex shrink-0 items-center gap-1 text-[12.5px] font-medium text-foreground underline decoration-border-strong underline-offset-2 transition-colors group-hover:decoration-foreground">
+          <span className="ml-auto flex shrink-0 items-center gap-1 text-[12.5px] font-medium text-foreground underline decoration-border-strong underline-offset-2 group-hover:decoration-foreground">
             Claim
             <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden>
               <path
@@ -184,7 +184,7 @@ export function TestTokenAnnouncement() {
       {/* Modal */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-[100] flex animate-fade-in items-end justify-center bg-foreground/25 p-3 backdrop-blur-md sm:items-center sm:p-6"
+          className="fixed inset-0 z-[100] flex items-end justify-center bg-foreground/25 p-3 backdrop-blur-md sm:items-center sm:p-6"
           role="dialog"
           aria-modal="true"
           aria-labelledby="claim-modal-title"
@@ -192,7 +192,7 @@ export function TestTokenAnnouncement() {
             if (e.target === e.currentTarget) closeModal();
           }}
         >
-          <div className="w-full max-w-lg animate-rise overflow-hidden rounded-xl border border-border bg-surface shadow-pop">
+          <div className="w-full max-w-lg overflow-hidden rounded-xl border border-border bg-surface shadow-pop">
             {/* Header */}
             <div className="border-b border-border-subtle px-5 py-5 sm:px-6">
               <div className="flex items-start justify-between gap-4">
@@ -215,7 +215,7 @@ export function TestTokenAnnouncement() {
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="focus-ring flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-subtle-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  className="focus-ring flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-subtle-foreground hover:bg-muted hover:text-foreground"
                   aria-label="Close"
                 >
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -264,7 +264,7 @@ export function TestTokenAnnouncement() {
                       href={getTransactionUrl(faucetChainId, claimState.txHash)}
                       target="_blank"
                       rel="noreferrer"
-                      className="font-mono text-[11px] text-brand-ink transition-opacity hover:opacity-70"
+                      className="font-mono text-[11px] text-brand-ink hover:opacity-70"
                     >
                       {claimState.txHash.slice(0, 12)}…
                       {claimState.txHash.slice(-8)} ↗
@@ -273,7 +273,7 @@ export function TestTokenAnnouncement() {
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="focus-ring mt-2 h-9 rounded border border-border px-6 text-[12.5px] font-medium text-foreground transition-colors hover:bg-surface-raised"
+                    className="focus-ring mt-2 h-9 rounded border border-border px-6 text-[12.5px] font-medium text-foreground hover:bg-surface-raised"
                   >
                     Done
                   </button>
@@ -370,7 +370,7 @@ export function TestTokenAnnouncement() {
                           : "Paste recipient wallet address"
                       }
                       spellCheck={false}
-                      className="h-11 w-full rounded border border-input bg-surface px-3.5 font-mono text-[13px] text-foreground outline-none transition-[border-color,box-shadow] placeholder:font-sans placeholder:text-subtle-foreground focus:border-brand/50 focus:ring-2 focus:ring-ring/25"
+                      className="h-11 w-full rounded border border-input bg-surface px-3.5 font-mono text-[13px] text-foreground outline-none placeholder:font-sans placeholder:text-subtle-foreground focus:border-brand/50 focus:ring-2 focus:ring-ring/25"
                     />
                     <p className="mt-2 text-[11.5px] text-subtle-foreground">
                       {address
@@ -416,7 +416,7 @@ export function TestTokenAnnouncement() {
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="focus-ring h-9 rounded border border-border px-4 text-[12.5px] font-medium text-muted-foreground transition-colors hover:border-border-strong hover:text-foreground"
+                    className="focus-ring h-9 rounded border border-border px-4 text-[12.5px] font-medium text-muted-foreground hover:border-border-strong hover:text-foreground"
                   >
                     Cancel
                   </button>
@@ -424,7 +424,7 @@ export function TestTokenAnnouncement() {
                     type="button"
                     onClick={handleClaim}
                     disabled={isDisabled}
-                    className={`focus-ring h-9 rounded px-5 text-[12.5px] font-semibold transition-colors ${
+                    className={`focus-ring h-9 rounded px-5 text-[12.5px] font-semibold ${
                       canSubmit
                         ? "bg-brand text-brand-foreground hover:bg-brand-strong"
                         : "cursor-not-allowed bg-muted text-subtle-foreground"

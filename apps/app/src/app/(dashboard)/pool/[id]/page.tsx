@@ -72,6 +72,46 @@ function formatTime(date: string | Date): string {
   });
 }
 
+/**
+ * Recharts draws SVG nodes per point, so an unbounded series from the API will
+ * pin the main thread. Keep every nth point, always preserving the first and
+ * last so the curve still starts and ends where the data does.
+ */
+const MAX_CHART_POINTS = 240;
+
+function downsample<T>(points: T[], max: number): T[] {
+  if (points.length <= max) return points;
+  const stride = Math.ceil(points.length / max);
+  const out: T[] = [];
+  for (let i = 0; i < points.length; i += stride) out.push(points[i]);
+  const last = points[points.length - 1];
+  if (out[out.length - 1] !== last) out.push(last);
+  return out;
+}
+
+/**
+ * Declared at module scope on purpose. Defined inside the chart component it
+ * was a new component type on every render, so React unmounted and remounted
+ * the whole tooltip subtree each time — and the chart sets state on every
+ * pointer move, so moving across it churned mount/unmount continuously.
+ */
+function NavTooltip({ active, payload }: any) {
+  if (!active || !payload || !payload.length) return null;
+  const data = payload[0].payload;
+  return (
+    <div className="rounded-lg border border-border bg-surface px-3 py-2 shadow-pop">
+      <p className="mb-1 font-mono text-[10px] text-muted-foreground">{data.date}</p>
+      <div className="flex items-center gap-2 text-[11px]">
+        <span className="h-2 w-2 rounded-full bg-brand" />
+        <span className="text-muted-foreground">NAV / share</span>
+        <span className="ml-auto font-mono font-semibold text-foreground">
+          {data.nav.toFixed(4)} {data.symbol}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export default function PoolDetailPage({ params }: { params: { id: string } }) {
   const { data: pool, isLoading: poolLoading } = usePoolData(params.id);
 
@@ -173,7 +213,7 @@ function PoolDetailContent({ pool }: { pool: Pool }) {
     <div className="mx-auto max-w-[1320px] px-5 pb-4 pt-6 sm:px-8">
       <Link
         href="/"
-        className="focus-ring -ml-1 mb-5 inline-flex items-center gap-1.5 rounded-lg px-1 py-0.5 text-[12.5px] text-muted-foreground transition-colors hover:text-foreground"
+        className="focus-ring -ml-1 mb-5 inline-flex items-center gap-1.5 rounded-lg px-1 py-0.5 text-[12.5px] text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
         Back to pools
@@ -329,20 +369,25 @@ function NAVYieldHistory({ pool }: { pool: Pool }) {
   // honest to plot, so the chart shows a "building history" empty state instead.
   const chartData = useMemo(() => {
     if (!navHistory?.data || navHistory.data.length === 0) return [];
-    return navHistory.data.map((point) => ({
+    const points = navHistory.data.map((point) => ({
       date: new Date(point.timestamp).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
       fullDate: new Date(point.timestamp),
       nav: parseFloat(point.navPerShare),
+      symbol: pool.assetSymbol,
     }));
-  }, [navHistory]);
+    return downsample(points, MAX_CHART_POINTS);
+  }, [navHistory, pool.assetSymbol]);
 
   const hasHistory = chartData.length >= 2;
 
   const { minNav, maxNav } = useMemo(() => {
     if (chartData.length === 0) return { minNav: 0, maxNav: 1 };
-    const navs = chartData.map((d) => d.nav);
-    const min = Math.min(...navs);
-    const max = Math.max(...navs);
+    let min = Infinity;
+    let max = -Infinity;
+    for (const d of chartData) {
+      if (d.nav < min) min = d.nav;
+      if (d.nav > max) max = d.nav;
+    }
     const padding = (max - min) * 0.1 || 0.001;
     return { minNav: min - padding, maxNav: max + padding };
   }, [chartData]);
@@ -365,22 +410,7 @@ function NAVYieldHistory({ pool }: { pool: Pool }) {
     setActiveIndex(null);
   }, []);
 
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (!active || !payload || !payload.length) return null;
-    const data = payload[0].payload;
-    return (
-      <div className="rounded-xl border border-border bg-surface px-3 py-2 shadow-pop">
-        <p className="mb-1 font-mono text-[10px] text-muted-foreground">{data.date}</p>
-        <div className="flex items-center gap-2 text-[11px]">
-          <span className="h-2 w-2 rounded-full bg-brand" />
-          <span className="text-muted-foreground">NAV / share</span>
-          <span className="ml-auto font-mono font-semibold text-foreground">
-            {data.nav.toFixed(4)} {pool.assetSymbol}
-          </span>
-        </div>
-      </div>
-    );
-  };
+
 
   return (
     <div className="section-block">
@@ -404,7 +434,7 @@ function NAVYieldHistory({ pool }: { pool: Pool }) {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`focus-ring rounded-sm px-2.5 py-1 text-[11.5px] font-medium transition-colors ${
+              className={`focus-ring rounded-sm px-2.5 py-1 text-[11.5px] font-medium ${
                 activeTab === tab
                   ? "bg-surface text-foreground"
                   : "text-muted-foreground hover:text-foreground"
@@ -456,7 +486,7 @@ function NAVYieldHistory({ pool }: { pool: Pool }) {
               width={55}
             />
             <Tooltip
-              content={<CustomTooltip />}
+              content={<NavTooltip />}
               cursor={{
                 stroke: "hsl(var(--chart-1))",
                 strokeWidth: 1,
@@ -470,6 +500,7 @@ function NAVYieldHistory({ pool }: { pool: Pool }) {
               strokeWidth={1.75}
               fill="url(#navAreaGradient)"
               dot={false}
+              isAnimationActive={false}
               activeDot={{
                 r: 4,
                 fill: "hsl(var(--chart-1))",
@@ -563,7 +594,7 @@ function FundingProgress({ pool, availability, onDeposit }: { pool: Pool; availa
         <div className="mt-3 mb-2">
           <div className="relative h-3 bg-muted rounded-full overflow-hidden">
             <div
-              className="absolute inset-y-0 left-0 rounded-full transition-all duration-700 ease-out"
+              className="absolute inset-y-0 left-0 rounded-full"
               style={{
                 width: `${percent}%`,
                 background: percent >= 100
@@ -633,7 +664,7 @@ function FundingProgress({ pool, availability, onDeposit }: { pool: Pool; availa
         {availability.canDeposit ? (
           <button
             onClick={onDeposit}
-            className="w-full rounded-full bg-brand px-5 py-2.5 text-[12px] font-medium text-brand-foreground transition-colors hover:bg-brand-strong sm:w-auto sm:px-8"
+            className="w-full rounded-full bg-brand px-5 py-2.5 text-[12px] font-medium text-brand-foreground hover:bg-brand-strong sm:w-auto sm:px-8"
           >
             Deposit
           </button>
@@ -841,11 +872,11 @@ function DepositModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex animate-fade-in items-end justify-center bg-foreground/25 p-0 backdrop-blur-md sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/25 p-0 backdrop-blur-md sm:items-center sm:p-4"
       onClick={onClose}
     >
       <div
-        className="max-h-[92vh] w-full max-w-lg animate-rise overflow-y-auto rounded-t-xl border border-border bg-surface p-5 shadow-pop sm:rounded-xl sm:p-6"
+        className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-xl border border-border bg-surface p-5 shadow-pop sm:rounded-xl sm:p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-start justify-between gap-3">
@@ -856,7 +887,7 @@ function DepositModal({
           <button
             onClick={onClose}
             aria-label="Close"
-            className="focus-ring flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-subtle-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="focus-ring flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-subtle-foreground hover:bg-muted hover:text-foreground"
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
           </button>
@@ -884,7 +915,7 @@ function DepositModal({
           )}
           <button
             onClick={handleDone}
-            className="mt-6 w-full rounded-full bg-brand px-5 py-2.5 text-[12px] font-medium text-brand-foreground transition-colors hover:bg-brand-strong"
+            className="mt-6 w-full rounded-full bg-brand px-5 py-2.5 text-[12px] font-medium text-brand-foreground hover:bg-brand-strong"
           >
             Done
           </button>
@@ -910,7 +941,7 @@ function DepositModal({
             Balance: {isConnected ? `${userBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${pool.assetSymbol}` : `— ${pool.assetSymbol}`}
           </span>
         </div>
-        <div className="flex min-w-0 items-center gap-2 rounded-xl border border-border-subtle bg-surface-sunken p-3 transition-colors focus-within:border-brand/50">
+        <div className="flex min-w-0 items-center gap-2 rounded-xl border border-border-subtle bg-surface-sunken p-3 focus-within:border-brand/50">
           <input
             type="text"
             value={amount}
@@ -921,7 +952,7 @@ function DepositModal({
           <button className="px-2 py-1 text-[10px] text-muted-foreground border border-border-subtle rounded">{pool.assetSymbol}</button>
           <button 
             onClick={handleMaxClick}
-            className="px-2 py-1 text-[10px] text-muted-foreground border border-border-subtle rounded hover:text-foreground hover:border-border-strong transition-colors"
+            className="px-2 py-1 text-[10px] text-muted-foreground border border-border-subtle rounded hover:text-foreground hover:border-border-strong"
           >
             Max
           </button>
@@ -938,7 +969,7 @@ function DepositModal({
                 <button
                   key={tier.index}
                   onClick={() => setSelectedTier(tier.index)}
-                  className={`p-3 rounded-lg border text-left transition-colors ${
+                  className={`p-3 rounded-lg border text-left ${
                     selectedTier === tier.index
                       ? "border-brand bg-brand-soft"
                       : "border-border-subtle hover:border-border-strong"
@@ -957,7 +988,7 @@ function DepositModal({
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => setInterestPayment("AT_MATURITY")}
-                  className={`px-3 py-2 text-[11px] rounded-lg border transition-colors ${
+                  className={`px-3 py-2 text-[11px] rounded-lg border ${
                     interestPayment === "AT_MATURITY"
                       ? "border-brand bg-brand-soft text-foreground"
                       : "border-border-subtle text-muted-foreground"
@@ -967,7 +998,7 @@ function DepositModal({
                 </button>
                 <button
                   onClick={() => setInterestPayment("UPFRONT")}
-                  className={`px-3 py-2 text-[11px] rounded-lg border transition-colors ${
+                  className={`px-3 py-2 text-[11px] rounded-lg border ${
                     interestPayment === "UPFRONT"
                       ? "border-brand bg-brand-soft text-foreground"
                       : "border-border-subtle text-muted-foreground"
@@ -1059,7 +1090,7 @@ function DepositModal({
           <button
             onClick={handleAction}
             disabled={isButtonDisabled}
-            className={`w-full flex-1 px-5 py-2.5 text-[12px] font-medium rounded-full transition-colors ${
+            className={`w-full flex-1 px-5 py-2.5 text-[12px] font-medium rounded-full ${
               isButtonDisabled
                 ? "bg-muted text-muted-foreground cursor-not-allowed"
                 : "bg-brand text-brand-foreground hover:bg-brand-strong"
@@ -1069,7 +1100,7 @@ function DepositModal({
           </button>
           <button
             onClick={onClose}
-            className="w-full px-4 py-2.5 text-[12px] text-muted-foreground border border-border-subtle rounded-full hover:text-foreground hover:border-border-strong transition-colors sm:w-auto"
+            className="w-full px-4 py-2.5 text-[12px] text-muted-foreground border border-border-subtle rounded-full hover:text-foreground hover:border-border-strong sm:w-auto"
           >
             Cancel
           </button>
@@ -1212,7 +1243,7 @@ function YourPositions({ pool }: { pool: Pool }) {
         <button
           onClick={() => setShowWithdrawModal(!showWithdrawModal)}
           disabled={!canWithdraw || exit.isConfirming}
-          className={`px-3 py-1.5 text-[11px] rounded-lg transition-colors ${
+          className={`px-3 py-1.5 text-[11px] rounded-lg ${
             canWithdraw
               ? "text-brand-ink border border-brand-line hover:bg-brand-soft"
               : "text-muted-foreground border border-border-subtle cursor-not-allowed"
@@ -1618,7 +1649,7 @@ function LockedPositions({ pool }: { pool: Pool }) {
 
       {/* Early Exit Confirmation Modal */}
       {showEarlyExitModal && selectedPosition && (
-        <div className="fixed inset-0 z-50 flex animate-fade-in items-center justify-center bg-foreground/25 p-4 backdrop-blur-md">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/25 p-4 backdrop-blur-md">
           <div className="max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-xl border border-border-subtle bg-surface-sunken p-4 sm:p-6">
             <h3 className="mb-2 text-[16px] font-semibold tracking-tight text-foreground">Early Exit Confirmation</h3>
             <p className="text-[12px] text-muted-foreground mb-4">
@@ -1771,7 +1802,7 @@ function LockedAPYCard({ pool, tiers, lockedMetrics, availability, onDeposit }: 
         {!isConnected ? (
           <button
             onClick={() => open()}
-            className="flex-1 px-4 py-2.5 bg-brand text-brand-foreground text-[12px] font-medium rounded-full hover:bg-brand-strong transition-colors"
+            className="flex-1 px-4 py-2.5 bg-brand text-brand-foreground text-[12px] font-medium rounded-full hover:bg-brand-strong"
           >
             Connect wallet
           </button>
@@ -1779,12 +1810,12 @@ function LockedAPYCard({ pool, tiers, lockedMetrics, availability, onDeposit }: 
           <>
             <button
               onClick={onDeposit}
-              className="flex-1 px-4 py-2.5 bg-brand text-brand-foreground text-[12px] font-medium rounded-full hover:bg-brand-strong transition-colors"
+              className="flex-1 px-4 py-2.5 bg-brand text-brand-foreground text-[12px] font-medium rounded-full hover:bg-brand-strong"
             >
               {hasPositions ? "Lock more" : "Lock deposit"}
             </button>
             {maturedCount > 0 && (
-              <button className="flex-1 px-4 py-2.5 text-[12px] text-warning border border-warning/30 rounded-full hover:bg-warning-soft transition-colors">
+              <button className="flex-1 px-4 py-2.5 text-[12px] text-warning border border-warning/30 rounded-full hover:bg-warning-soft">
                 Redeem matured
               </button>
             )}
@@ -1798,7 +1829,7 @@ function LockedAPYCard({ pool, tiers, lockedMetrics, availability, onDeposit }: 
               {availability.label}
             </button>
             {maturedCount > 0 && (
-              <button className="flex-1 px-4 py-2.5 text-[12px] text-warning border border-warning/30 rounded-full hover:bg-warning-soft transition-colors">
+              <button className="flex-1 px-4 py-2.5 text-[12px] text-warning border border-warning/30 rounded-full hover:bg-warning-soft">
                 Redeem matured
               </button>
             )}
@@ -1884,7 +1915,7 @@ function APYCard({
         {!isConnected ? (
           <button
             onClick={() => open()}
-            className="flex-1 px-4 py-2.5 bg-brand text-brand-foreground text-[12px] font-medium rounded-full hover:bg-brand-strong transition-colors"
+            className="flex-1 px-4 py-2.5 bg-brand text-brand-foreground text-[12px] font-medium rounded-full hover:bg-brand-strong"
           >
             Connect wallet
           </button>
@@ -1892,14 +1923,14 @@ function APYCard({
           <>
             <button
               onClick={onDeposit}
-              className="flex-1 px-4 py-2.5 bg-brand text-brand-foreground text-[12px] font-medium rounded-full hover:bg-brand-strong transition-colors"
+              className="flex-1 px-4 py-2.5 bg-brand text-brand-foreground text-[12px] font-medium rounded-full hover:bg-brand-strong"
             >
               {hasPosition ? "Deposit more" : "Deposit"}
             </button>
             {hasPosition && (
               <button
                 onClick={scrollToPositions}
-                className="flex-1 px-4 py-2.5 text-[12px] text-muted-foreground border border-border-subtle rounded-full hover:text-foreground hover:border-border-strong transition-colors"
+                className="flex-1 px-4 py-2.5 text-[12px] text-muted-foreground border border-border-subtle rounded-full hover:text-foreground hover:border-border-strong"
               >
                 Withdraw
               </button>
@@ -1916,7 +1947,7 @@ function APYCard({
             {hasPosition && (
               <button
                 onClick={scrollToPositions}
-                className="flex-1 px-4 py-2.5 text-[12px] text-muted-foreground border border-border-subtle rounded-full hover:text-foreground hover:border-border-strong transition-colors"
+                className="flex-1 px-4 py-2.5 text-[12px] text-muted-foreground border border-border-subtle rounded-full hover:text-foreground hover:border-border-strong"
               >
                 Withdraw
               </button>
@@ -2216,10 +2247,10 @@ function RiskCard({ pool }: { pool: Pool }) {
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
-        <button className="px-3 py-1.5 text-[11px] text-muted-foreground border border-border-subtle rounded-full hover:text-foreground hover:border-border-strong transition-colors">
+        <button className="px-3 py-1.5 text-[11px] text-muted-foreground border border-border-subtle rounded-full hover:text-foreground hover:border-border-strong">
           View full disclosures
         </button>
-        <button className="px-3 py-1.5 text-[11px] text-muted-foreground border border-border-subtle rounded-full hover:text-foreground hover:border-border-strong transition-colors">
+        <button className="px-3 py-1.5 text-[11px] text-muted-foreground border border-border-subtle rounded-full hover:text-foreground hover:border-border-strong">
           Tax & reporting
         </button>
       </div>
@@ -2259,13 +2290,13 @@ function AboutPoolCard({ pool }: { pool: Pool }) {
       </div>
 
       <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-        <button className="px-3 py-1.5 text-[11px] text-muted-foreground border border-border-subtle rounded-lg hover:text-foreground hover:border-border-strong transition-colors">
+        <button className="px-3 py-1.5 text-[11px] text-muted-foreground border border-border-subtle rounded-lg hover:text-foreground hover:border-border-strong">
           Strategy docs
         </button>
-        <button className="px-3 py-1.5 text-[11px] text-muted-foreground border border-border-subtle rounded-lg hover:text-foreground hover:border-border-strong transition-colors">
+        <button className="px-3 py-1.5 text-[11px] text-muted-foreground border border-border-subtle rounded-lg hover:text-foreground hover:border-border-strong">
           Smart contracts
         </button>
-        <button className="px-3 py-1.5 text-[11px] text-muted-foreground border border-border-subtle rounded-lg hover:text-foreground hover:border-border-strong transition-colors">
+        <button className="px-3 py-1.5 text-[11px] text-muted-foreground border border-border-subtle rounded-lg hover:text-foreground hover:border-border-strong">
           Audit report
         </button>
       </div>
@@ -2305,7 +2336,7 @@ function PoolTransactionsTable({ poolAddress, assetSymbol, chainId }: { poolAddr
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`focus-ring rounded-sm px-2.5 py-1 text-[11.5px] font-medium capitalize transition-colors ${
+              className={`focus-ring rounded-sm px-2.5 py-1 text-[11.5px] font-medium capitalize ${
                 filter === f
                   ? "bg-surface text-foreground"
                   : "text-muted-foreground hover:text-foreground"
@@ -2359,7 +2390,7 @@ function PoolTransactionsTable({ poolAddress, assetSymbol, chainId }: { poolAddr
                       href={getTransactionUrl(tx.chainId ?? chainId, tx.txHash)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-mono text-muted-foreground transition-colors hover:text-foreground"
+                      className="font-mono text-muted-foreground hover:text-foreground"
                     >
                       {truncateAddress(tx.txHash)}
                     </a>
@@ -2407,7 +2438,7 @@ function PoolTransactionsTable({ poolAddress, assetSymbol, chainId }: { poolAddr
                         href={getTransactionUrl(tx.chainId ?? chainId, tx.txHash)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[12px] text-muted-foreground font-mono transition-colors hover:text-foreground"
+                        className="text-[12px] text-muted-foreground font-mono hover:text-foreground"
                       >
                         {truncateAddress(tx.txHash)}
                       </a>
@@ -2422,7 +2453,7 @@ function PoolTransactionsTable({ poolAddress, assetSymbol, chainId }: { poolAddr
 
       {filteredTransactions.length > 0 && (
         <div className="flex justify-center mt-4">
-          <button className="focus-ring rounded-full px-4 py-2 text-[11.5px] font-medium text-muted-foreground transition-colors hover:text-foreground">
+          <button className="focus-ring rounded-full px-4 py-2 text-[11.5px] font-medium text-muted-foreground hover:text-foreground">
             Load more transactions
           </button>
         </div>

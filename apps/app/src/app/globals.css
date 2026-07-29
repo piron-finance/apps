@@ -217,7 +217,7 @@
 
   /* A data row: hairline-separated, highlights on hover, no border of its own. */
   .ledger-row {
-    @apply border-b border-border-subtle transition-colors last:border-b-0;
+    @apply border-b border-border-subtle last:border-b-0;
   }
 
   /* A section of a detail page. Separated by a rule, not boxed.

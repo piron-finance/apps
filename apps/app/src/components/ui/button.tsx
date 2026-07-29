@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 const buttonVariants = cva(
   [
     "inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded",
-    "text-[13px] font-medium leading-none transition-[background-color,border-color,color,box-shadow,transform] duration-200",
+    "text-[13px] font-medium leading-none",
     "outline-none focus-visible:ring-2 focus-visible:ring-ring/45 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
     "disabled:pointer-events-none disabled:opacity-45",
     "[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
@@ -16,7 +16,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-brand text-brand-foreground hover:bg-brand-strong active:translate-y-px",
+          "bg-brand text-brand-foreground hover:bg-brand-strong",
         secondary:
           "border border-border text-foreground hover:border-border-strong hover:bg-muted",
         outline:

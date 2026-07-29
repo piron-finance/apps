@@ -22,7 +22,7 @@ export function SelectField({
   return (
     <div
       className={cn(
-        "group relative inline-flex h-7 items-center gap-1.5 rounded border border-border pl-2.5 pr-2 text-[12px] transition-colors focus-within:border-brand/45 hover:border-border-strong",
+        "group relative inline-flex h-7 items-center gap-1.5 rounded border border-border pl-2.5 pr-2 text-[12px] focus-within:border-brand/45 hover:border-border-strong",
         wrapperClassName,
       )}
     >
@@ -38,7 +38,7 @@ export function SelectField({
       />
       <ChevronDown
         aria-hidden
-        className="pointer-events-none absolute right-2.5 h-3.5 w-3.5 text-subtle-foreground transition-colors group-hover:text-muted-foreground"
+        className="pointer-events-none absolute right-2.5 h-3.5 w-3.5 text-subtle-foreground group-hover:text-muted-foreground"
         strokeWidth={2}
       />
     </div>

@@ -92,8 +92,7 @@ export function PoolCard({ pool }: { pool: PoolCardData }) {
       href={`/pool/${pool.poolId}`}
       className={cn(
         "group relative flex flex-col overflow-hidden rounded-lg border border-border bg-surface p-6",
-        "transition-[border-color,box-shadow,transform] duration-200",
-        "hover:-translate-y-px hover:shadow-raise",
+        "",
         accent.hover,
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
       )}
@@ -102,7 +101,7 @@ export function PoolCard({ pool }: { pool: PoolCardData }) {
       <span
         aria-hidden
         className={cn(
-          "pointer-events-none absolute inset-0 bg-gradient-to-br to-transparent opacity-70 transition-opacity duration-300 group-hover:opacity-100",
+          "pointer-events-none absolute inset-0 bg-gradient-to-br to-transparent opacity-70",
           accent.wash,
         )}
       />
@@ -110,7 +109,7 @@ export function PoolCard({ pool }: { pool: PoolCardData }) {
       <span
         aria-hidden
         className={cn(
-          "absolute left-0 top-0 h-[2px] w-8 transition-all duration-300 group-hover:w-16",
+          "absolute left-0 top-0 h-[2px] w-8",
           accent.bar,
         )}
       />
@@ -156,7 +155,7 @@ export function PoolCard({ pool }: { pool: PoolCardData }) {
           <span className="block h-[3px] w-full overflow-hidden rounded-full bg-border">
             <span
               className={cn(
-                "block h-full rounded-full transition-[width] duration-500 ease-out",
+                "block h-full rounded-full",
                 accent.meter,
               )}
               style={{
@@ -186,7 +185,7 @@ export function PoolCard({ pool }: { pool: PoolCardData }) {
           ))}
         </dl>
         <ArrowRight
-          className="h-4 w-4 shrink-0 text-subtle-foreground/60 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-foreground"
+          className="h-4 w-4 shrink-0 text-subtle-foreground/60 group-hover:text-foreground"
           strokeWidth={1.75}
         />
       </div>

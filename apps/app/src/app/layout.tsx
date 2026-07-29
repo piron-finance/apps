@@ -37,7 +37,12 @@ const themeBootstrap = `
 (function () {
   try {
     var stored = localStorage.getItem(${JSON.stringify(THEME_STORAGE_KEY)});
-    var theme = stored === "dark" || stored === "light" ? stored : ${JSON.stringify(DEFAULT_THEME)};
+    var pref = stored === "dark" || stored === "light" || stored === "system"
+      ? stored
+      : ${JSON.stringify(DEFAULT_THEME)};
+    var theme = pref === "system"
+      ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+      : pref;
     if (theme === "dark") document.documentElement.classList.add("dark");
     document.documentElement.style.colorScheme = theme;
   } catch (e) {}

@@ -152,7 +152,7 @@ function PortfolioBlock({ walletAddress }: { walletAddress: string }) {
       action={
         <Link
           href="/portfolio"
-          className="focus-ring inline-flex items-center gap-0.5 rounded text-[12px] text-muted-foreground transition-colors hover:text-foreground"
+          className="focus-ring inline-flex items-center gap-0.5 rounded text-[12px] text-muted-foreground hover:text-foreground"
         >
           Open
           <ArrowUpRight className="h-3 w-3" strokeWidth={2} />
@@ -258,7 +258,7 @@ function AllocationBlock() {
               segments.map((segment) => (
                 <span
                   key={segment.label}
-                  className="h-full transition-[width] duration-500 ease-out"
+                  className="h-full"
                   style={{
                     width: `${(segment.value / total) * 100}%`,
                     background: segment.color,

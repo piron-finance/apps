@@ -66,7 +66,7 @@ export function ChainSwitcher({ className }: { className?: string }) {
     <DropdownMenu>
       <DropdownMenuTrigger
         className={cn(
-          "focus-ring inline-flex h-8 items-center gap-2 rounded px-2 text-[12.5px] font-medium text-foreground transition-colors hover:bg-muted data-[state=open]:bg-muted",
+          "focus-ring inline-flex h-8 items-center gap-2 rounded px-2 text-[12.5px] font-medium text-foreground hover:bg-muted data-[state=open]:bg-muted",
           className,
         )}
         aria-label={`Network: ${activeChain.label}`}

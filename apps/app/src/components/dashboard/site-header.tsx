@@ -36,7 +36,7 @@ function NavLink({
       href={href}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "focus-ring relative flex h-full items-center px-0.5 text-[13.5px] transition-colors",
+        "focus-ring relative flex h-full items-center px-0.5 text-[13.5px]",
         active
           ? "font-medium text-foreground"
           : "text-muted-foreground hover:text-foreground",
@@ -46,7 +46,7 @@ function NavLink({
       <span
         aria-hidden
         className={cn(
-          "absolute inset-x-0 -bottom-px h-px transition-colors",
+          "absolute inset-x-0 -bottom-px h-px",
           active ? "bg-foreground" : "bg-transparent",
         )}
       />
@@ -96,7 +96,7 @@ export function SiteHeader() {
             href={DOCS_URL}
             target="_blank"
             rel="noreferrer"
-            className="focus-ring hidden rounded px-2 py-1 text-[13px] text-muted-foreground transition-colors hover:text-foreground lg:inline-block"
+            className="focus-ring hidden rounded px-2 py-1 text-[13px] text-muted-foreground hover:text-foreground lg:inline-block"
           >
             Docs
           </Link>
@@ -108,7 +108,7 @@ export function SiteHeader() {
             type="button"
             onClick={() => open()}
             className={cn(
-              "focus-ring ml-1 inline-flex h-8 items-center gap-2 rounded px-3 text-[12.5px] font-medium transition-colors",
+              "focus-ring ml-1 inline-flex h-8 items-center gap-2 rounded px-3 text-[12.5px] font-medium",
               isConnected
                 ? "border border-border text-foreground hover:border-border-strong hover:bg-muted"
                 : "bg-foreground text-background hover:bg-foreground/88",

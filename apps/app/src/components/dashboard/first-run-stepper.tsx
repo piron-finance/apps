@@ -146,7 +146,7 @@ export function FirstRunStepper() {
               {step.cta && isCurrent && (
                 <button
                   onClick={step.cta.onClick}
-                  className="focus-ring ml-0.5 rounded px-1.5 py-0.5 text-[12px] font-medium text-brand-ink underline decoration-brand/30 underline-offset-2 transition-colors hover:decoration-brand"
+                  className="focus-ring ml-0.5 rounded px-1.5 py-0.5 text-[12px] font-medium text-brand-ink underline decoration-brand/30 underline-offset-2 hover:decoration-brand"
                 >
                   {step.cta.label}
                 </button>
@@ -159,7 +159,7 @@ export function FirstRunStepper() {
       <button
         onClick={dismiss}
         aria-label="Dismiss getting started"
-        className="focus-ring ml-auto flex h-6 w-6 items-center justify-center rounded text-subtle-foreground transition-colors hover:bg-muted hover:text-foreground"
+        className="focus-ring ml-auto flex h-6 w-6 items-center justify-center rounded text-subtle-foreground hover:bg-muted hover:text-foreground"
       >
         <X className="h-3.5 w-3.5" strokeWidth={2} />
       </button>
