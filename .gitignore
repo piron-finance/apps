@@ -60,3 +60,6 @@ api-endpoints.md
 # Contracts (root only — apps/app/src/contracts is tracked)
 /contracts/
 !/apps/app/src/contracts/
+
+# Claude Code local settings and permission allowlists
+.claude/

@@ -1,29 +1,103 @@
 "use client";
 
-interface StatCardProps {
+import { cn } from "@/lib/utils";
+
+export interface StatCardProps {
   label: string;
   value: string;
   badge?: string;
+  /** Signals the badge tone. Defaults to positive. */
+  badgeTone?: "positive" | "negative" | "neutral";
   subtitle?: string;
+  className?: string;
 }
 
-export function StatCard({ label, value, badge, subtitle }: StatCardProps) {
+const badgeTones = {
+  positive: "text-positive",
+  negative: "text-negative",
+  neutral: "text-subtle-foreground",
+} as const;
+
+/** The bare figure: label above, value, footnote below. */
+export function Stat({
+  label,
+  value,
+  badge,
+  badgeTone = "positive",
+  subtitle,
+  className,
+}: StatCardProps) {
   return (
-    <div className="rounded-2xl border border-[#292a30] bg-[#08080a] p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.035)] sm:p-5">
-      <p className="text-[10px] text-[#8F9B99] tracking-wider mb-2">{label}</p>
-      <div className="mb-1 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
-        <span className="break-words text-xl font-semibold tabular-nums text-[#F5F7F6] sm:text-2xl">
+    <div className={cn("min-w-0", className)}>
+      <p className="eyebrow">{label}</p>
+      <div className="mt-3.5 flex items-baseline gap-2">
+        <span
+          data-numeric
+          className="text-[25px] font-semibold leading-none tracking-display text-foreground"
+        >
           {value}
         </span>
         {badge && (
-          <span className="text-[9px] px-2 py-0.5 rounded bg-[#0a2a1a] text-[#00c853]">
+          <span
+            data-numeric
+            className={cn("text-[12px] font-medium", badgeTones[badgeTone])}
+          >
             {badge}
           </span>
         )}
       </div>
       {subtitle && (
-        <p className="text-[10px] text-[#8F9B99] mt-1">{subtitle}</p>
+        <p className="mt-2.5 truncate text-[12.5px] text-muted-foreground">
+          {subtitle}
+        </p>
       )}
     </div>
   );
 }
+
+/**
+ * Headline figures, ruled top and bottom and divided by hairlines. Deliberately
+ * not a card — these are the page's own numbers, not a widget sitting on it.
+ */
+export function MetricRow({ items }: { items: StatCardProps[] }) {
+  return (
+    <div className="grid grid-cols-2 border-y border-border lg:grid-cols-4">
+      {items.map((item, i) => {
+        // Two columns below lg, four at lg. A cell gets a left rule unless it
+        // starts its row, and a top rule only when it wraps onto a second row.
+        const startsMobileRow = i % 2 === 0;
+        const startsWideRow = i === 0;
+        return (
+          <div
+            key={item.label}
+            className={cn(
+              "py-7 lg:py-8",
+              startsMobileRow ? "pr-8" : "pl-8",
+              !startsMobileRow && "border-l border-border-subtle",
+              i > 1 && "border-t border-border-subtle",
+              // At four-up, only the first cell is flush and rule-free.
+              "lg:border-t-0",
+              startsWideRow
+                ? "lg:pl-0 lg:pr-8"
+                : "lg:border-l lg:border-border-subtle lg:pl-8 lg:pr-8",
+            )}
+          >
+            <Stat {...item} />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Kept for callers that still want a single bordered figure. */
+export function StatCard({ className, ...props }: StatCardProps) {
+  return (
+    <div className={cn("rounded-lg border border-border p-5", className)}>
+      <Stat {...props} />
+    </div>
+  );
+}
+
+/** @deprecated use `MetricRow` */
+export const OverviewStrip = MetricRow;

@@ -3,29 +3,45 @@
 import { ReactNode } from "react";
 
 interface PoolSectionProps {
-  label: string;
   title: string;
-  subtitle: string;
+  description: string;
   filters?: ReactNode;
+  count?: number;
   children: ReactNode;
 }
 
+/**
+ * A section is a heading, a line of explanation and a table. No container, no
+ * border of its own — the table's own rules do the separating.
+ */
 export function PoolSection({
-  label,
   title,
-  subtitle,
+  description,
   filters,
+  count,
   children,
 }: PoolSectionProps) {
   return (
-    <div className="rounded-2xl border border-[#292a30] bg-[#08080a] p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.035)] sm:p-5">
-      <div className="mb-1 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <p className="text-[11px] text-[#8F9B99] tracking-wider">{label}</p>
-        {filters && <div className="w-full overflow-x-auto sm:w-auto">{filters}</div>}
+    <section className="scroll-mt-24">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-3 pb-4">
+        <div className="flex items-baseline gap-2.5">
+          <h2 className="text-[18px] font-semibold tracking-title text-foreground">
+            {title}
+          </h2>
+          {count !== undefined && (
+            <span data-numeric className="text-[12.5px] text-subtle-foreground">
+              {count} {count === 1 ? "pool" : "pools"}
+            </span>
+          )}
+        </div>
+        {filters}
       </div>
-      <h2 className="text-[16px] font-medium text-[#F5F7F6]">{title}</h2>
-      <p className="text-[12px] text-[#8F9B99] mt-1">{subtitle}</p>
+
+      <p className="max-w-2xl pb-7 text-[13.5px] leading-relaxed text-muted-foreground">
+        {description}
+      </p>
+
       {children}
-    </div>
+    </section>
   );
 }

@@ -2,110 +2,239 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { ArrowRight } from "lucide-react";
 import { CHAIN_INFO } from "@/lib/constants/chains";
+import { cn } from "@/lib/utils";
 
-interface PoolCardProps {
-  type: string;
-  asset: string;
-  name: string;
-  tvl: string;
-  subtitle?: string;
-  info: string;
-  right: string;
-  tags: string[];
-  link: string;
-  minInvestment?: string;
-  currency?: string;
-  poolId?: string;
+/** Each pool type owns a colour, shared with the allocation bar in the rail. */
+export type PoolAccent = "brand" | "info" | "warning";
+
+export interface PoolCardData {
+  id: string;
+  poolId: string;
   chainId?: number;
-  tiers?: { duration: string; rate: string }[];
+  /** "Flexible yield" | "Fixed yield" | "Term deal" */
+  kind: string;
+  accent: PoolAccent;
+  name: string;
+  /** NAV, issuer — one line of identity beneath the name. */
+  subtitle?: string;
+  asset: string;
+  /** The single number this card exists to communicate. */
+  rate: string;
+  rateLabel: string;
+  /** Two supporting figures, no more. */
+  footnotes: { label: string; value: string }[];
+  /** 0–100. Term deals only. */
+  progress?: number;
+  progressLabel?: string;
 }
 
-export function PoolCard({
-  type,
-  asset,
-  name,
-  tvl,
-  subtitle,
-  info,
-  right,
-  tags,
-  link,
-  minInvestment,
-  currency,
-  poolId = "demo",
-  chainId,
-  tiers,
-}: PoolCardProps) {
+const ACCENT = {
+  brand: {
+    chip: "bg-brand-soft text-brand-ink",
+    bar: "bg-brand",
+    hover: "hover:border-brand/35",
+    wash: "from-brand/[0.05]",
+    meter: "bg-brand",
+  },
+  info: {
+    chip: "bg-info-soft text-info",
+    bar: "bg-info",
+    hover: "hover:border-info/35",
+    wash: "from-info/[0.05]",
+    meter: "bg-info",
+  },
+  warning: {
+    chip: "bg-warning-soft text-warning",
+    bar: "bg-warning",
+    hover: "hover:border-warning/35",
+    wash: "from-warning/[0.06]",
+    meter: "bg-warning",
+  },
+} as const;
+
+function ChainMark({ chainId }: { chainId?: number }) {
   const chain = chainId ? CHAIN_INFO[chainId] : undefined;
+  if (!chain) return null;
+
+  return (
+    <span className="inline-flex items-center gap-1.5 text-[11.5px] text-muted-foreground">
+      {chain.logo ? (
+        <Image
+          src={chain.logo}
+          alt=""
+          width={13}
+          height={13}
+          className="shrink-0 rounded-full"
+        />
+      ) : (
+        <span
+          className="h-[7px] w-[7px] shrink-0 rounded-full"
+          style={{ background: chain.color }}
+        />
+      )}
+      {chain.shortName}
+    </span>
+  );
+}
+
+/**
+ * Landscape, not portrait: identity on the left, the rate on the right, two
+ * footnotes under a rule. The colour is carried by the pool type, so it means
+ * something rather than decorating.
+ */
+export function PoolCard({ pool }: { pool: PoolCardData }) {
+  const accent = ACCENT[pool.accent];
+
   return (
     <Link
-      href={`/pool/${poolId}`}
-      className="group block rounded-2xl border border-[#303139] bg-[#0d0d10] p-4 transition-colors duration-200 hover:border-[#40414a] hover:bg-[#15151a]"
+      href={`/pool/${pool.poolId}`}
+      className={cn(
+        "group relative flex flex-col overflow-hidden rounded-lg border border-border bg-surface p-6",
+        "",
+        accent.hover,
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+      )}
     >
-      <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      {/* A wash in the type colour so the surface has some depth without a shadow. */}
+      <span
+        aria-hidden
+        className={cn(
+          "pointer-events-none absolute inset-0 bg-gradient-to-br to-transparent opacity-70",
+          accent.wash,
+        )}
+      />
+      {/* Index tab — short at rest, extends on hover. */}
+      <span
+        aria-hidden
+        className={cn(
+          "absolute left-0 top-0 h-[2px] w-8",
+          accent.bar,
+        )}
+      />
+
+      <div className="relative flex items-center justify-between gap-3">
+        <span
+          className={cn(
+            "rounded-sm px-2 py-1 text-[11.5px] font-medium",
+            accent.chip,
+          )}
+        >
+          {pool.kind}
+        </span>
+        <ChainMark chainId={pool.chainId} />
+      </div>
+
+      {/* Identity + rate share a baseline row so the card reads landscape. */}
+      <div className="relative mt-7 flex items-end justify-between gap-6">
         <div className="min-w-0">
-          <div className="mb-2 flex flex-wrap items-center gap-2">
-            <span className="px-2 py-1 text-[11px] text-[#888] border border-[#1a1a1a] rounded-lg">
-              {type}
-            </span>
-            {asset && (
-              <span className="px-2 py-1 text-[11px] text-[#888] border border-[#1a1a1a] rounded-lg">
-                {asset}
-              </span>
-            )}
-            {chain && (
-              <span className="inline-flex items-center gap-1.5 rounded-lg border border-[#1a1a1a] px-2 py-1 text-[11px] text-[#aaa]">
-                {chain.logo && (
-                  <Image src={chain.logo} alt={chain.shortName} width={14} height={14} />
-                )}
-                {chain.shortName}
-              </span>
-            )}
-          </div>
+          <h3 className="text-[15px] font-medium leading-snug tracking-title text-foreground">
+            {pool.name}
+          </h3>
+          <p className="mt-1.5 truncate text-[12.5px] text-muted-foreground">
+            {pool.asset}
+            {pool.subtitle ? ` · ${pool.subtitle}` : ""}
+          </p>
         </div>
-        <div className="shrink-0 sm:ml-4 sm:text-right">
-          <p className="break-words text-xl font-semibold tabular-nums text-white">{tvl}</p>
-          <p className="text-[10px] uppercase tracking-wider text-[#555]">TVL</p>
+
+        <div className="shrink-0 text-right">
+          <p
+            data-numeric
+            className="text-[27px] font-semibold leading-none tracking-display text-foreground"
+          >
+            {pool.rate}
+          </p>
+          <p className="mt-2 text-[11.5px] text-muted-foreground">{pool.rateLabel}</p>
         </div>
       </div>
-      <h3 className="mb-1 text-[14px] font-medium text-white">{name}</h3>
-      {subtitle && (
-        <p className="text-[12px] text-[#888] mb-2">{subtitle}</p>
-      )}
-      {tiers && tiers.length > 0 && (
-        <div className="flex flex-wrap gap-x-4 gap-y-1 mb-2">
-          <span className="text-[11px] text-[#555]">Lock tiers</span>
-          {tiers.map((t, i) => (
-            <span key={i} className="text-[11px] text-[#888]">
-              {t.duration} <span className="text-[#00c853]">{t.rate}</span>
-            </span>
-          ))}
-        </div>
-      )}
-      <div className="mb-2 flex flex-col gap-1 text-[11px] text-[#888] sm:flex-row sm:justify-between">
-        <span>{info}</span>
-        <span>{right}</span>
-      </div>
-      {(minInvestment || currency) && (
-        <div className="mb-3 flex flex-col gap-1 text-[11px] text-[#666] sm:flex-row sm:justify-between">
-          {minInvestment && <span>Min: {parseFloat(minInvestment).toLocaleString()}</span>}
-          {currency && <span>Currency: {currency}</span>}
-        </div>
-      )}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-wrap gap-2">
-          {tags.map((tag) => (
+
+      {/* Funding meter — term deals only */}
+      {pool.progress !== undefined && (
+        <div className="relative mt-6">
+          <span className="block h-[3px] w-full overflow-hidden rounded-full bg-border">
             <span
-              key={tag}
-              className="px-2 py-1 text-[10px] text-[#555] border border-[#1a1a1a] rounded-lg"
-            >
-              {tag}
-            </span>
-          ))}
+              className={cn(
+                "block h-full rounded-full",
+                accent.meter,
+              )}
+              style={{
+                width: `${Math.min(Math.max(pool.progress, 0), 100)}%`,
+              }}
+            />
+          </span>
+          {pool.progressLabel && (
+            <p className="mt-2 text-[11.5px] text-subtle-foreground">
+              {pool.progressLabel}
+            </p>
+          )}
         </div>
-        <span className="text-[11px] text-[#888] group-hover:text-[#00c853]">{link}</span>
+      )}
+
+      <div className="relative mt-8 flex items-center justify-between gap-4 border-t border-border-subtle pt-4">
+        <dl className="flex gap-6">
+          {pool.footnotes.map((note) => (
+            <div key={note.label} className="flex items-baseline gap-1.5">
+              <dt className="text-[11.5px] text-subtle-foreground">
+                {note.label}
+              </dt>
+              <dd data-numeric className="text-[12.5px] text-foreground">
+                {note.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+        <ArrowRight
+          className="h-4 w-4 shrink-0 text-subtle-foreground/60 group-hover:text-foreground"
+          strokeWidth={1.75}
+        />
       </div>
     </Link>
+  );
+}
+
+export function PoolCardGrid({
+  pools,
+  loading = false,
+  emptyMessage,
+}: {
+  pools: PoolCardData[];
+  loading?: boolean;
+  emptyMessage: string;
+}) {
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+        {[0, 1].map((i) => (
+          <div key={i} className="rounded-lg border border-border p-6">
+            <div className="h-4 w-28 animate-pulse rounded-sm bg-muted" />
+            <div className="mt-5 flex items-end justify-between">
+              <div className="flex-1">
+                <div className="h-4 w-2/3 animate-pulse rounded-sm bg-muted" />
+                <div className="mt-2 h-3 w-1/3 animate-pulse rounded-sm bg-muted" />
+              </div>
+              <div className="h-7 w-20 animate-pulse rounded-sm bg-muted" />
+            </div>
+            <div className="mt-6 h-3 w-44 animate-pulse rounded-sm bg-muted" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (pools.length === 0) {
+    return (
+      <div className="rounded-lg border border-dashed border-border px-6 py-14">
+        <p className="text-[13px] text-muted-foreground">{emptyMessage}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+      {pools.map((pool) => (
+        <PoolCard key={pool.id} pool={pool} />
+      ))}
+    </div>
   );
 }

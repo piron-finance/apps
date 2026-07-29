@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import { useAccount, useReadContracts } from "wagmi";
 import { erc20Abi } from "viem";
 import { useWeb3Modal } from "@web3modal/wagmi/react";
+import { Check, X } from "lucide-react";
 import { useUserPositions } from "@/hooks/useUserData";
+import { cn } from "@/lib/utils";
 
 // Faucet test token per chain — used only to tell whether the visitor has
 // already claimed on any supported network. Mirrors the backend faucet's
@@ -24,7 +26,6 @@ export function openFaucet() {
 
 type Step = {
   title: string;
-  hint: string;
   done: boolean;
   cta?: { label: string; onClick: () => void };
 };
@@ -49,7 +50,10 @@ export function FirstRunStepper() {
     query: { enabled: !!address },
   });
   const hasTokens = (balances ?? []).some(
-    (r) => r.status === "success" && typeof r.result === "bigint" && r.result > BigInt(0),
+    (r) =>
+      r.status === "success" &&
+      typeof r.result === "bigint" &&
+      r.result > BigInt(0),
   );
 
   const { data: positions } = useUserPositions(address);
@@ -58,102 +62,107 @@ export function FirstRunStepper() {
   const hasPosition = active + activeLocked > 0;
 
   const scrollToPools = () =>
-    document.getElementById("pools-start")?.scrollIntoView({ behavior: "smooth" });
+    document
+      .getElementById("pools-start")
+      ?.scrollIntoView({ behavior: "smooth" });
 
   const steps: Step[] = [
     {
-      title: "Connect your wallet",
-      hint: "Sign in to deposit and track your positions.",
+      title: "Connect a wallet",
       done: isConnected,
       cta: isConnected ? undefined : { label: "Connect", onClick: () => open() },
     },
     {
       title: "Claim test tokens",
-      hint: "Get 100,000 free tokens on your preferred network.",
       done: hasTokens,
       cta: hasTokens ? undefined : { label: "Claim", onClick: openFaucet },
     },
     {
-      title: "Make your first deposit",
-      hint: "Pick a pool and start earning.",
+      title: "Make a deposit",
       done: hasPosition,
-      cta: hasPosition ? undefined : { label: "Browse pools", onClick: scrollToPools },
+      cta: hasPosition
+        ? undefined
+        : { label: "Browse markets", onClick: scrollToPools },
     },
   ];
 
   const allDone = steps.every((s) => s.done);
   if (dismissed || allDone) return null;
 
-  // The first not-yet-done step is the one we actively prompt.
   const currentIndex = steps.findIndex((s) => !s.done);
+  const doneCount = steps.filter((s) => s.done).length;
 
   const dismiss = () => {
     localStorage.setItem(DISMISS_KEY, "1");
     setDismissed(true);
   };
 
-  const doneCount = steps.filter((s) => s.done).length;
-
   return (
-    <div className="mb-4 overflow-hidden rounded-2xl border border-[#292a30] bg-[#08080a] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.035)]">
-      <div className="flex items-center justify-between px-5 pt-5 sm:px-6">
-        <div>
-          <h2 className="text-[15px] font-semibold tracking-tight text-white">Get started</h2>
-          <p className="mt-0.5 text-[12px] text-[#7c7c7c]">
-            Three quick steps to your first deposit — {doneCount} of {steps.length} done.
-          </p>
-        </div>
-        <button
-          onClick={dismiss}
-          className="text-[11px] text-[#5f5f5f] transition-colors hover:text-[#9a9a9a]"
-        >
-          Dismiss
-        </button>
-      </div>
+    <div className="flex flex-wrap items-center gap-x-7 gap-y-3 border-b border-border py-4">
+      <span className="eyebrow">
+        Getting started · {doneCount}/{steps.length}
+      </span>
 
-      <div className="mt-4 grid grid-cols-1 divide-y divide-[#161618] px-5 pb-5 sm:grid-cols-3 sm:divide-x sm:divide-y-0 sm:px-0 sm:pb-0">
+      <ol className="flex flex-wrap items-center gap-x-5 gap-y-2">
         {steps.map((step, i) => {
           const isCurrent = i === currentIndex;
           return (
-            <div
-              key={i}
-              className="flex items-start gap-3.5 py-4 first:pt-0 last:pb-0 sm:px-6 sm:py-5 sm:first:pt-5 sm:last:pb-5"
+            <li
+              key={step.title}
+              className={cn(
+                "items-center gap-2",
+                // On phones only the step you can act on is worth the space.
+                isCurrent ? "flex" : "hidden sm:flex",
+              )}
             >
               <span
-                className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold transition-colors ${
+                className={cn(
+                  "flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full text-[10px] font-semibold",
                   step.done
-                    ? "bg-[#00c853] text-black"
+                    ? "bg-brand text-brand-foreground"
                     : isCurrent
-                      ? "text-white ring-2 ring-[#00c853]/60"
-                      : "text-[#666] ring-1 ring-[#2a2a2c]"
-                }`}
+                      ? "border border-brand/60 text-brand-ink"
+                      : "border border-border text-subtle-foreground",
+                )}
               >
                 {step.done ? (
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path d="M2.5 6.2L5 8.5L9.5 3.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  <Check className="h-2.5 w-2.5" strokeWidth={3} />
                 ) : (
                   i + 1
                 )}
               </span>
-              <div className="min-w-0">
-                <p className={`text-[13px] font-medium ${step.done ? "text-[#9a9a9a]" : "text-white"}`}>
-                  {step.title}
-                </p>
-                <p className="mt-0.5 text-[11px] leading-relaxed text-[#7c7c7c]">{step.hint}</p>
-                {step.cta && isCurrent && (
-                  <button
-                    onClick={step.cta.onClick}
-                    className="mt-2.5 inline-flex items-center rounded-lg bg-[#00b64a] px-3.5 py-1.5 text-[11px] font-semibold text-black transition-colors hover:bg-[#00c853]"
-                  >
-                    {step.cta.label}
-                  </button>
+              <span
+                className={cn(
+                  "text-[12.5px]",
+                  step.done
+                    ? "text-subtle-foreground line-through decoration-border-strong"
+                    : isCurrent
+                      ? "font-medium text-foreground"
+                      : "text-muted-foreground",
                 )}
-              </div>
-            </div>
+              >
+                {step.title}
+              </span>
+              {step.cta && isCurrent && (
+                <button
+                  onClick={step.cta.onClick}
+                  className="focus-ring ml-0.5 rounded px-1.5 py-0.5 text-[12px] font-medium text-brand-ink underline decoration-brand/30 underline-offset-2 hover:decoration-brand"
+                >
+                  {step.cta.label}
+                </button>
+              )}
+            </li>
           );
         })}
-      </div>
+      </ol>
+
+      <button
+        onClick={dismiss}
+        aria-label="Dismiss getting started"
+        className="focus-ring ml-auto flex h-6 w-6 items-center justify-center rounded text-subtle-foreground hover:bg-muted hover:text-foreground"
+      >
+        <X className="h-3.5 w-3.5" strokeWidth={2} />
+      </button>
     </div>
   );
 }
