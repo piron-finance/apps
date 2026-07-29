@@ -44,6 +44,7 @@ function flexibleCard(pool: Pool): PoolCardData {
     poolId: pool.poolAddress,
     chainId: pool.chainId,
     kind: "Flexible yield",
+    accent: "brand" as const,
     name: pool.name,
     asset: pool.assetSymbol,
     subtitle: nav ? `NAV ${parseFloat(nav).toFixed(4)}` : (pool.issuer ?? undefined),
@@ -84,6 +85,7 @@ function fixedCard(pool: Pool): PoolCardData {
     poolId: pool.poolAddress,
     chainId: pool.chainId,
     kind: "Fixed yield",
+    accent: "info" as const,
     name: pool.name,
     asset: pool.assetSymbol,
     subtitle: pool.lockTiers?.length
@@ -109,6 +111,7 @@ function termCard(pool: Pool): PoolCardData {
     poolId: pool.poolAddress,
     chainId: pool.chainId,
     kind: "Term deal",
+    accent: "warning" as const,
     name: pool.name,
     asset: pool.assetSymbol,
     subtitle: pool.issuer ?? undefined,

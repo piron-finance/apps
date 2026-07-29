@@ -79,7 +79,9 @@
   --chart-grid: 38 14% 90%;
   --chart-axis: 32 5% 50%;
 
-  /* Elevation — reserved for things that actually float */
+  /* Elevation — a hover lift for cards, and one for things that truly float */
+  --shadow-raise:
+    0 1px 2px -1px hsl(32 20% 24% / 0.06), 0 10px 24px -12px hsl(32 20% 24% / 0.16);
   --shadow-pop:
     0 0 0 1px hsl(32 14% 82% / 0.6), 0 12px 32px -12px hsl(32 20% 20% / 0.18),
     0 2px 6px -2px hsl(32 20% 20% / 0.08);
@@ -141,6 +143,8 @@
   --chart-grid: 240 5% 15%;
   --chart-axis: 40 4% 50%;
 
+  --shadow-raise:
+    0 0 0 1px hsl(240 5% 18%), 0 12px 28px -14px hsl(0 0% 0% / 0.7);
   --shadow-pop:
     0 0 0 1px hsl(240 5% 20%), 0 16px 40px -12px hsl(0 0% 0% / 0.7);
 }

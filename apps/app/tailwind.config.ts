@@ -123,6 +123,7 @@ const config: Config = {
       },
 
       boxShadow: {
+        raise: "var(--shadow-raise)",
         pop: "var(--shadow-pop)",
         none: "none",
       },
