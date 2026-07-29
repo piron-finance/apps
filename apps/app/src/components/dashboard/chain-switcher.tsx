@@ -3,12 +3,12 @@
 import Image from "next/image";
 import { Check, ChevronDown, Layers } from "lucide-react";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  Menu,
+  MenuContent,
+  MenuItem,
+  MenuLabel,
+  MenuTrigger,
+} from "@/components/ui/menu";
 import { useChainContext, SUPPORTED_CHAINS } from "@/lib/context/ChainContext";
 import { getChainLogo } from "@/lib/constants/chains";
 import { cn } from "@/lib/utils";
@@ -63,8 +63,8 @@ export function ChainSwitcher({ className }: { className?: string }) {
   const { activeChainId, setActiveChainId, activeChain } = useChainContext();
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
+    <Menu>
+      <MenuTrigger
         className={cn(
           "focus-ring inline-flex h-8 items-center gap-2 rounded px-2 text-[12.5px] font-medium text-foreground hover:bg-muted data-[state=open]:bg-muted",
           className,
@@ -77,14 +77,14 @@ export function ChainSwitcher({ className }: { className?: string }) {
           className="h-3 w-3 text-subtle-foreground"
           strokeWidth={2}
         />
-      </DropdownMenuTrigger>
+      </MenuTrigger>
 
-      <DropdownMenuContent align="end" sideOffset={8} className="w-60">
-        <DropdownMenuLabel>Network</DropdownMenuLabel>
+      <MenuContent className="w-60">
+        <MenuLabel>Network</MenuLabel>
         {SUPPORTED_CHAINS.map((chain) => {
           const selected = chain.id === activeChainId;
           return (
-            <DropdownMenuItem
+            <MenuItem
               key={chain.label}
               onSelect={() => setActiveChainId(chain.id)}
               className="gap-2.5"
@@ -99,10 +99,10 @@ export function ChainSwitcher({ className }: { className?: string }) {
               {selected && (
                 <Check className="h-3.5 w-3.5 text-brand-ink" strokeWidth={2.5} />
               )}
-            </DropdownMenuItem>
+            </MenuItem>
           );
         })}
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </MenuContent>
+    </Menu>
   );
 }

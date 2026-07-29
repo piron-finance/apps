@@ -9,6 +9,8 @@ import {
   useState,
 } from "react";
 
+import { syncWeb3ModalTheme } from "./web3modal";
+
 /** What the user picked. "system" follows the OS. */
 export type ThemePreference = "light" | "dark" | "system";
 /** What is actually painted. */
@@ -49,6 +51,7 @@ function applyTheme(theme: Theme) {
   const root = document.documentElement;
   root.classList.toggle("dark", theme === "dark");
   root.style.colorScheme = theme;
+  syncWeb3ModalTheme(theme);
 }
 
 function readStored(): ThemePreference {

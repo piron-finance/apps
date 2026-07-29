@@ -2,12 +2,12 @@
 
 import { Check, ChevronDown, Monitor, Moon, Sun } from "lucide-react";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  Menu,
+  MenuContent,
+  MenuItem,
+  MenuLabel,
+  MenuTrigger,
+} from "@/components/ui/menu";
 import {
   useTheme,
   type ThemePreference,
@@ -30,8 +30,8 @@ export function ThemeToggle({ className }: { className?: string }) {
       (theme === "dark" ? Moon : Sun));
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
+    <Menu>
+      <MenuTrigger
         aria-label="Theme"
         className={cn(
           "focus-ring inline-flex h-8 items-center gap-1 rounded px-2 text-subtle-foreground hover:bg-muted hover:text-foreground data-[state=open]:bg-muted data-[state=open]:text-foreground",
@@ -40,14 +40,14 @@ export function ThemeToggle({ className }: { className?: string }) {
       >
         <TriggerIcon className="h-[15px] w-[15px]" strokeWidth={1.8} />
         <ChevronDown className="h-3 w-3" strokeWidth={2} />
-      </DropdownMenuTrigger>
+      </MenuTrigger>
 
-      <DropdownMenuContent align="end" sideOffset={8} className="w-44">
-        <DropdownMenuLabel>Theme</DropdownMenuLabel>
+      <MenuContent className="w-44">
+        <MenuLabel>Theme</MenuLabel>
         {OPTIONS.map(({ value, label, Icon }) => {
           const selected = mounted && preference === value;
           return (
-            <DropdownMenuItem
+            <MenuItem
               key={value}
               onSelect={() => setPreference(value)}
               className="gap-2.5"
@@ -63,10 +63,10 @@ export function ThemeToggle({ className }: { className?: string }) {
                   strokeWidth={2.5}
                 />
               )}
-            </DropdownMenuItem>
+            </MenuItem>
           );
         })}
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </MenuContent>
+    </Menu>
   );
 }

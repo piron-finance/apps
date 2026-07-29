@@ -4,13 +4,11 @@ import { QueryProvider } from "@/providers/QueryProvider";
 import { ChainProvider } from "@/lib/context/ChainContext";
 import { PostHogProvider } from "./PostHogProvider";
 import { ThemeProvider } from "./theme-provider";
-import { Web3ModalThemeSync } from "./web3modal-theme-sync";
 
 export function Providers({ children }: PropsWithChildren) {
   return (
     <ThemeProvider>
       <Web3ModalProvider>
-        <Web3ModalThemeSync />
         <QueryProvider>
           <ChainProvider>
             {/* PostHog is innermost so wallet context is available to capture hooks */}
