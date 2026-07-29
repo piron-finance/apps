@@ -1,4 +1,5 @@
 import { apiClient } from "./client";
+import type { Product, ProductsResponse } from "./types";
 import type {
   PlatformMetrics,
   PoolsResponse,
@@ -35,6 +36,24 @@ export const platformApi = {
 // ============================================================================
 // POOLS APIs
 // ============================================================================
+
+export const productsApi = {
+  /** Product-first list; chainId filters to products with an instance on that chain. */
+  getAll: async (chainId?: number): Promise<ProductsResponse> => {
+    const { data } = await apiClient.get("/products", {
+      params: chainId !== undefined ? { chainId } : undefined,
+    });
+    return data;
+  },
+  getFeatured: async (): Promise<Product[]> => {
+    const { data } = await apiClient.get("/products/featured");
+    return data;
+  },
+  getByKey: async (productKey: string): Promise<Product> => {
+    const { data } = await apiClient.get(`/products/${productKey}`);
+    return data;
+  },
+};
 
 export const poolsApi = {
   /**
