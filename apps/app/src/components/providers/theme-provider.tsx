@@ -12,7 +12,10 @@ import {
 export type Theme = "light" | "dark";
 
 /** Kept in sync with the inline bootstrap script in `app/layout.tsx`. */
-export const THEME_STORAGE_KEY = "piron-theme";
+// v2: the original key stranded anyone who had tried dark before the theme
+// control was reliably clickable. Bumping it discards those values so every
+// visitor lands on the light default once, and genuine choices persist after.
+export const THEME_STORAGE_KEY = "piron-theme-v2";
 export const DEFAULT_THEME: Theme = "light";
 
 type ThemeContextValue = {

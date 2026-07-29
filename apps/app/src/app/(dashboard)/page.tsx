@@ -5,7 +5,7 @@ import { usePlatformMetrics } from "@/hooks/usePlatformData";
 import { usePoolsData, useFeaturedPools } from "@/hooks/usePoolsData";
 import { MetricRow } from "@/components/dashboard/stat-card";
 import { PoolSection } from "@/components/dashboard/pool-section";
-import { PoolTable, type PoolRow } from "@/components/dashboard/pool-table";
+import { PoolCardGrid, type PoolCardData } from "@/components/dashboard/pool-card";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { FirstRunStepper } from "@/components/dashboard/first-run-stepper";
 import { SelectField } from "@/components/ui/select-field";
@@ -35,26 +35,35 @@ function daysUntil(date: string | Date | null | undefined): number | null {
   return days > 0 ? days : null;
 }
 
-// ── Row mapping, one function per pool type ──────────────────────────────────
-function flexibleRow(pool: Pool): PoolRow {
+// ── Card mapping, one function per pool type ─────────────────────────────────
+function flexibleCard(pool: Pool): PoolCardData {
   const nav = pool.analytics?.navPerShare;
   const utilization = pool.analytics?.utilizationRate;
   return {
     id: pool.id,
     poolId: pool.poolAddress,
     chainId: pool.chainId,
+    kind: "Flexible yield",
     name: pool.name,
     asset: pool.assetSymbol,
     subtitle: nav ? `NAV ${parseFloat(nav).toFixed(4)}` : (pool.issuer ?? undefined),
     rate: formatAPY(pool.projectedAPY ?? pool.analytics?.apy),
-    tvl: formatTVL(pool.analytics?.totalValueLocked),
-    detail: utilization
-      ? `${parseFloat(utilization).toFixed(0)}%`
-      : undefined,
+    rateLabel: "Current APY",
+    footnotes: [
+      { label: "TVL", value: formatTVL(pool.analytics?.totalValueLocked) },
+      utilization
+        ? { label: "At work", value: `${parseFloat(utilization).toFixed(0)}%` }
+        : {
+            label: "Min",
+            value: pool.minInvestment
+              ? `${parseFloat(pool.minInvestment).toLocaleString()} ${pool.assetSymbol}`
+              : "—",
+          },
+    ],
   };
 }
 
-function fixedRow(pool: Pool): PoolRow {
+function fixedCard(pool: Pool): PoolCardData {
   const rates = (pool.lockTiers ?? []).map((t) =>
     parseFloat(t.interestRatePercent),
   );
@@ -74,18 +83,22 @@ function fixedRow(pool: Pool): PoolRow {
     id: pool.id,
     poolId: pool.poolAddress,
     chainId: pool.chainId,
+    kind: "Fixed yield",
     name: pool.name,
     asset: pool.assetSymbol,
     subtitle: pool.lockTiers?.length
       ? `${pool.lockTiers.length} lock tiers`
       : (pool.issuer ?? undefined),
     rate,
-    tvl: formatTVL(pool.analytics?.totalValueLocked),
-    detail: term,
+    rateLabel: "Fixed rate",
+    footnotes: [
+      { label: "TVL", value: formatTVL(pool.analytics?.totalValueLocked) },
+      { label: "Term", value: term ?? "—" },
+    ],
   };
 }
 
-function termRow(pool: Pool): PoolRow {
+function termCard(pool: Pool): PoolCardData {
   const target = pool.targetRaise ? parseFloat(pool.targetRaise) : 0;
   const raised = parseFloat(pool.analytics?.totalValueLocked || "0");
   const progress = target > 0 ? Math.round((raised / target) * 100) : undefined;
@@ -95,16 +108,20 @@ function termRow(pool: Pool): PoolRow {
     id: pool.id,
     poolId: pool.poolAddress,
     chainId: pool.chainId,
+    kind: "Term deal",
     name: pool.name,
     asset: pool.assetSymbol,
     subtitle: pool.issuer ?? undefined,
     rate: pool.discountRate ? `${(pool.discountRate / 100).toFixed(2)}%` : "—",
-    tvl: formatTVL(pool.analytics?.totalValueLocked),
-    detail: tenor ? `${tenor}d` : undefined,
+    rateLabel: "Target APY",
+    footnotes: [
+      { label: "Raised", value: formatTVL(pool.analytics?.totalValueLocked) },
+      { label: "Tenor", value: tenor ? `${tenor}d` : "—" },
+    ],
     progress,
     progressLabel:
       progress !== undefined
-        ? `${formatTVL(pool.analytics?.totalValueLocked)} of ${formatTVL(pool.targetRaise || undefined)}`
+        ? `${progress}% of ${formatTVL(pool.targetRaise || undefined)} target`
         : undefined,
   };
 }
@@ -274,19 +291,14 @@ export default function DashboardPage() {
               description="Curated pools with strong performance and deep liquidity."
               count={featuredPools.length}
             >
-              <PoolTable
-                rows={featuredPools.slice(0, 3).map((p) => {
-                  const row =
-                    p.poolType === "LOCKED"
-                      ? fixedRow(p)
-                      : p.poolType === "SINGLE_ASSET"
-                        ? termRow(p)
-                        : flexibleRow(p);
-                  // Featured mixes pool types, so no single detail label would
-                  // be honest across the rows — drop the column here.
-                  return { ...row, detail: undefined };
-                })}
-                rateLabel="Rate"
+              <PoolCardGrid
+                pools={featuredPools.slice(0, 3).map((p) =>
+                  p.poolType === "LOCKED"
+                    ? fixedCard(p)
+                    : p.poolType === "SINGLE_ASSET"
+                      ? termCard(p)
+                      : flexibleCard(p),
+                )}
                 emptyMessage="Nothing featured right now."
               />
             </PoolSection>
@@ -312,11 +324,9 @@ export default function DashboardPage() {
               ) : undefined
             }
           >
-            <PoolTable
+            <PoolCardGrid
               loading={poolsLoading}
-              rows={filteredStable.map(flexibleRow)}
-              rateLabel="Current APY"
-              detailLabel="At work"
+              pools={filteredStable.map(flexibleCard)}
               emptyMessage={emptyFor("flexible yield")}
             />
           </PoolSection>
@@ -341,11 +351,9 @@ export default function DashboardPage() {
               ) : undefined
             }
           >
-            <PoolTable
+            <PoolCardGrid
               loading={poolsLoading}
-              rows={filteredLocked.map(fixedRow)}
-              rateLabel="Fixed rate"
-              detailLabel="Term"
+              pools={filteredLocked.map(fixedCard)}
               emptyMessage={emptyFor("fixed yield")}
             />
           </PoolSection>
@@ -355,12 +363,9 @@ export default function DashboardPage() {
             description="Finance a specific receivable or credit facility. SPV-wrapped, with deal documents onchain."
             count={singleAssetPools.length}
           >
-            <PoolTable
+            <PoolCardGrid
               loading={poolsLoading}
-              rows={singleAssetPools.map(termRow)}
-              rateLabel="Target APY"
-              detailLabel="Tenor"
-              tvlLabel="Raised"
+              pools={singleAssetPools.map(termCard)}
               emptyMessage={emptyFor("term deal")}
             />
           </PoolSection>
