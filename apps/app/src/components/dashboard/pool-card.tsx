@@ -13,6 +13,10 @@ export interface PoolCardData {
   id: string;
   poolId: string;
   chainId?: number;
+  /** When set, the card is a product (links to /product/[key]) and shows all its
+   *  networks. Falls back to a single-pool card + chainId when absent. */
+  productKey?: string;
+  chains?: number[];
   /** "Flexible yield" | "Fixed yield" | "Term deal" */
   kind: string;
   accent: PoolAccent;
@@ -54,42 +58,64 @@ const ACCENT = {
   },
 } as const;
 
-function ChainMark({ chainId }: { chainId?: number }) {
-  const chain = chainId ? CHAIN_INFO[chainId] : undefined;
+function ChainDot({ chainId, ring }: { chainId: number; ring?: boolean }) {
+  const chain = CHAIN_INFO[chainId];
   if (!chain) return null;
+  return chain.logo ? (
+    <Image
+      src={chain.logo}
+      alt={chain.shortName}
+      width={14}
+      height={14}
+      className={cn("shrink-0 rounded-full", ring && "ring-2 ring-surface")}
+    />
+  ) : (
+    <span
+      className={cn(
+        "h-[9px] w-[9px] shrink-0 rounded-full",
+        ring && "ring-2 ring-surface",
+      )}
+      style={{ background: chain.color }}
+    />
+  );
+}
 
+/** One chain → logo + name. Many → overlapping logos + "N networks" (the
+ *  "available networks" badge; shares are not fungible across them). */
+function ChainMarks({ chains }: { chains: number[] }) {
+  if (chains.length === 0) return null;
+  if (chains.length === 1) {
+    const chain = CHAIN_INFO[chains[0]];
+    return (
+      <span className="inline-flex items-center gap-1.5 text-[11.5px] text-muted-foreground">
+        <ChainDot chainId={chains[0]} />
+        {chain?.shortName}
+      </span>
+    );
+  }
   return (
     <span className="inline-flex items-center gap-1.5 text-[11.5px] text-muted-foreground">
-      {chain.logo ? (
-        <Image
-          src={chain.logo}
-          alt=""
-          width={13}
-          height={13}
-          className="shrink-0 rounded-full"
-        />
-      ) : (
-        <span
-          className="h-[7px] w-[7px] shrink-0 rounded-full"
-          style={{ background: chain.color }}
-        />
-      )}
-      {chain.shortName}
+      <span className="flex -space-x-1.5">
+        {chains.slice(0, 4).map((c) => (
+          <ChainDot key={c} chainId={c} ring />
+        ))}
+      </span>
+      {chains.length} networks
     </span>
   );
 }
 
-/**
- * Landscape, not portrait: identity on the left, the rate on the right, two
- * footnotes under a rule. The colour is carried by the pool type, so it means
- * something rather than decorating.
- */
 export function PoolCard({ pool }: { pool: PoolCardData }) {
   const accent = ACCENT[pool.accent];
 
+  const href = pool.productKey
+    ? `/product/${pool.productKey}`
+    : `/pool/${pool.poolId}`;
+  const chains = pool.chains ?? (pool.chainId != null ? [pool.chainId] : []);
+
   return (
     <Link
-      href={`/pool/${pool.poolId}`}
+      href={href}
       className={cn(
         "group relative flex flex-col overflow-hidden rounded-lg border border-border bg-surface p-6",
         "",
@@ -108,10 +134,7 @@ export function PoolCard({ pool }: { pool: PoolCardData }) {
       {/* Index tab — short at rest, extends on hover. */}
       <span
         aria-hidden
-        className={cn(
-          "absolute left-0 top-0 h-[2px] w-8",
-          accent.bar,
-        )}
+        className={cn("absolute left-0 top-0 h-[2px] w-8", accent.bar)}
       />
 
       <div className="relative flex items-center justify-between gap-3">
@@ -123,7 +146,7 @@ export function PoolCard({ pool }: { pool: PoolCardData }) {
         >
           {pool.kind}
         </span>
-        <ChainMark chainId={pool.chainId} />
+        <ChainMarks chains={chains} />
       </div>
 
       {/* Identity + rate share a baseline row so the card reads landscape. */}
@@ -145,7 +168,9 @@ export function PoolCard({ pool }: { pool: PoolCardData }) {
           >
             {pool.rate}
           </p>
-          <p className="mt-2 text-[11.5px] text-muted-foreground">{pool.rateLabel}</p>
+          <p className="mt-2 text-[11.5px] text-muted-foreground">
+            {pool.rateLabel}
+          </p>
         </div>
       </div>
 
@@ -154,10 +179,7 @@ export function PoolCard({ pool }: { pool: PoolCardData }) {
         <div className="relative mt-6">
           <span className="block h-[3px] w-full overflow-hidden rounded-full bg-border">
             <span
-              className={cn(
-                "block h-full rounded-full",
-                accent.meter,
-              )}
+              className={cn("block h-full rounded-full", accent.meter)}
               style={{
                 width: `${Math.min(Math.max(pool.progress, 0), 100)}%`,
               }}

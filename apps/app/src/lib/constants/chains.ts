@@ -239,6 +239,7 @@ export const CHAIN_INFO: Record<number, ChainInfo> = {
         url: "https://explorer.arc.fun",
       },
     ],
+    logo: "/chains/arc.svg",
     color: "#8B5CF6",
   },
 
@@ -258,6 +259,7 @@ export const CHAIN_INFO: Record<number, ChainInfo> = {
         "https://robinhood-testnet.g.alchemy.com/v2/oseXvdn8oXOMITWZqEdAn",
     ],
     blockExplorers: [],
+    logo: "/chains/robinhood.svg",
     color: "#00C805",
   },
 };

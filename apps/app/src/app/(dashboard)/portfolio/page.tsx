@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { MetricRow } from "@/components/dashboard/stat-card";
 import { usersApi } from "@/lib/api/endpoints";
 import type { PortfolioSummary } from "@/lib/api/types";
-import { useChainContext } from "@/lib/context/ChainContext";
 import { poolTypeLabel } from "@/lib/pool-helpers";
 import { cn } from "@/lib/utils";
 
@@ -70,7 +69,6 @@ const GRID =
 export default function PortfolioPage() {
   const { address } = useAccount();
   const { open } = useWeb3Modal();
-  const { activeChainId, activeChain } = useChainContext();
   const [portfolio, setPortfolio] = useState<PortfolioSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -85,9 +83,10 @@ export default function PortfolioPage() {
       setLoading(true);
       setError(null);
       try {
-        // Scope positions to the chain selected in the header.
-        // undefined = all chains.
-        const data = await usersApi.getPositions(address, activeChainId);
+        // Portfolio spans every chain: a product's positions are held per network
+        // and non-fungible across them, so show the user's full holdings regardless
+        // of the header's browse chain. Each position carries its own chain badge.
+        const data = await usersApi.getPositions(address);
         setPortfolio(data);
       } catch (err: any) {
         console.error("Error fetching portfolio:", err);
@@ -98,7 +97,7 @@ export default function PortfolioPage() {
     };
 
     fetchPortfolio();
-  }, [address, activeChainId]);
+  }, [address]);
 
   const analytics = portfolio?.analytics;
   const positions = portfolio?.positions ?? [];
@@ -115,10 +114,7 @@ export default function PortfolioPage() {
           </p>
         </div>
         <p className="text-[12.5px] text-subtle-foreground">
-          Showing{" "}
-          <span className="font-medium text-foreground">
-            {activeChain.label}
-          </span>
+          Showing <span className="font-medium text-foreground">all networks</span>
         </p>
       </header>
 
@@ -174,7 +170,7 @@ export default function PortfolioPage() {
               {
                 label: "Open positions",
                 value: String(analytics?.activePositions || 0),
-                subtitle: "Across pools on this network",
+                subtitle: "Across pools on every network",
               },
               {
                 label: "Weighted APY",

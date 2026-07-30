@@ -2,14 +2,18 @@
 
 import { useState } from "react";
 import { usePlatformMetrics } from "@/hooks/usePlatformData";
-import { usePoolsData, useFeaturedPools } from "@/hooks/usePoolsData";
+import { useProductsData, useFeaturedProducts } from "@/hooks/useProductsData";
 import { MetricRow } from "@/components/dashboard/stat-card";
 import { PoolSection } from "@/components/dashboard/pool-section";
-import { PoolCardGrid, type PoolCardData } from "@/components/dashboard/pool-card";
+import {
+  PoolCardGrid,
+  type PoolCardData,
+  type PoolAccent,
+} from "@/components/dashboard/pool-card";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { FirstRunStepper } from "@/components/dashboard/first-run-stepper";
 import { SelectField } from "@/components/ui/select-field";
-import type { Pool } from "@/lib/api/types";
+import type { Product } from "@/lib/api/types";
 import { useChainContext, SUPPORTED_CHAINS } from "@/lib/context/ChainContext";
 
 // ── Formatting ───────────────────────────────────────────────────────────────
@@ -29,161 +33,97 @@ function formatAPY(value: string | number | null | undefined): string {
   return `${num.toFixed(2)}%`;
 }
 
-function daysUntil(date: string | Date | null | undefined): number | null {
-  if (!date) return null;
-  const days = Math.ceil((new Date(date).getTime() - Date.now()) / 86_400_000);
-  return days > 0 ? days : null;
-}
-
-// ── Card mapping, one function per pool type ─────────────────────────────────
-function flexibleCard(pool: Pool): PoolCardData {
-  const nav = pool.analytics?.navPerShare;
-  const utilization = pool.analytics?.utilizationRate;
-  return {
-    id: pool.id,
-    poolId: pool.poolAddress,
-    chainId: pool.chainId,
+// ── Product → card ───────────────────────────────────────────────────────────
+const KIND: Record<
+  string,
+  { kind: string; accent: PoolAccent; rateLabel: string }
+> = {
+  STABLE_YIELD: {
     kind: "Flexible yield",
-    accent: "brand" as const,
-    name: pool.name,
-    asset: pool.assetSymbol,
-    subtitle: nav ? `NAV ${parseFloat(nav).toFixed(4)}` : (pool.issuer ?? undefined),
-    rate: formatAPY(pool.projectedAPY ?? pool.analytics?.apy),
-    rateLabel: "Current APY",
-    footnotes: [
-      { label: "TVL", value: formatTVL(pool.analytics?.totalValueLocked) },
-      utilization
-        ? { label: "At work", value: `${parseFloat(utilization).toFixed(0)}%` }
-        : {
-            label: "Min",
-            value: pool.minInvestment
-              ? `${parseFloat(pool.minInvestment).toLocaleString()} ${pool.assetSymbol}`
-              : "—",
-          },
-    ],
-  };
-}
-
-function fixedCard(pool: Pool): PoolCardData {
-  const rates = (pool.lockTiers ?? []).map((t) =>
-    parseFloat(t.interestRatePercent),
-  );
-  const durations = (pool.lockTiers ?? []).map((t) => t.lockDurationDays);
-  const rate = rates.length
-    ? Math.min(...rates) === Math.max(...rates)
-      ? `${Math.max(...rates).toFixed(2)}%`
-      : `${Math.min(...rates).toFixed(1)}–${Math.max(...rates).toFixed(1)}%`
-    : "—";
-  const term = durations.length
-    ? Math.min(...durations) === Math.max(...durations)
-      ? `${Math.max(...durations)}d`
-      : `${Math.min(...durations)}–${Math.max(...durations)}d`
-    : undefined;
-
-  return {
-    id: pool.id,
-    poolId: pool.poolAddress,
-    chainId: pool.chainId,
-    kind: "Fixed yield",
-    accent: "info" as const,
-    name: pool.name,
-    asset: pool.assetSymbol,
-    subtitle: pool.lockTiers?.length
-      ? `${pool.lockTiers.length} lock tiers`
-      : (pool.issuer ?? undefined),
-    rate,
-    rateLabel: "Fixed rate",
-    footnotes: [
-      { label: "TVL", value: formatTVL(pool.analytics?.totalValueLocked) },
-      { label: "Term", value: term ?? "—" },
-    ],
-  };
-}
-
-function termCard(pool: Pool): PoolCardData {
-  const target = pool.targetRaise ? parseFloat(pool.targetRaise) : 0;
-  const raised = parseFloat(pool.analytics?.totalValueLocked || "0");
-  const progress = target > 0 ? Math.round((raised / target) * 100) : undefined;
-  const tenor = daysUntil(pool.maturityDate);
-
-  return {
-    id: pool.id,
-    poolId: pool.poolAddress,
-    chainId: pool.chainId,
+    accent: "brand",
+    rateLabel: "Blended APY",
+  },
+  LOCKED: { kind: "Fixed yield", accent: "info", rateLabel: "Fixed rate" },
+  SINGLE_ASSET: {
     kind: "Term deal",
-    accent: "warning" as const,
-    name: pool.name,
-    asset: pool.assetSymbol,
-    subtitle: pool.issuer ?? undefined,
-    rate: pool.discountRate ? `${(pool.discountRate / 100).toFixed(2)}%` : "—",
+    accent: "warning",
     rateLabel: "Target APY",
+  },
+};
+
+function productCard(product: Product): PoolCardData {
+  const k = KIND[product.poolType] ?? KIND.STABLE_YIELD;
+  const asset = product.instances[0]?.assetSymbol ?? "";
+  const minInvestment = product.instances[0]?.minInvestment;
+  const count = product.aggregates.instanceCount;
+  return {
+    id: product.productKey,
+    poolId: product.instances[0]?.poolAddress ?? product.productKey,
+    productKey: product.productKey,
+    chains: product.aggregates.chains,
+    kind: k.kind,
+    accent: k.accent,
+    name: product.name,
+    asset,
+    subtitle: product.issuer ?? undefined,
+    rate: formatAPY(product.aggregates.blendedApy),
+    rateLabel: k.rateLabel,
     footnotes: [
-      { label: "Raised", value: formatTVL(pool.analytics?.totalValueLocked) },
-      { label: "Tenor", value: tenor ? `${tenor}d` : "—" },
+      {
+        label: count > 1 ? "TVL (all networks)" : "TVL",
+        value: formatTVL(product.aggregates.totalTvl),
+      },
+      {
+        label: "Min",
+        value: minInvestment
+          ? `${parseFloat(minInvestment).toLocaleString()} ${asset}`
+          : "—",
+      },
     ],
-    progress,
-    progressLabel:
-      progress !== undefined
-        ? `${progress}% of ${formatTVL(pool.targetRaise || undefined)} target`
-        : undefined,
   };
 }
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 export default function DashboardPage() {
-  const [activeDuration, setActiveDuration] = useState("All");
   const [activeAsset, setActiveAsset] = useState("All");
-  // Global ChainContext — set from the header, shared with the portfolio page.
   const { activeChainId } = useChainContext();
 
   const { data: metrics } = usePlatformMetrics(activeChainId);
-  const { data: poolsResponse, isLoading: poolsLoading } = usePoolsData(
-    activeChainId !== undefined ? { chainId: activeChainId } : undefined,
-  );
-  const { data: featuredResponse } = useFeaturedPools();
+  const { data: productsResponse, isLoading: poolsLoading } =
+    useProductsData(activeChainId);
+  const { data: featuredData } = useFeaturedProducts();
 
-  const pools = poolsResponse?.data || [];
+  const products = productsResponse?.data || [];
 
-  const allFeatured = featuredResponse?.data || [];
-  const featuredPools =
+  const allFeatured = featuredData || [];
+  const featuredProducts =
     activeChainId !== undefined
-      ? allFeatured.filter((p) => p.chainId === activeChainId)
+      ? allFeatured.filter((p) => p.aggregates.chains.includes(activeChainId))
       : allFeatured;
 
-  const stableYieldPools = pools.filter((p) => p.poolType === "STABLE_YIELD");
-  const lockedPools = pools.filter((p) => p.poolType === "LOCKED");
-  const singleAssetPools = pools.filter((p) => p.poolType === "SINGLE_ASSET");
+  const stableProducts = products.filter((p) => p.poolType === "STABLE_YIELD");
+  const lockedProducts = products.filter((p) => p.poolType === "LOCKED");
+  const termProducts = products.filter((p) => p.poolType === "SINGLE_ASSET");
 
-  // Filter options derive from the pools actually present, so a selection can
-  // never lead to an empty dead-end.
   const assetOptions = [
     "All",
     ...Array.from(
-      new Set(stableYieldPools.map((p) => p.assetSymbol).filter(Boolean)),
-    ),
-  ];
-  const durationOptions = [
-    "All",
-    ...Array.from(
       new Set(
-        lockedPools.flatMap(
-          (p) => p.lockTiers?.map((t) => `${t.lockDurationDays}d`) ?? [],
-        ),
+        stableProducts
+          .map((p) => p.instances[0]?.assetSymbol)
+          .filter((s): s is string => !!s),
       ),
     ),
   ];
 
   const filteredStable =
     activeAsset === "All"
-      ? stableYieldPools
-      : stableYieldPools.filter((p) => p.assetSymbol === activeAsset);
-
-  const filteredLocked =
-    activeDuration === "All"
-      ? lockedPools
-      : lockedPools.filter((p) =>
-          p.lockTiers?.some((t) => `${t.lockDurationDays}d` === activeDuration),
+      ? stableProducts
+      : stableProducts.filter(
+          (p) => p.instances[0]?.assetSymbol === activeAsset,
         );
+
+  const filteredLocked = lockedProducts;
 
   const tvlChangeNum = metrics?.tvlChange24hPercentage
     ? parseFloat(String(metrics.tvlChange24hPercentage))
@@ -193,24 +133,18 @@ export default function DashboardPage() {
       ? `${tvlChangeNum >= 0 ? "+" : ""}${tvlChangeNum.toFixed(1)}%`
       : undefined;
 
-  // Blended APY — use the platform metric, fall back to a TVL-weighted calc.
+  // Blended APY — use the platform metric, fall back to a TVL-weighted calc
+  // across products' aggregated numbers.
   const blendedAPY = (() => {
     if (metrics?.averageAPY && parseFloat(String(metrics.averageAPY)) > 0) {
       return formatAPY(metrics.averageAPY);
     }
     let totalWeight = 0;
     let weightedSum = 0;
-    for (const pool of pools) {
-      const tvl = parseFloat(pool.analytics?.totalValueLocked || "0");
-      if (tvl <= 0) continue;
-      let apy = 0;
-      if (pool.poolType === "SINGLE_ASSET" && pool.discountRate) {
-        apy = pool.discountRate / 100;
-      } else if (pool.projectedAPY) {
-        apy = parseFloat(String(pool.projectedAPY));
-      } else if (pool.analytics?.apy) {
-        apy = parseFloat(pool.analytics.apy);
-      }
+    for (const p of products) {
+      const tvl = parseFloat(p.aggregates.totalTvl || "0");
+      const apy = p.aggregates.blendedApy;
+      if (tvl <= 0 || apy == null) continue;
       weightedSum += apy * tvl;
       totalWeight += tvl;
     }
@@ -221,12 +155,12 @@ export default function DashboardPage() {
     SUPPORTED_CHAINS.find((o) => o.id === activeChainId)?.label ?? "All chains";
 
   const noPoolsOnChain =
-    !poolsLoading && activeChainId !== undefined && pools.length === 0;
+    !poolsLoading && activeChainId !== undefined && products.length === 0;
 
   const emptyFor = (kind: string) =>
     noPoolsOnChain
-      ? `No pools are deployed on ${chainLabel} yet. Switch networks from the header.`
-      : `No ${kind} pools match the current filter.`;
+      ? `No products are available on ${chainLabel} yet. Switch networks from the header.`
+      : `No ${kind} products match the current filter.`;
 
   return (
     <div className="mx-auto max-w-[1320px] px-5 sm:px-8">
@@ -266,9 +200,9 @@ export default function DashboardPage() {
             subtitle: "Across every live pool",
           },
           {
-            label: "Live pools",
-            value: String(pools.length),
-            subtitle: `${stableYieldPools.length} flexible · ${lockedPools.length} fixed · ${singleAssetPools.length} term`,
+            label: "Live products",
+            value: String(products.length),
+            subtitle: `${stableProducts.length} flexible · ${lockedProducts.length} fixed · ${termProducts.length} term`,
           },
           {
             label: "Blended APY",
@@ -288,20 +222,14 @@ export default function DashboardPage() {
       {/* ── Markets + rail, both starting on the same baseline ─────────── */}
       <div className="flex flex-col gap-14 pb-6 pt-14 xl:flex-row xl:gap-12">
         <div id="pools-start" className="min-w-0 flex-1 space-y-16">
-          {featuredPools.length > 0 && (
+          {featuredProducts.length > 0 && (
             <PoolSection
               title="Featured"
-              description="Curated pools with strong performance and deep liquidity."
-              count={featuredPools.length}
+              description="Curated products with strong performance and deep liquidity."
+              count={featuredProducts.length}
             >
               <PoolCardGrid
-                pools={featuredPools.slice(0, 3).map((p) =>
-                  p.poolType === "LOCKED"
-                    ? fixedCard(p)
-                    : p.poolType === "SINGLE_ASSET"
-                      ? termCard(p)
-                      : flexibleCard(p),
-                )}
+                pools={featuredProducts.slice(0, 3).map(productCard)}
                 emptyMessage="Nothing featured right now."
               />
             </PoolSection>
@@ -329,7 +257,7 @@ export default function DashboardPage() {
           >
             <PoolCardGrid
               loading={poolsLoading}
-              pools={filteredStable.map(flexibleCard)}
+              pools={filteredStable.map(productCard)}
               emptyMessage={emptyFor("flexible yield")}
             />
           </PoolSection>
@@ -338,25 +266,10 @@ export default function DashboardPage() {
             title="Fixed yield"
             description="Fixed-term deposits with the rate set at deposit. Choose when you receive interest; early exit carries a penalty."
             count={filteredLocked.length}
-            filters={
-              durationOptions.length > 2 ? (
-                <SelectField
-                  prefix="Term"
-                  value={activeDuration}
-                  onChange={(e) => setActiveDuration(e.target.value)}
-                >
-                  {durationOptions.map((d) => (
-                    <option key={d} value={d}>
-                      {d}
-                    </option>
-                  ))}
-                </SelectField>
-              ) : undefined
-            }
           >
             <PoolCardGrid
               loading={poolsLoading}
-              pools={filteredLocked.map(fixedCard)}
+              pools={filteredLocked.map(productCard)}
               emptyMessage={emptyFor("fixed yield")}
             />
           </PoolSection>
@@ -364,11 +277,11 @@ export default function DashboardPage() {
           <PoolSection
             title="Term deals"
             description="Finance a specific receivable or credit facility. SPV-wrapped, with deal documents onchain."
-            count={singleAssetPools.length}
+            count={termProducts.length}
           >
             <PoolCardGrid
               loading={poolsLoading}
-              pools={singleAssetPools.map(termCard)}
+              pools={termProducts.map(productCard)}
               emptyMessage={emptyFor("term deal")}
             />
           </PoolSection>

@@ -48,17 +48,27 @@ function rpcTransport(chainId: number, override?: string): Transport {
 }
 
 // Arc Testnet has no public RPC, so the (env-overridable) provider endpoint is
-// its only option here.
+// its only option for the app's own reads (the direct transport below).
 const ARC_TESTNET_RPC =
   process.env.NEXT_PUBLIC_ARC_TESTNET_RPC ||
   "https://arc-testnet.g.alchemy.com/v2/FeJRn-TNvhl6iQRFlBHPL";
+
+// Wallet-facing RPC for the keyless chains. wallet_addEthereumChain saves this URL
+// permanently in the user's wallet, so it must NOT contain the provider key — it
+// points at our backend RPC proxy, which forwards to the provider server-side.
+// The app's own reads still use the direct transport above; only the chain params
+// handed to the wallet use the proxy.
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3008/api/v1";
+const ARC_WALLET_RPC = `${API_BASE}/rpc/arc`;
+const ROBINHOOD_WALLET_RPC = `${API_BASE}/rpc/robinhood`;
 
 export const arcTestnet = defineChain({
   id: 5042002,
   name: "Arc Testnet",
   nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
   rpcUrls: {
-    default: { http: [ARC_TESTNET_RPC] },
+    default: { http: [ARC_WALLET_RPC] },
   },
   blockExplorers: {
     default: { name: "Arc Explorer", url: "https://explorer.arc.fun" },
@@ -66,8 +76,7 @@ export const arcTestnet = defineChain({
   testnet: true,
 });
 
-// Robinhood Testnet — an Arbitrum-Orbit L2 with no public RPC, so the
-// (env-overridable) provider endpoint is its only option here.
+// Robinhood Testnet — an Arbitrum-Orbit L2 with no public RPC.
 const ROBINHOOD_TESTNET_RPC =
   process.env.NEXT_PUBLIC_ROBINHOOD_TESTNET_RPC ||
   "https://robinhood-testnet.g.alchemy.com/v2/oseXvdn8oXOMITWZqEdAn";
@@ -77,7 +86,7 @@ export const robinhoodTestnet = defineChain({
   name: "Robinhood Testnet",
   nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
   rpcUrls: {
-    default: { http: [ROBINHOOD_TESTNET_RPC] },
+    default: { http: [ROBINHOOD_WALLET_RPC] },
   },
   testnet: true,
 });
