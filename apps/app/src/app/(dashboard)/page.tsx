@@ -5,7 +5,11 @@ import { usePlatformMetrics } from "@/hooks/usePlatformData";
 import { useProductsData, useFeaturedProducts } from "@/hooks/useProductsData";
 import { MetricRow } from "@/components/dashboard/stat-card";
 import { PoolSection } from "@/components/dashboard/pool-section";
-import { PoolCardGrid, type PoolCardData, type PoolAccent } from "@/components/dashboard/pool-card";
+import {
+  PoolCardGrid,
+  type PoolCardData,
+  type PoolAccent,
+} from "@/components/dashboard/pool-card";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { FirstRunStepper } from "@/components/dashboard/first-run-stepper";
 import { SelectField } from "@/components/ui/select-field";
@@ -30,13 +34,21 @@ function formatAPY(value: string | number | null | undefined): string {
 }
 
 // ── Product → card ───────────────────────────────────────────────────────────
-// One card per product; the footnote count and network badge convey that it may
-// span several chains. Per-instance specifics (tiers, funding progress) live on
-// the product detail page.
-const KIND: Record<string, { kind: string; accent: PoolAccent; rateLabel: string }> = {
-  STABLE_YIELD: { kind: "Flexible yield", accent: "brand", rateLabel: "Blended APY" },
+const KIND: Record<
+  string,
+  { kind: string; accent: PoolAccent; rateLabel: string }
+> = {
+  STABLE_YIELD: {
+    kind: "Flexible yield",
+    accent: "brand",
+    rateLabel: "Blended APY",
+  },
   LOCKED: { kind: "Fixed yield", accent: "info", rateLabel: "Fixed rate" },
-  SINGLE_ASSET: { kind: "Term deal", accent: "warning", rateLabel: "Target APY" },
+  SINGLE_ASSET: {
+    kind: "Term deal",
+    accent: "warning",
+    rateLabel: "Target APY",
+  },
 };
 
 function productCard(product: Product): PoolCardData {
@@ -57,7 +69,10 @@ function productCard(product: Product): PoolCardData {
     rate: formatAPY(product.aggregates.blendedApy),
     rateLabel: k.rateLabel,
     footnotes: [
-      { label: count > 1 ? "TVL (all networks)" : "TVL", value: formatTVL(product.aggregates.totalTvl) },
+      {
+        label: count > 1 ? "TVL (all networks)" : "TVL",
+        value: formatTVL(product.aggregates.totalTvl),
+      },
       {
         label: "Min",
         value: minInvestment
@@ -71,13 +86,11 @@ function productCard(product: Product): PoolCardData {
 // ── Page ─────────────────────────────────────────────────────────────────────
 export default function DashboardPage() {
   const [activeAsset, setActiveAsset] = useState("All");
-  // Global ChainContext — set from the header, shared with the portfolio page.
   const { activeChainId } = useChainContext();
 
   const { data: metrics } = usePlatformMetrics(activeChainId);
-  const { data: productsResponse, isLoading: poolsLoading } = useProductsData(
-    activeChainId,
-  );
+  const { data: productsResponse, isLoading: poolsLoading } =
+    useProductsData(activeChainId);
   const { data: featuredData } = useFeaturedProducts();
 
   const products = productsResponse?.data || [];
@@ -92,7 +105,6 @@ export default function DashboardPage() {
   const lockedProducts = products.filter((p) => p.poolType === "LOCKED");
   const termProducts = products.filter((p) => p.poolType === "SINGLE_ASSET");
 
-  // Asset filter derives from the products actually present (flexible yield only).
   const assetOptions = [
     "All",
     ...Array.from(
@@ -107,7 +119,9 @@ export default function DashboardPage() {
   const filteredStable =
     activeAsset === "All"
       ? stableProducts
-      : stableProducts.filter((p) => p.instances[0]?.assetSymbol === activeAsset);
+      : stableProducts.filter(
+          (p) => p.instances[0]?.assetSymbol === activeAsset,
+        );
 
   const filteredLocked = lockedProducts;
 

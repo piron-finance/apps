@@ -71,7 +71,10 @@ function ChainDot({ chainId, ring }: { chainId: number; ring?: boolean }) {
     />
   ) : (
     <span
-      className={cn("h-[9px] w-[9px] shrink-0 rounded-full", ring && "ring-2 ring-surface")}
+      className={cn(
+        "h-[9px] w-[9px] shrink-0 rounded-full",
+        ring && "ring-2 ring-surface",
+      )}
       style={{ background: chain.color }}
     />
   );
@@ -102,15 +105,12 @@ function ChainMarks({ chains }: { chains: number[] }) {
   );
 }
 
-/**
- * Landscape, not portrait: identity on the left, the rate on the right, two
- * footnotes under a rule. The colour is carried by the pool type, so it means
- * something rather than decorating.
- */
 export function PoolCard({ pool }: { pool: PoolCardData }) {
   const accent = ACCENT[pool.accent];
 
-  const href = pool.productKey ? `/product/${pool.productKey}` : `/pool/${pool.poolId}`;
+  const href = pool.productKey
+    ? `/product/${pool.productKey}`
+    : `/pool/${pool.poolId}`;
   const chains = pool.chains ?? (pool.chainId != null ? [pool.chainId] : []);
 
   return (
@@ -134,10 +134,7 @@ export function PoolCard({ pool }: { pool: PoolCardData }) {
       {/* Index tab — short at rest, extends on hover. */}
       <span
         aria-hidden
-        className={cn(
-          "absolute left-0 top-0 h-[2px] w-8",
-          accent.bar,
-        )}
+        className={cn("absolute left-0 top-0 h-[2px] w-8", accent.bar)}
       />
 
       <div className="relative flex items-center justify-between gap-3">
@@ -171,7 +168,9 @@ export function PoolCard({ pool }: { pool: PoolCardData }) {
           >
             {pool.rate}
           </p>
-          <p className="mt-2 text-[11.5px] text-muted-foreground">{pool.rateLabel}</p>
+          <p className="mt-2 text-[11.5px] text-muted-foreground">
+            {pool.rateLabel}
+          </p>
         </div>
       </div>
 
@@ -180,10 +179,7 @@ export function PoolCard({ pool }: { pool: PoolCardData }) {
         <div className="relative mt-6">
           <span className="block h-[3px] w-full overflow-hidden rounded-full bg-border">
             <span
-              className={cn(
-                "block h-full rounded-full",
-                accent.meter,
-              )}
+              className={cn("block h-full rounded-full", accent.meter)}
               style={{
                 width: `${Math.min(Math.max(pool.progress, 0), 100)}%`,
               }}
