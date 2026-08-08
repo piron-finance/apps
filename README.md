@@ -10,9 +10,10 @@ A **Turborepo** monorepo with two Next.js 14 apps:
 | --- | --- | --- | --- |
 | [`apps/web`](apps/web) | Marketing site — how it works, institutions, blog, legal | 3000 | [piron.finance](https://piron.finance) |
 | [`apps/app`](apps/app) | Investment platform — browse, invest, portfolio | 3001 | [app.piron.finance](https://app.piron.finance) |
-| [`contracts/`](contracts) | Reference ABIs and a per-chain address registry | — | — |
 
 Neither app is standalone: **`apps/app` requires the Piron backend API** (a separate service) for all pool, product, position, and transaction data. It reads chain state directly via wagmi, but everything else comes over REST.
+
+A root `contracts/` directory may be present locally. It's gitignored and serves as reference context while developing — nothing builds or runs from it. The ABIs the app actually calls are committed at `apps/app/src/contracts/abis/`.
 
 The admin and SPV operator consoles live in a separate repository.
 
@@ -103,7 +104,7 @@ Wired into the wallet config, in the order the app offers them:
 | Morph Holesky | 2810 | |
 | Arbitrum One | 42161 | |
 
-Live pool addresses always come from the API at runtime, per deployment. The static registry in `contracts/chains/` only carries Base and Arbitrum definitions and lists Base Sepolia as the sole deployed chain — it lags the networks the backend actually serves, and no app imports it.
+Pool addresses are never hardcoded — they come from the API at runtime, per deployment.
 
 ## Scripts
 

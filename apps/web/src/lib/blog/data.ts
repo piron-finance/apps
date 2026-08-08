@@ -108,7 +108,6 @@ export async function getBlogIndexData({
     });
 
     return {
-      configured: true,
       settings: fullSettings(),
       categories: allCategories,
       heroPost: undefined,
@@ -135,7 +134,6 @@ export async function getBlogIndexData({
   const recent = posts.filter((p) => !excludedIds.has(p._id));
 
   return {
-    configured: true,
     settings: fullSettings(heroPost, featuredPosts),
     categories: allCategories,
     heroPost,
@@ -160,7 +158,6 @@ export async function getBlogPostPageData(slug: string): Promise<BlogPostPageDat
     : [];
 
   return {
-    configured: true,
     post,
     settings: fullSettings(),
     relatedPosts,
