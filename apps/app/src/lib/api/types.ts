@@ -289,6 +289,41 @@ export interface ProductsResponse {
   data: Product[];
 }
 
+// ── Instruments (the securities a pool's capital is deployed into) ────────────
+// Mirrors the backend `Instrument` model as returned by
+// GET /spv/pools/:poolAddress/instruments (public, read-only).
+export interface Instrument {
+  id: string;
+  poolId: string;
+  instrumentId: number;
+  instrumentType: string;
+  purchasePrice: string;
+  faceValue: string;
+  purchaseDate: string;
+  maturityDate: string;
+  /** Basis points. */
+  annualCouponRate: number | null;
+  /** 0=none, 2=semi-annual, 4=quarterly, 12=monthly. */
+  couponFrequency: number | null;
+  nextCouponDueDate: string | null;
+  couponsPaid: number;
+  isActive: boolean;
+  maturedAt: string | null;
+  realizedYield: string | null;
+  issuer: string | null;
+  cusip: string | null;
+  isin: string | null;
+  documentUrl: string | null;
+  rating: string | null;
+}
+
+export interface PoolInstrumentsResponse {
+  poolAddress: string;
+  poolName: string;
+  instruments: Instrument[];
+  summary: { total: number; active: number; matured: number };
+}
+
 export interface PoolFilters {
   poolType?: PoolType;
   type?: PoolType; // alias

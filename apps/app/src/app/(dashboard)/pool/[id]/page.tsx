@@ -147,6 +147,18 @@ function PoolDetailContent({ pool }: { pool: Pool }) {
     if (availability.canDeposit) setDepositOpen(true);
   }, [availability.canDeposit]);
 
+  // The fund page's "Invest" CTA deep-links here with ?invest=1 so the deposit
+  // form is the first thing you see. Read it off `location` rather than
+  // useSearchParams — the latter would force this page behind a Suspense
+  // boundary. Fires once, so closing the modal doesn't reopen it.
+  const investIntentRef = useRef(false);
+  useEffect(() => {
+    if (investIntentRef.current) return;
+    if (new URLSearchParams(window.location.search).get("invest") !== "1") return;
+    investIntentRef.current = true;
+    if (availability.canDeposit) setDepositOpen(true);
+  }, [availability.canDeposit]);
+
   //  locked pool metrics for locked pools
   const { data: lockedMetrics } = useLockedPoolMetrics(
     isLockedPool ? pool.chainId : undefined,
