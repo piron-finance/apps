@@ -61,7 +61,6 @@ export type BlogSettings = {
 };
 
 export type BlogIndexData = {
-  configured: boolean;
   settings: BlogSettings;
   categories: BlogCategory[];
   heroPost?: BlogPost | null;
@@ -75,7 +74,6 @@ export type BlogIndexData = {
 };
 
 export type BlogPostPageData = {
-  configured: boolean;
   post: BlogPost | null;
   settings: BlogSettings;
   relatedPosts: BlogPost[];
