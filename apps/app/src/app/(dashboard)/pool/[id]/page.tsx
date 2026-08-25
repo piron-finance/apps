@@ -26,6 +26,7 @@ import type { Pool, Transaction, LockedPosition } from "@/lib/api/types";
 import { getEffectiveApy, getDepositAvailability, poolTypeLabel, type DepositAvailability } from "@/lib/pool-helpers";
 import { getTransactionUrl } from "@/lib/constants/chains";
 import { MetricRow } from "@/components/dashboard/stat-card";
+import { PoolTrustPanel, VerifiedMark } from "@/components/dashboard/pool-trust-panel";
 import { usePendingTx, useReconcilePending, type PendingTx } from "@/lib/context/PendingTxContext";
 
 function formatValue(value: string | number | null | undefined, decimals = 2): string {
@@ -341,6 +342,7 @@ function PoolDetailContent({ pool }: { pool: Pool }) {
             <APYCard pool={pool} availability={availability} effectiveApy={effectiveApy} onDeposit={openDeposit} />
           )}
           <PoolStatsCard pool={pool} isLockedPool={isLockedPool} lockedMetrics={lockedMetrics} tiers={tiers} effectiveApy={effectiveApy} />
+          <PoolTrustPanel pool={pool} />
           {!isLockedPool && <AllocationCard pool={pool} />}
           <HoldingExitsCard pool={pool} isLockedPool={isLockedPool} tiers={tiers} />
           <RiskCard pool={pool} />
@@ -414,11 +416,12 @@ function PoolHeader({ pool, availability }: { pool: Pool; availability: DepositA
           </h1>
           <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12.5px] text-muted-foreground">
             {pool.issuer && (
-              <span>
+              <span className="inline-flex items-center gap-1">
                 Issued by{" "}
                 <span className="font-medium text-foreground">
                   {pool.issuer}
                 </span>
+                <VerifiedMark />
               </span>
             )}
             {pool.issuer && (pool.region || pool.country) && (
