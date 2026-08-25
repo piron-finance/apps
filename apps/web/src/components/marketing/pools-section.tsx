@@ -7,7 +7,7 @@ import { APP_URL } from "@/components/marketing/links";
 const pools = [
   {
     number: "01",
-    label: "Stable Yield",
+    label: "Flexible Yield",
     name: "Daily Access Pool",
     description:
       "Deposit stablecoins and start earning from day one. Your capital is allocated to Treasury Bills and short-duration instruments. Withdraw freely after a short holding period.",
@@ -20,20 +20,20 @@ const pools = [
   },
   {
     number: "02",
-    label: "Locked Term",
+    label: "Fixed Yield",
     name: "Fixed Rate Pool",
     description:
-      "Lock in a guaranteed rate for 90, 180, or 365 days. Know exactly what you'll earn before you deposit. At maturity, choose to withdraw or roll over into a new term automatically.",
+      "Lock a fixed rate for 90, 180, or 365 days, set when you deposit. At maturity, choose to withdraw or roll over into a new term automatically. Returns are subject to risk and are not guaranteed.",
     features: [
       { key: "Lock-in periods", value: "90 / 180 / 365 days" },
-      { key: "Your rate", value: "Guaranteed at deposit" },
+      { key: "Your rate", value: "Fixed at deposit" },
       { key: "At maturity", value: "Withdraw or auto-renew" },
       { key: "Early exit", value: "Available with a fee" },
     ],
   },
   {
     number: "03",
-    label: "Single Asset",
+    label: "Term Deals",
     name: "Deal-Specific Pool",
     description:
       "Back a specific real-world asset: an invoice, trade deal, or bond. See the borrower, the terms, and the payment schedule before you commit a single dollar.",

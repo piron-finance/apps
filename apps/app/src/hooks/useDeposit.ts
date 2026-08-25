@@ -4,6 +4,7 @@ import {
   useWriteContract,
   useWaitForTransactionReceipt,
   useReadContract,
+  useSwitchChain,
 } from "wagmi";
 import { parseUnits, formatUnits } from "viem";
 import ERC20_ABI from "@/contracts/abis/IERC20.json";
@@ -47,8 +48,22 @@ interface UseDepositReturn {
 }
 
 export function useDeposit(pool?: Pool): UseDepositReturn {
-  const { address } = useAccount();
+  const { address, chainId: walletChainId } = useAccount();
+  const { switchChainAsync } = useSwitchChain();
   const invalidateAfterMutation = useInvalidateAfterMutation();
+
+  // A product's instances live on different chains, so the wallet may be on the
+  // wrong one when the user picks a network to invest on. wagmi's switchChainAsync
+  // prompts wallet_switchEthereumChain and auto-adds the chain (wallet_addEthereumChain)
+  // from the wagmi config if the wallet doesn't have it yet. Without this the write
+  // throws ChainMismatchError. NOTE: for Arc/Robinhood the add-chain RPC still carries
+  // the provider key — swap to a keyless/proxy RPC before public launch (plan U4).
+  const ensureChain = async () => {
+    if (!pool) return;
+    if (walletChainId !== pool.chainId) {
+      await switchChainAsync({ chainId: pool.chainId as any });
+    }
+  };
   const [depositTxHash, setDepositTxHash] = useState<
     `0x${string}` | undefined
   >();
@@ -200,6 +215,8 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
       throw new Error("Pool or wallet not connected");
     }
 
+    await ensureChain();
+
     const amountBigInt = parseUnits(amount, pool.assetDecimals);
 
     try {
@@ -223,6 +240,8 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
     if (!pool || !address) {
       throw new Error("Pool or wallet not connected");
     }
+
+    await ensureChain();
 
     try {
       const amountBigInt = parseUnits(amount, pool.assetDecimals);

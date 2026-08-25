@@ -3,6 +3,7 @@ import {
   useAccount,
   useWriteContract,
   useWaitForTransactionReceipt,
+  useSwitchChain,
 } from "wagmi";
 import { parseUnits } from "viem";
 import LIQUIDITY_POOL_ABI from "@/contracts/abis/LiquidityPool.json";
@@ -21,7 +22,8 @@ import { useInvalidateAfterMutation } from "@/hooks/useQueryInvalidation";
  *  - LOCKED (LockedPool): redeemPosition, earlyExitPosition, setAutoRollover, transferPosition
  */
 export function usePoolExit(pool?: Pool) {
-  const { address } = useAccount();
+  const { address, chainId: walletChainId } = useAccount();
+  const { switchChainAsync } = useSwitchChain();
   const invalidateAfterMutation = useInvalidateAfterMutation();
   const { writeContractAsync } = useWriteContract();
   const [txHash, setTxHash] = useState<`0x${string}` | undefined>();
@@ -45,6 +47,11 @@ export function usePoolExit(pool?: Pool) {
 
   const call = async (functionName: string, args: unknown[]) => {
     if (!pool || !address) throw new Error("Pool or wallet not connected");
+    // Exit actions run on the pool's chain; switch (and add if needed) the wallet
+    // so the write doesn't throw ChainMismatchError when it's on another network.
+    if (walletChainId !== pool.chainId) {
+      await switchChainAsync({ chainId: pool.chainId as any });
+    }
     try {
       const hash = await writeContractAsync({
         address: pool.poolAddress as `0x${string}`,

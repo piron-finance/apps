@@ -6,11 +6,14 @@ import { Footer } from "@/components/marketing/footer";
 import { BlogCTA } from "@/components/blog/blog-cta";
 import { PostCard } from "@/components/blog/post-card";
 import { PostImage } from "@/components/blog/post-image";
-import { RichText } from "@/components/blog/rich-text";
+import { MarkdownContent } from "@/components/blog/markdown-content";
 import { ShareButtons } from "@/components/blog/share-buttons";
 import { getBlogPostPageData } from "@/lib/blog/data";
-import { resolveBodyImages } from "@/lib/sanity/image";
 import { absoluteUrl } from "@/lib/site";
+
+// Rendered on demand and cached (ISR) — a marketing publish appears within ~a
+// minute without a redeploy.
+export const revalidate = 60;
 
 type BlogPostPageProps = {
   params: {
@@ -55,7 +58,14 @@ export async function generateMetadata({
       title,
       description,
       url,
-      images: image ? [{ url: image, alt: post.socialImage?.alt || post.image?.alt || title }] : undefined,
+      images: image
+        ? [
+            {
+              url: image,
+              alt: post.socialImage?.alt || post.image?.alt || title,
+            },
+          ]
+        : undefined,
     },
     twitter: {
       card: image ? "summary_large_image" : "summary",
@@ -67,7 +77,9 @@ export async function generateMetadata({
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
-  const { post, relatedPosts, settings } = await getBlogPostPageData(params.slug);
+  const { post, relatedPosts, settings } = await getBlogPostPageData(
+    params.slug,
+  );
 
   if (!post) {
     notFound();
@@ -80,7 +92,10 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       <Header transparent />
 
       <div className="relative overflow-x-hidden">
-        <section data-header-theme="dark" className="relative bg-[#0a0a0b] pb-12 pt-28">
+        <section
+          data-header-theme="dark"
+          className="relative bg-black pb-12 pt-28"
+        >
           <div className="relative mx-auto max-w-4xl px-6">
             <Link
               href="/blog"
@@ -99,7 +114,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               {post.author?.name ? <span>By {post.author.name}</span> : null}
             </div>
 
-            <h1 className="mt-6 text-4xl font-bold leading-tight tracking-tight text-white md:text-6xl">
+            <h1 className="mt-6 font-serif text-4xl font-semibold leading-[1.1] tracking-tight text-white md:text-6xl">
               {post.title}
             </h1>
 
@@ -121,7 +136,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
             <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_260px]">
               <article className="space-y-8">
-                <RichText value={resolveBodyImages(post.body)} />
+                <MarkdownContent source={post.body} />
               </article>
 
               <aside className="lg:sticky lg:top-24 lg:self-start lg:border-l lg:border-border lg:pl-8">

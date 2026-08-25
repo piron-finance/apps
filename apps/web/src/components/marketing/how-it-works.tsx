@@ -13,7 +13,7 @@ const steps = [
     number: "02",
     title: "Select Pool",
     description:
-      "Choose from stable yield, locked term, or single-asset pools based on your goals.",
+      "Choose from flexible yield, fixed yield, or term deals pools based on your goals.",
   },
   {
     number: "03",

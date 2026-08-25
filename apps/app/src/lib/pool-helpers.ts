@@ -1,14 +1,37 @@
 import type { Pool } from "@/lib/api/types";
 
 /**
+ * Public-facing product names for each pool type. The enums (SINGLE_ASSET,
+ * STABLE_YIELD, LOCKED) stay in code/DB/contracts — this is display copy only.
+ *   STABLE_YIELD → Flexible Yield (withdraw anytime)
+ *   LOCKED       → Fixed Yield    (lock a term, fixed APY)
+ *   SINGLE_ASSET → Term Deals     (back one specific deal to maturity)
+ */
+const POOL_TYPE_LABELS: Record<string, string> = {
+  STABLE_YIELD: "Flexible Yield",
+  LOCKED: "Fixed Yield",
+  SINGLE_ASSET: "Term Deals",
+};
+
+export function poolTypeLabel(poolType?: string | null): string {
+  if (!poolType) return "—";
+  return POOL_TYPE_LABELS[poolType] ?? poolType.replace(/_/g, " ");
+}
+
+/** Uppercased variant for section eyebrows/tags. */
+export function poolTypeLabelUpper(poolType?: string | null): string {
+  return poolTypeLabel(poolType).toUpperCase();
+}
+
+/**
  * Effective APY for a pool.
  *
- * Single-asset (discounted) pools carry their fixed promised rate as
- * `discountRate` in basis points (e.g. 560 bps = 5.60%). This is the rate the
- * protocol promises and the SPV settles against — used directly, NOT annualized
+ * Single-asset (discounted) pools carry their target rate as `discountRate` in
+ * basis points (e.g. 560 bps = 5.60%). This is the rate the deal is structured
+ * against and the SPV settles toward — used directly, NOT annualized
  * (see spv.service `promisedRatePct`: `discountRate / 100 || projectedAPY`).
  * The backend leaves `analytics.apy` at "0" for these pools, so we read the
- * promised rate straight off the pool record.
+ * target rate straight off the pool record.
  */
 export function getEffectiveApy(pool: Pool): {
   apy: number;
@@ -18,7 +41,7 @@ export function getEffectiveApy(pool: Pool): {
   const isSingleAsset = pool.poolType === "SINGLE_ASSET";
   const isLocked = pool.poolType === "LOCKED";
 
-  // Fixed promised rate for single-asset pools — discountRate (bps) → percent.
+  // Fixed target rate for single-asset pools — discountRate (bps) → percent.
   if (isSingleAsset && pool.discountRate != null && pool.discountRate > 0) {
     return { apy: pool.discountRate / 100, isFixed: true, hasValue: true };
   }

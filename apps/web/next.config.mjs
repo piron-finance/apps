@@ -1,13 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "cdn.sanity.io",
-      },
-    ],
-  },
+  // Blog content is local MDX with images served from /public, so no remote
+  // image hosts are required. Add remotePatterns here if that changes.
 };
 
 export default nextConfig;

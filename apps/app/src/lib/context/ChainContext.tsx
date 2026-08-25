@@ -55,27 +55,47 @@ export const SUPPORTED_CHAINS: ChainOption[] = [
     bgColor: "rgba(40,160,240,0.12)",
     isTestnet: true,
   },
+  {
+    id: 46630,
+    label: "Robinhood Testnet",
+    shortLabel: "Robinhood",
+    color: "#00C805",
+    bgColor: "rgba(0,200,5,0.12)",
+    isTestnet: true,
+  },
 ];
 
 const ALL_CHAINS_OPTION = SUPPORTED_CHAINS[0] as ChainOption;
 
-// Separate storage key from admin/SPV so each app persists independently
-const STORAGE_KEY = "piron_app_active_chain";
+// Base is the default chain the dashboard opens on. Every other chain (and
+// "All Chains") stays selectable from the dropdown; this only sets where a new
+// visitor lands before they pick, or choose to persist, something else.
+const DEFAULT_CHAIN_ID = 84532; // Base Sepolia
+
+// Separate storage key from admin/SPV so each app persists independently.
+// v2: the old key was polluted by the earlier Arbitrum "pin" (every visitor had
+// 421614 force-written), so bumping the key discards those stale values and lets
+// the Base default below take effect. Genuine choices persist under the new key.
+const STORAGE_KEY = "piron_app_active_chain_v2";
 
 // ─── Context ──────────────────────────────────────────────────────────────────
 
+const DEFAULT_CHAIN =
+  SUPPORTED_CHAINS.find((c) => c.id === DEFAULT_CHAIN_ID) ?? ALL_CHAINS_OPTION;
+
 const ChainContext = createContext<ChainContextValue>({
-  activeChainId: undefined,
+  activeChainId: DEFAULT_CHAIN_ID,
   setActiveChainId: () => {},
-  activeChain: ALL_CHAINS_OPTION,
+  activeChain: DEFAULT_CHAIN,
   supportedChains: SUPPORTED_CHAINS,
 });
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
 export function ChainProvider({ children }: { children: React.ReactNode }) {
+  // Start on Base (deterministic for SSR), then rehydrate any prior choice below.
   const [activeChainId, setActiveChainIdState] = useState<number | undefined>(
-    undefined
+    DEFAULT_CHAIN_ID
   );
 
   // Rehydrate from localStorage on mount (client-side only)

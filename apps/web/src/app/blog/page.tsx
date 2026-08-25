@@ -77,11 +77,6 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                 <p className="mt-5 max-w-2xl text-base leading-relaxed text-white/60 md:text-lg">
                   {data.settings.description}
                 </p>
-                {!data.configured ? (
-                  <p className="mt-4 text-sm text-white/30">
-                    Showing seeded content until Sanity is connected.
-                  </p>
-                ) : null}
               </div>
 
               <SearchForm activeCategory={data.activeCategory} searchQuery={data.searchQuery} variant="dark" />

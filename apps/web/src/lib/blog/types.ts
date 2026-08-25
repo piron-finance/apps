@@ -37,7 +37,8 @@ export type BlogPost = {
   category?: BlogCategory;
   author?: BlogAuthor;
   image?: BlogImage;
-  body: any[];
+  /** Raw MDX source for the post body (rendered by <MDXContent />). */
+  body: string;
   tags?: string[];
   seoTitle?: string;
   seoDescription?: string;
@@ -60,7 +61,6 @@ export type BlogSettings = {
 };
 
 export type BlogIndexData = {
-  configured: boolean;
   settings: BlogSettings;
   categories: BlogCategory[];
   heroPost?: BlogPost | null;
@@ -74,7 +74,6 @@ export type BlogIndexData = {
 };
 
 export type BlogPostPageData = {
-  configured: boolean;
   post: BlogPost | null;
   settings: BlogSettings;
   relatedPosts: BlogPost[];

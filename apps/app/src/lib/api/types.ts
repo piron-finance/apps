@@ -243,6 +243,87 @@ export interface PoolsResponse {
   };
 }
 
+// ── Products (one product = 1..N per-chain pool instances) ────────────────────
+// Shares are NOT fungible across chains — `aggregates` is a labeled roll-up,
+// `instances` is the per-chain truth (the unit you actually deposit into).
+export interface ProductInstance {
+  chainId: number;
+  poolAddress: string;
+  status: string;
+  tvl: string;
+  apy: number | null;
+  navPerShare: string | null;
+  assetSymbol: string;
+  minInvestment: string;
+}
+
+export interface ProductAggregates {
+  totalTvl: string;
+  chains: number[];
+  instanceCount: number;
+  blendedApy: number | null;
+  /** null for SINGLE_ASSET — read statusByChain instead. */
+  combinedStatus: string | null;
+  statusByChain: Record<number, string>;
+}
+
+export interface Product {
+  productKey: string;
+  name: string;
+  description: string | null;
+  poolType: PoolType;
+  issuer: string | null;
+  issuerLogo: string | null;
+  securityType: string | null;
+  riskRating: string | null;
+  country: string | null;
+  region: string | null;
+  tags: string[];
+  isFeatured: boolean;
+  synthesized: boolean;
+  aggregates: ProductAggregates;
+  instances: ProductInstance[];
+}
+
+export interface ProductsResponse {
+  data: Product[];
+}
+
+// ── Instruments (the securities a pool's capital is deployed into) ────────────
+// Mirrors the backend `Instrument` model as returned by
+// GET /spv/pools/:poolAddress/instruments (public, read-only).
+export interface Instrument {
+  id: string;
+  poolId: string;
+  instrumentId: number;
+  instrumentType: string;
+  purchasePrice: string;
+  faceValue: string;
+  purchaseDate: string;
+  maturityDate: string;
+  /** Basis points. */
+  annualCouponRate: number | null;
+  /** 0=none, 2=semi-annual, 4=quarterly, 12=monthly. */
+  couponFrequency: number | null;
+  nextCouponDueDate: string | null;
+  couponsPaid: number;
+  isActive: boolean;
+  maturedAt: string | null;
+  realizedYield: string | null;
+  issuer: string | null;
+  cusip: string | null;
+  isin: string | null;
+  documentUrl: string | null;
+  rating: string | null;
+}
+
+export interface PoolInstrumentsResponse {
+  poolAddress: string;
+  poolName: string;
+  instruments: Instrument[];
+  summary: { total: number; active: number; matured: number };
+}
+
 export interface PoolFilters {
   poolType?: PoolType;
   type?: PoolType; // alias
