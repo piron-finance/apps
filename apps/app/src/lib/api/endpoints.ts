@@ -324,6 +324,27 @@ export const lockedPositionsApi = {
 
 export const withdrawalsApi = {
   /**
+   * Signal an inbound exit so the backend's indexer switches to BURST (12s)
+   * before the transaction lands. We sign the contract call directly, so the
+   * returned calldata is unused — these are called for that side effect only,
+   * and must never block the user's transaction.
+   */
+  signalWithdrawal: async (poolAddress: string, amount: string, receiver: string) => {
+    const { data } = await apiClient.post("/withdrawals", { poolAddress, amount, receiver });
+    return data;
+  },
+
+  signalRedeem: async (poolAddress: string, positionId: number) => {
+    const { data } = await apiClient.post("/withdrawals/redeem", { poolAddress, positionId });
+    return data;
+  },
+
+  signalEarlyExit: async (poolAddress: string, positionId: number) => {
+    const { data } = await apiClient.post("/withdrawals/early-exit", { poolAddress, positionId });
+    return data;
+  },
+
+  /**
    * Get pool withdrawal requests for a user
    */
   getPoolRequests: async (poolId: string, userAddress: string) => {

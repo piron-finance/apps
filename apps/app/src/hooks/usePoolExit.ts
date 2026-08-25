@@ -12,6 +12,7 @@ import LOCKED_POOL_ABI from "@/contracts/abis/LockedPool.json";
 import { Pool } from "@/lib/api/types";
 import { useInvalidateAfterMutation } from "@/hooks/useQueryInvalidation";
 import { usePendingTx, type PendingTxType } from "@/lib/context/PendingTxContext";
+import { withdrawalsApi } from "@/lib/api/endpoints";
 
 /**
  * Every user-side EXIT/CLAIM action across the three pool types. Mirrors the
@@ -63,6 +64,29 @@ export function usePoolExit(pool?: Pool) {
       ? LOCKED_POOL_ABI
       : LIQUIDITY_POOL_ABI;
 
+  /**
+   * Tells the backend an exit is inbound so its indexer bursts before the tx
+   * lands. Exits have no confirm-receipt endpoint, so this is the only thing
+   * keeping them off the 60s indexer cadence. Fire-and-forget by design — a
+   * failure here must never block the user's exit.
+   */
+  const signalExit = (functionName: string, args: unknown[], amount?: string) => {
+    if (!pool) return;
+    const positionId = Number(args[0]);
+    const send =
+      functionName === "redeemPosition"
+        ? withdrawalsApi.signalRedeem(pool.poolAddress, positionId)
+        : functionName === "earlyExitPosition"
+        ? withdrawalsApi.signalEarlyExit(pool.poolAddress, positionId)
+        : amount && address
+        ? withdrawalsApi.signalWithdrawal(pool.poolAddress, amount, address)
+        : null;
+
+    send?.catch((err) => {
+      console.warn(`[usePoolExit] ${functionName} pre-signal failed:`, err?.message);
+    });
+  };
+
   const call = async (functionName: string, args: unknown[], amount?: string) => {
     if (!pool || !address) throw new Error("Pool or wallet not connected");
     // Exit actions run on the pool's chain; switch (and add if needed) the wallet
@@ -70,6 +94,7 @@ export function usePoolExit(pool?: Pool) {
     if (walletChainId !== pool.chainId) {
       await switchChainAsync({ chainId: pool.chainId as any });
     }
+    if (LEDGER_TYPES[functionName]) signalExit(functionName, args, amount);
     try {
       const hash = await writeContractAsync({
         address: pool.poolAddress as `0x${string}`,
