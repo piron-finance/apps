@@ -3,15 +3,21 @@
 import { useQuery } from "@tanstack/react-query";
 import { poolsApi } from "@/lib/api/endpoints";
 import type { PoolFilters } from "@/lib/api/types";
+import { useHasPendingTx } from "@/lib/context/PendingTxContext";
+import { LIVE_POLL_MS, RESTING_POLL_MS } from "@/lib/constants/polling";
 
 /**
  * Hook to fetch all pools with optional filters
  */
 export function usePoolsData(filters?: PoolFilters) {
+  const hasPending = useHasPendingTx();
   return useQuery({
     queryKey: ["pools", filters],
     queryFn: () => poolsApi.getAll(filters),
-    staleTime: 30000, // 30 seconds
+    // Pool TVL on the dashboard cards moves the moment the user's own deposit
+    // is indexed, so track it closely while one is in flight.
+    staleTime: hasPending ? 0 : 30000,
+    refetchInterval: hasPending ? LIVE_POLL_MS : false,
     retry: 2,
   });
 }
@@ -21,12 +27,14 @@ export function usePoolsData(filters?: PoolFilters) {
  * NOTE: Listing endpoint doesn't include assetAddress, so we MUST fetch detail endpoint
  */
 export function usePoolData(poolAddress: string) {
+  const hasPending = useHasPendingTx();
   return useQuery({
     queryKey: ["pool", poolAddress],
     queryFn: () => poolsApi.getById(poolAddress),
     enabled: !!poolAddress,
-    staleTime: 30000,
-    refetchInterval: 60000, // NAV and pool state can change
+    staleTime: hasPending ? 0 : 30000,
+    // NAV and pool state can change
+    refetchInterval: hasPending ? LIVE_POLL_MS : RESTING_POLL_MS,
     retry: 2,
     // Don't use initialData - listing doesn't have all fields (e.g. assetAddress)
   });
@@ -91,12 +99,13 @@ export function useFeaturedPools() {
  * Hook to fetch pool stats
  */
 export function usePoolStats(poolAddress?: string) {
+  const hasPending = useHasPendingTx();
   return useQuery({
     queryKey: ["pool-stats", poolAddress],
     queryFn: () => poolsApi.getStats(poolAddress!),
     enabled: !!poolAddress,
-    staleTime: 30000,
-    refetchInterval: 60000,
+    staleTime: hasPending ? 0 : 30000,
+    refetchInterval: hasPending ? LIVE_POLL_MS : RESTING_POLL_MS,
     retry: 2,
   });
 }

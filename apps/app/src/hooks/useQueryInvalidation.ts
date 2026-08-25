@@ -30,19 +30,27 @@ function invalidateAll(
 }
 
 /**
- * Returns a function that invalidates all user/pool query data after a mutation,
- * then retries at 3 s and 8 s to handle backend indexer lag.
+ * Delays, in ms, at which the post-mutation invalidation is repeated.
  *
- * The backend indexes on-chain events asynchronously — a single immediate
- * invalidation often races ahead of the indexer and refetches stale data.
- * The delayed retries guarantee at least one refetch after the backend has caught up.
+ * The backend indexes on-chain events asynchronously, so a single immediate
+ * invalidation races ahead of the indexer and refetches the same stale data.
+ * These retries cover the window until it catches up. They are a backstop:
+ * the primary mechanism is the receipt push in `useDeposit` plus the 3s poll
+ * that `useHasPendingTx` turns on while a transaction is unconfirmed.
+ */
+const RETRY_DELAYS_MS = [2000, 5000, 12000];
+
+/**
+ * Returns a function that invalidates all user/pool query data after a mutation,
+ * immediately and then again on the retry ladder above.
  */
 export function useInvalidateAfterMutation() {
   const queryClient = useQueryClient();
 
   return (address: string, poolAddress: string) => {
     invalidateAll(queryClient, address, poolAddress);
-    setTimeout(() => invalidateAll(queryClient, address, poolAddress), 3000);
-    setTimeout(() => invalidateAll(queryClient, address, poolAddress), 8000);
+    for (const delay of RETRY_DELAYS_MS) {
+      setTimeout(() => invalidateAll(queryClient, address, poolAddress), delay);
+    }
   };
 }

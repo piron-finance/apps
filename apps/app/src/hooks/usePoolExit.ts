@@ -11,13 +11,14 @@ import STABLE_YIELD_POOL_ABI from "@/contracts/abis/StableYieldPool.json";
 import LOCKED_POOL_ABI from "@/contracts/abis/LockedPool.json";
 import { Pool } from "@/lib/api/types";
 import { useInvalidateAfterMutation } from "@/hooks/useQueryInvalidation";
+import { usePendingTx, type PendingTxType } from "@/lib/context/PendingTxContext";
 
 /**
  * Every user-side EXIT/CLAIM action across the three pool types. Mirrors the
  * direct-contract-write pattern in `useDeposit`. Burning shares / claiming needs
  * no ERC20 approval (you already own the shares), so there is no approve step.
  *
- *  - SINGLE_ASSET (LiquidityPool): withdraw, redeem, claimCoupon, claimRefund, emergencyWithdraw
+ *  - SINGLE_ASSET (LiquidityPool): withdraw, redeem, claimCoupon, emergencyWithdraw
  *  - STABLE_YIELD (StableYieldPool): withdraw (auto-queues when liquidity is low), redeem, emergencyRedeem
  *  - LOCKED (LockedPool): redeemPosition, earlyExitPosition, setAutoRollover, transferPosition
  */
@@ -25,6 +26,7 @@ export function usePoolExit(pool?: Pool) {
   const { address, chainId: walletChainId } = useAccount();
   const { switchChainAsync } = useSwitchChain();
   const invalidateAfterMutation = useInvalidateAfterMutation();
+  const { add: addPendingTx, markMined } = usePendingTx();
   const { writeContractAsync } = useWriteContract();
   const [txHash, setTxHash] = useState<`0x${string}` | undefined>();
 
@@ -33,10 +35,26 @@ export function usePoolExit(pool?: Pool) {
   });
 
   useEffect(() => {
-    if (isSuccess && address && pool?.poolAddress) {
-      invalidateAfterMutation(address, pool.poolAddress);
-    }
+    if (!isSuccess || !address || !pool?.poolAddress) return;
+    if (txHash) markMined(txHash);
+    invalidateAfterMutation(address, pool.poolAddress);
   }, [isSuccess]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /**
+   * How each contract call surfaces in the transaction ledger, so the optimistic
+   * row is tagged the same way the indexed one will be. Calls absent from this
+   * map (setAutoRollover, transferPosition) produce no ledger entry, so they get
+   * no pending row.
+   */
+  const LEDGER_TYPES: Record<string, PendingTxType> = {
+    withdraw: "WITHDRAWAL",
+    redeem: "WITHDRAWAL",
+    emergencyWithdraw: "WITHDRAWAL",
+    emergencyRedeem: "WITHDRAWAL",
+    claimCoupon: "WITHDRAWAL",
+    redeemPosition: "POSITION_REDEEMED",
+    earlyExitPosition: "EARLY_EXIT",
+  };
 
   const poolABI =
     pool?.poolType === "STABLE_YIELD"
@@ -45,7 +63,7 @@ export function usePoolExit(pool?: Pool) {
       ? LOCKED_POOL_ABI
       : LIQUIDITY_POOL_ABI;
 
-  const call = async (functionName: string, args: unknown[]) => {
+  const call = async (functionName: string, args: unknown[], amount?: string) => {
     if (!pool || !address) throw new Error("Pool or wallet not connected");
     // Exit actions run on the pool's chain; switch (and add if needed) the wallet
     // so the write doesn't throw ChainMismatchError when it's on another network.
@@ -61,6 +79,17 @@ export function usePoolExit(pool?: Pool) {
         args,
       });
       setTxHash(hash);
+      const ledgerType = LEDGER_TYPES[functionName];
+      if (ledgerType) {
+        addPendingTx({
+          txHash: hash,
+          chainId: pool.chainId,
+          poolAddress: pool.poolAddress,
+          userAddress: address,
+          type: ledgerType,
+          amount: amount ?? null,
+        });
+      }
       return hash;
     } catch (error) {
       console.error(`${functionName} failed:`, error);
@@ -74,20 +103,19 @@ export function usePoolExit(pool?: Pool) {
   // ERC4626 withdraw by ASSET amount (single-asset + stable-yield).
   // Stable-yield auto-queues the request when reserves are low.
   const withdraw = (assetAmount: string) =>
-    call("withdraw", [amt(assetAmount), me(), me()]);
+    call("withdraw", [amt(assetAmount), me(), me()], assetAmount);
 
   // ERC4626 redeem by SHARE amount.
   const redeemShares = (shares: string) =>
-    call("redeem", [amt(shares), me(), me()]);
+    call("redeem", [amt(shares), me(), me()], shares);
 
   // SINGLE_ASSET
   const claimCoupon = () => call("claimCoupon", []);
-  const claimRefund = () => call("claimRefund", []); // post-cancellation refund
   const emergencyWithdraw = () => call("emergencyWithdraw", []);
 
   // STABLE_YIELD
   const emergencyRedeem = (shares: string) =>
-    call("emergencyRedeem", [amt(shares), me(), me()]);
+    call("emergencyRedeem", [amt(shares), me()], shares);
 
   // LOCKED — position-scoped
   const redeemPosition = (positionId: number | string) =>
@@ -104,7 +132,6 @@ export function usePoolExit(pool?: Pool) {
     withdraw,
     redeemShares,
     claimCoupon,
-    claimRefund,
     emergencyWithdraw,
     emergencyRedeem,
     // locked

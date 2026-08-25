@@ -12,8 +12,13 @@ import LIQUIDITY_POOL_ABI from "@/contracts/abis/LiquidityPool.json";
 import STABLE_YIELD_POOL_ABI from "@/contracts/abis/StableYieldPool.json";
 import LOCKED_POOL_ABI from "@/contracts/abis/LockedPool.json";
 import { Pool } from "@/lib/api/types";
-import { buildDepositTransaction } from "@/lib/api/endpoints";
+import {
+  buildDepositTransaction,
+  buildLockedDepositTransaction,
+  confirmDepositTransaction,
+} from "@/lib/api/endpoints";
 import { useInvalidateAfterMutation } from "@/hooks/useQueryInvalidation";
+import { usePendingTx } from "@/lib/context/PendingTxContext";
 
 interface UseDepositReturn {
   deposit: (amount: string, tierIndex?: number, interestPayment?: "UPFRONT" | "AT_MATURITY") => Promise<`0x${string}`>;
@@ -51,6 +56,7 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
   const { address, chainId: walletChainId } = useAccount();
   const { switchChainAsync } = useSwitchChain();
   const invalidateAfterMutation = useInvalidateAfterMutation();
+  const { add: addPendingTx, markMined } = usePendingTx();
 
   // A product's instances live on different chains, so the wallet may be on the
   // wrong one when the user picks a network to invest on. wagmi's switchChainAsync
@@ -152,10 +158,21 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
     hash: depositTxHash,
   });
 
+  // The receipt is on-chain within a couple of seconds, but the backend only
+  // learns about it on its next indexer poll (12s in BURST, 60s in NORMAL).
+  // Hand it the hash directly so it writes the Transaction row now, then
+  // invalidate — so the very next refetch already carries the confirmed record
+  // instead of returning pre-deposit state for another minute.
   useEffect(() => {
-    if (isDepositSuccess && address && pool?.poolAddress) {
-      invalidateAfterMutation(address, pool.poolAddress);
-    }
+    if (!isDepositSuccess || !address || !pool?.poolAddress || !depositTxHash) return;
+    markMined(depositTxHash);
+    confirmDepositTransaction(depositTxHash, pool.chainId)
+      .catch((err) => {
+        // Non-fatal: the indexer still picks the deposit up on its own. The
+        // optimistic row stays on screen until then.
+        console.warn("[useDeposit] confirm push failed, falling back to indexer:", err?.message);
+      })
+      .finally(() => invalidateAfterMutation(address, pool.poolAddress));
   }, [isDepositSuccess]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const needsApproval = (amount: string): boolean => {
@@ -251,6 +268,23 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
       if (pool.poolType === "LOCKED") {
         // UPFRONT = 0, AT_MATURITY = 1
         const paymentChoice = interestPayment === "UPFRONT" ? 0 : 1;
+
+        // Tell the backend a locked deposit is inbound so its indexer bursts
+        // (12s polls) before the tx lands. The non-locked branch below gets this
+        // for free from buildDepositTransaction; without it a locked deposit
+        // left the indexer at its 60s resting cadence. Fire-and-forget — a
+        // failure here must never block the user's deposit.
+        buildLockedDepositTransaction({
+          poolAddress: pool.poolAddress,
+          amount,
+          depositor: address,
+          tierIndex: tierIndex ?? 0,
+          interestPayment: interestPayment ?? "AT_MATURITY",
+          chainId: pool.chainId,
+        }).catch((err) => {
+          console.warn("[useDeposit] locked deposit pre-signal failed:", err?.message);
+        });
+
         hash = await writeContractAsync({
           address: pool.poolAddress as `0x${string}`,
           chainId: pool.chainId as any,
@@ -275,6 +309,16 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
       }
 
       setDepositTxHash(hash);
+      // Show the deposit immediately, tagged pending, so the modal can close
+      // straight into a visible record rather than an unchanged page.
+      addPendingTx({
+        txHash: hash,
+        chainId: pool.chainId,
+        poolAddress: pool.poolAddress,
+        userAddress: address,
+        type: pool.poolType === "LOCKED" ? "POSITION_CREATED" : "DEPOSIT",
+        amount,
+      });
       return hash;
     } catch (error) {
       console.error("Deposit failed:", error);

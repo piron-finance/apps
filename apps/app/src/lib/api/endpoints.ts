@@ -270,6 +270,38 @@ export const buildDepositTransaction = async (depositData: {
   return data;
 };
 
+/**
+ * Locked-pool equivalent of `buildDepositTransaction`. We sign `depositLocked`
+ * directly from the client, so the returned calldata is unused — the call is
+ * made for its side effect: it signals the backend orchestrator to switch that
+ * chain's indexer into BURST mode (12s polls) before the tx lands, instead of
+ * leaving it at the 60s NORMAL cadence.
+ */
+export const buildLockedDepositTransaction = async (depositData: {
+  poolAddress: string;
+  amount: string;
+  depositor: string;
+  tierIndex: number;
+  interestPayment: "UPFRONT" | "AT_MATURITY";
+  chainId: number;
+}) => {
+  const { data } = await apiClient.post("/deposits/locked", depositData);
+  return data;
+};
+
+/**
+ * Hands a confirmed transaction hash to the backend, which reads the receipt and
+ * writes the Transaction row synchronously rather than waiting for the next
+ * indexer poll. This is what takes a deposit from "visible in up to 90s" to
+ * "visible on the next refetch".
+ */
+export const confirmDepositTransaction = async (txHash: string, chainId: number) => {
+  const { data } = await apiClient.post("/deposits/confirm", { txHash, chainId }, {
+    params: { chainId },
+  });
+  return data;
+};
+
 // ============================================================================
 // LOCKED POSITIONS APIs
 // ============================================================================

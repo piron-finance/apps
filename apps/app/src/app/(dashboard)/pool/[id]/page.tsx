@@ -26,6 +26,7 @@ import type { Pool, Transaction, LockedPosition } from "@/lib/api/types";
 import { getEffectiveApy, getDepositAvailability, poolTypeLabel, type DepositAvailability } from "@/lib/pool-helpers";
 import { getTransactionUrl } from "@/lib/constants/chains";
 import { MetricRow } from "@/components/dashboard/stat-card";
+import { usePendingTx, useReconcilePending, type PendingTx } from "@/lib/context/PendingTxContext";
 
 function formatValue(value: string | number | null | undefined, decimals = 2): string {
   if (value === null || value === undefined) return "—";
@@ -108,6 +109,81 @@ function NavTooltip({ active, payload }: any) {
           {data.nav.toFixed(4)} {data.symbol}
         </span>
       </div>
+    </div>
+  );
+}
+
+/**
+ * Marks a record the user has signed but the backend hasn't indexed yet. It
+ * clears itself within a few seconds — the queries poll fast while anything is
+ * pending, and the row is replaced by the confirmed one the moment it lands.
+ */
+function PendingTag() {
+  return (
+    <span
+      title="Confirmed on-chain — waiting for it to appear in your history"
+      className="inline-flex shrink-0 items-center gap-1 rounded-full border border-warning/30 bg-warning-soft px-1.5 py-0.5 text-[9.5px] font-semibold uppercase tracking-wide text-warning"
+    >
+      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-warning" />
+      Pending
+    </span>
+  );
+}
+
+function pendingActionLabel(type: PendingTx["type"]): string {
+  switch (type) {
+    case "DEPOSIT":
+    case "POSITION_CREATED":
+      return "Deposit";
+    case "WITHDRAWAL":
+      return "Withdrawal";
+    case "POSITION_REDEEMED":
+      return "Redemption";
+    case "EARLY_EXIT":
+      return "Early exit";
+  }
+}
+
+/**
+ * The user's just-signed transactions, shown above their positions so the page
+ * visibly reacts the moment the deposit modal closes — rather than looking
+ * unchanged until the backend indexer catches up.
+ */
+function PendingActivity({ pool, pending }: { pool: Pool; pending: PendingTx[] }) {
+  if (pending.length === 0) return null;
+
+  return (
+    <div className="panel mb-4 divide-y divide-border-subtle">
+      {pending.map((p) => (
+        <div key={p.txHash} className="flex items-center justify-between gap-3 px-4 py-3">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-[12.5px] font-medium text-foreground">{pendingActionLabel(p.type)}</p>
+              <PendingTag />
+            </div>
+            <p className="mt-0.5 text-[11px] text-muted-foreground">
+              {p.minedAt
+                ? "Confirmed on-chain — updating your position"
+                : "Submitted — waiting for on-chain confirmation"}
+            </p>
+          </div>
+          <div className="shrink-0 text-right">
+            {p.amount && (
+              <p className="text-[12.5px] font-medium text-foreground">
+                {parseFloat(p.amount).toLocaleString()} {pool.assetSymbol}
+              </p>
+            )}
+            <a
+              href={getTransactionUrl(p.chainId, p.txHash)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="focus-ring rounded font-mono text-[11px] text-muted-foreground hover:text-foreground"
+            >
+              {truncateAddress(p.txHash)} ↗
+            </a>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -1133,6 +1209,8 @@ function DepositModal({
 function YourPositions({ pool }: { pool: Pool }) {
   const { address, isConnected } = useAccount();
   const { data: position, isLoading } = useUserPositionInPool(address, pool.poolAddress);
+  const { pendingForPool } = usePendingTx();
+  const pending = pendingForPool(pool.poolAddress);
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [withdrawError, setWithdrawError] = useState<string | null>(null);
@@ -1193,6 +1271,17 @@ function YourPositions({ pool }: { pool: Pool }) {
   }
 
   if (!position || parseFloat(position.totalShares || "0") === 0) {
+    // A first deposit lands here until the backend indexes it — show the pending
+    // record rather than the onboarding steps the user has just completed.
+    if (pending.length > 0) {
+      return (
+        <div className="section-block">
+          <h3 className="mb-4 text-[13.5px] font-semibold tracking-tight text-foreground">Your positions</h3>
+          <PendingActivity pool={pool} pending={pending} />
+        </div>
+      );
+    }
+
     return (
       <div className="section-block">
         <h3 className="mb-4 text-[13.5px] font-semibold tracking-tight text-foreground">Your positions</h3>
@@ -1265,6 +1354,8 @@ function YourPositions({ pool }: { pool: Pool }) {
         </button>
       </div>
 
+      <PendingActivity pool={pool} pending={pending} />
+
       {/* Single-asset claim actions: coupons during the deal, refunds after a cancellation */}
       {pool.poolType === "SINGLE_ASSET" && (
         <div className="mb-4 flex flex-wrap gap-2">
@@ -1282,12 +1373,12 @@ function YourPositions({ pool }: { pool: Pool }) {
             <button
               onClick={async () => {
                 setWithdrawError(null);
-                try { await exit.claimRefund(); } catch (e: any) { setWithdrawError(e?.shortMessage ?? e?.message ?? "Claim refund failed"); }
+                try { await exit.emergencyWithdraw(); } catch (e: any) { setWithdrawError(e?.shortMessage ?? e?.message ?? "Emergency exit failed"); }
               }}
               disabled={exit.isConfirming}
               className="px-3 py-1.5 text-[11px] rounded-lg text-warning border border-warning/30 hover:bg-warning-soft disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {exit.isConfirming ? "Confirming..." : "Claim refund"}
+              {exit.isConfirming ? "Confirming..." : "Exit pool"}
             </button>
           )}
         </div>
@@ -1417,6 +1508,8 @@ function YourPositions({ pool }: { pool: Pool }) {
 function LockedPositions({ pool }: { pool: Pool }) {
   const { address, isConnected } = useAccount();
   const { data: lockedPositionsData, isLoading } = useUserLockedPositions(address);
+  const { pendingForPool } = usePendingTx();
+  const pending = pendingForPool(pool.poolAddress);
   const [selectedPosition, setSelectedPosition] = useState<LockedPosition | null>(null);
   const [showEarlyExitModal, setShowEarlyExitModal] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -1466,6 +1559,17 @@ function LockedPositions({ pool }: { pool: Pool }) {
   }
 
   if (poolPositions.length === 0) {
+    // The LockedPosition record is built by the burst indexer a few seconds
+    // after the deposit confirms — until then, show the pending lock.
+    if (pending.length > 0) {
+      return (
+        <div className="section-block">
+          <h3 className="mb-4 text-[13.5px] font-semibold tracking-tight text-foreground">Your locked positions</h3>
+          <PendingActivity pool={pool} pending={pending} />
+        </div>
+      );
+    }
+
     return (
       <div className="section-block">
         <h3 className="mb-4 text-[13.5px] font-semibold tracking-tight text-foreground">Your locked positions</h3>
@@ -1564,6 +1668,8 @@ function LockedPositions({ pool }: { pool: Pool }) {
           )}
         </div>
       </div>
+
+      <PendingActivity pool={pool} pending={pending} />
 
       <div className="hidden grid-cols-6 gap-4 border-b border-border-subtle pb-3 text-[11px] text-muted-foreground md:grid">
         <span>Tier</span>
@@ -2316,16 +2422,67 @@ function AboutPoolCard({ pool }: { pool: Pool }) {
   );
 }
 
+/** A row in the ledger — either indexed by the backend, or still pending locally. */
+interface LedgerRow {
+  key: string;
+  type: string;
+  timestamp: string | Date;
+  amount: string;
+  userWallet: string;
+  txHash: string;
+  chainId: number;
+  isPending: boolean;
+}
+
+function pendingToRow(p: PendingTx): LedgerRow {
+  return {
+    key: `pending-${p.txHash}`,
+    type: p.type,
+    timestamp: new Date(p.submittedAt),
+    amount: p.amount ?? "0",
+    userWallet: p.userAddress,
+    txHash: p.txHash,
+    chainId: p.chainId,
+    isPending: true,
+  };
+}
+
 function PoolTransactionsTable({ poolAddress, assetSymbol, chainId }: { poolAddress: string; assetSymbol: string; chainId: number }) {
   const [filter, setFilter] = useState<"all" | "deposits" | "withdrawals">("all");
   const { data: txResponse, isLoading } = usePoolTransactions(poolAddress, { limit: 10 });
+  const { pendingForPool } = usePendingTx();
 
   const transactions = txResponse?.data || [];
-  
+
+  // Once the backend returns a hash we're holding optimistically, the confirmed
+  // row supersedes it and the pending one is dropped.
+  useReconcilePending(transactions.map((tx) => tx.txHash));
+
   const isDepositType = (type: string) => type === "DEPOSIT" || type === "POSITION_CREATED";
   const isWithdrawalType = (type: string) => type === "WITHDRAWAL" || type === "POSITION_REDEEMED" || type === "EARLY_EXIT";
 
-  const filteredTransactions = transactions.filter((tx) => {
+  const indexedHashes = new Set(
+    transactions.map((tx) => tx.txHash?.toLowerCase()).filter(Boolean)
+  );
+  const pendingRows = pendingForPool(poolAddress)
+    .filter((p) => !indexedHashes.has(p.txHash))
+    .map(pendingToRow);
+
+  const rows: LedgerRow[] = [
+    ...pendingRows,
+    ...transactions.map((tx) => ({
+      key: tx.id,
+      type: tx.type,
+      timestamp: tx.timestamp,
+      amount: tx.amount,
+      userWallet: tx.userWallet || tx.user?.walletAddress || tx.from || "",
+      txHash: tx.txHash,
+      chainId: tx.chainId ?? chainId,
+      isPending: false,
+    })),
+  ];
+
+  const filteredTransactions = rows.filter((tx) => {
     if (filter === "all") return true;
     if (filter === "deposits") return isDepositType(tx.type);
     if (filter === "withdrawals") return isWithdrawalType(tx.type);
@@ -2368,19 +2525,25 @@ function PoolTransactionsTable({ poolAddress, assetSymbol, chainId }: { poolAddr
         <>
           <div className="space-y-3 md:hidden">
             {filteredTransactions.map((tx) => (
-              <div key={tx.id} className="rounded-lg border border-border-subtle bg-surface-sunken p-3">
+              <div
+                key={tx.key}
+                className={`rounded-lg border border-border-subtle bg-surface-sunken p-3 ${tx.isPending ? "border-dashed" : ""}`}
+              >
                 <div className="mb-3 flex items-center justify-between gap-3">
-                  <span
-                    className={`rounded-full px-2 py-1 text-[10px] font-semibold ${
-                      isDepositType(tx.type)
-                        ? "bg-positive-soft text-positive"
-                        : isWithdrawalType(tx.type)
-                        ? "bg-negative-soft text-negative"
-                        : "bg-info-soft text-info"
-                    }`}
-                  >
-                    {txTypeLabel(tx.type)}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className={`rounded-full px-2 py-1 text-[10px] font-semibold ${
+                        isDepositType(tx.type)
+                          ? "bg-positive-soft text-positive"
+                          : isWithdrawalType(tx.type)
+                          ? "bg-negative-soft text-negative"
+                          : "bg-info-soft text-info"
+                      }`}
+                    >
+                      {txTypeLabel(tx.type)}
+                    </span>
+                    {tx.isPending && <PendingTag />}
+                  </div>
                   <span className="text-right text-[11px] text-muted-foreground">{formatTime(tx.timestamp)}</span>
                 </div>
                 <div className="space-y-2 text-[12px]">
@@ -2393,13 +2556,13 @@ function PoolTransactionsTable({ poolAddress, assetSymbol, chainId }: { poolAddr
                   <div className="flex justify-between gap-3">
                     <span className="text-muted-foreground">User</span>
                     <span className="font-mono text-muted-foreground">
-                      {truncateAddress(tx.userWallet || tx.user?.walletAddress || tx.from || "")}
+                      {truncateAddress(tx.userWallet)}
                     </span>
                   </div>
                   <div className="flex justify-between gap-3">
                     <span className="text-muted-foreground">Hash</span>
                     <a
-                      href={getTransactionUrl(tx.chainId ?? chainId, tx.txHash)}
+                      href={getTransactionUrl(tx.chainId, tx.txHash)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="font-mono text-muted-foreground hover:text-foreground"
@@ -2424,30 +2587,33 @@ function PoolTransactionsTable({ poolAddress, assetSymbol, chainId }: { poolAddr
               </thead>
               <tbody>
                 {filteredTransactions.map((tx) => (
-                  <tr key={tx.id} className="border-b border-border-subtle last:border-0">
+                  <tr key={tx.key} className="border-b border-border-subtle last:border-0">
                     <td className="py-3 text-[12px] text-muted-foreground">{formatTime(tx.timestamp)}</td>
                     <td className="py-3">
-                      <span
-                        className={`rounded-full px-2 py-1 text-[10px] font-semibold ${
-                          isDepositType(tx.type)
-                            ? "bg-positive-soft text-positive"
-                            : isWithdrawalType(tx.type)
-                            ? "bg-negative-soft text-negative"
-                            : "bg-info-soft text-info"
-                        }`}
-                      >
-                        {txTypeLabel(tx.type)}
+                      <span className="inline-flex items-center gap-1.5">
+                        <span
+                          className={`rounded-full px-2 py-1 text-[10px] font-semibold ${
+                            isDepositType(tx.type)
+                              ? "bg-positive-soft text-positive"
+                              : isWithdrawalType(tx.type)
+                              ? "bg-negative-soft text-negative"
+                              : "bg-info-soft text-info"
+                          }`}
+                        >
+                          {txTypeLabel(tx.type)}
+                        </span>
+                        {tx.isPending && <PendingTag />}
                       </span>
                     </td>
                     <td className="py-3 text-[12px] text-muted-foreground font-mono">
-                      {truncateAddress(tx.userWallet || tx.user?.walletAddress || tx.from || "")}
+                      {truncateAddress(tx.userWallet)}
                     </td>
                     <td className="py-3 text-[12px] text-foreground font-medium">
                       {parseFloat(tx.amount).toLocaleString()} {assetSymbol}
                     </td>
                     <td className="py-3">
                       <a
-                        href={getTransactionUrl(tx.chainId ?? chainId, tx.txHash)}
+                        href={getTransactionUrl(tx.chainId, tx.txHash)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-[12px] text-muted-foreground font-mono hover:text-foreground"
