@@ -2,6 +2,8 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { poolsApi, lockedPositionsApi, usersApi } from "@/lib/api/endpoints";
+import { useHasPendingTx } from "@/lib/context/PendingTxContext";
+import { LIVE_POLL_MS, RESTING_POLL_MS, RESTING_USER_POLL_MS } from "@/lib/constants/polling";
 
 /**
  * Hook to fetch lock tiers for a pool
@@ -20,12 +22,13 @@ export function usePoolTiers(poolAddress?: string) {
  * Hook to fetch locked pool live metrics
  */
 export function useLockedPoolMetrics(chainId?: number, poolAddress?: string) {
+  const hasPending = useHasPendingTx();
   return useQuery({
     queryKey: ["locked-pool-metrics", chainId, poolAddress],
     queryFn: () => poolsApi.getLockedMetrics(chainId!, poolAddress!),
     enabled: !!chainId && !!poolAddress,
-    staleTime: 30000,
-    refetchInterval: 60000,
+    staleTime: hasPending ? 0 : 30000,
+    refetchInterval: hasPending ? LIVE_POLL_MS : RESTING_POLL_MS,
     retry: 2,
   });
 }
@@ -65,12 +68,15 @@ export function useEarlyExitPreview(positionId?: number) {
  * Hook to fetch user's locked positions
  */
 export function useUserLockedPositions(walletAddress?: string) {
+  const hasPending = useHasPendingTx();
   return useQuery({
     queryKey: ["user-locked-positions", walletAddress],
     queryFn: () => usersApi.getLockedPositions(walletAddress!),
     enabled: !!walletAddress,
-    staleTime: 30000,
-    refetchInterval: 30000,
+    // A locked deposit creates its LockedPosition record via the burst indexer,
+    // so poll hard while one is in flight and let the pending row cover the gap.
+    staleTime: hasPending ? 0 : 30000,
+    refetchInterval: hasPending ? LIVE_POLL_MS : RESTING_USER_POLL_MS,
     retry: 2,
   });
 }

@@ -4,6 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { usersApi } from "@/lib/api/endpoints";
 import { useChainContext } from "@/lib/context/ChainContext";
+import { useHasPendingTx } from "@/lib/context/PendingTxContext";
+import { LIVE_POLL_MS, RESTING_USER_POLL_MS } from "@/lib/constants/polling";
 
 /** Returns true if the error is an Axios 404 (user/position not found) */
 function is404(error: unknown): boolean {
@@ -17,6 +19,7 @@ function is404(error: unknown): boolean {
  */
 export function useUserPositions(walletAddress?: string) {
   const { activeChainId } = useChainContext();
+  const hasPending = useHasPendingTx();
   return useQuery({
     // Include chainId in query key so React Query treats each chain as separate cache entry
     queryKey: ["user-positions", walletAddress, activeChainId],
@@ -29,8 +32,10 @@ export function useUserPositions(walletAddress?: string) {
       }
     },
     enabled: !!walletAddress,
-    staleTime: 30000,
-    refetchInterval: 30000, // poll every 30s so balances stay current
+    // Drops to a few seconds while a transaction is unconfirmed so a new
+    // position shows up without a refresh; 30s otherwise.
+    staleTime: hasPending ? 0 : 30000,
+    refetchInterval: hasPending ? LIVE_POLL_MS : RESTING_USER_POLL_MS,
     retry: (failureCount, error) => is404(error) ? false : failureCount < 2,
   });
 }
@@ -44,6 +49,7 @@ export function useUserPositionInPool(
   poolId?: string,
   options?: { enabled?: boolean }
 ) {
+  const hasPending = useHasPendingTx();
   return useQuery({
     queryKey: ["user-position", walletAddress, poolId],
     queryFn: async () => {
@@ -55,8 +61,8 @@ export function useUserPositionInPool(
       }
     },
     enabled: !!walletAddress && !!poolId && (options?.enabled !== false),
-    staleTime: 30000,
-    refetchInterval: 30000,
+    staleTime: hasPending ? 0 : 30000,
+    refetchInterval: hasPending ? LIVE_POLL_MS : RESTING_USER_POLL_MS,
     retry: (failureCount, error) => is404(error) ? false : failureCount < 1,
   });
 }

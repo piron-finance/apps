@@ -240,11 +240,6 @@
         "internalType": "uint256"
       },
       {
-        "name": "receiver",
-        "type": "address",
-        "internalType": "address"
-      },
-      {
         "name": "owner",
         "type": "address",
         "internalType": "address"
@@ -409,9 +404,9 @@
             "internalType": "bool"
           },
           {
-            "name": "allocationId",
-            "type": "bytes32",
-            "internalType": "bytes32"
+            "name": "spv",
+            "type": "address",
+            "internalType": "address"
           }
         ]
       }
