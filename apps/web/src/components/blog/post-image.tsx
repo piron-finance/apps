@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
 import type { BlogImage } from "@/lib/blog/types";
 
@@ -54,11 +57,16 @@ export function PostImage({
   className = "",
   intrinsic = false,
 }: PostImageProps) {
-  const url = image?.asset?.url;
+  // A cover can be unreachable even when the URL is valid: storage quota,
+  // a deleted object, an expired bucket. Falling back to the generated art keeps
+  // the card looking deliberate instead of leaving a broken frame on the page.
+  const [failed, setFailed] = useState(false);
+
   const width = image?.asset?.metadata?.dimensions?.width || 1200;
   const height = image?.asset?.metadata?.dimensions?.height || 800;
   const aspectRatio = width / height;
   const isWideBanner = aspectRatio >= 2;
+  const url = failed ? undefined : image?.asset?.url;
 
   if (!url) {
     if (intrinsic) {
@@ -89,6 +97,7 @@ export function PostImage({
           sizes="(max-width: 1280px) 100vw, 1100px"
           placeholder={image?.asset?.metadata?.lqip ? "blur" : "empty"}
           blurDataURL={image?.asset?.metadata?.lqip}
+          onError={() => setFailed(true)}
         />
       </div>
     );
@@ -109,6 +118,7 @@ export function PostImage({
         sizes="(max-width: 768px) 100vw, 50vw"
         placeholder={image?.asset?.metadata?.lqip ? "blur" : "empty"}
         blurDataURL={image?.asset?.metadata?.lqip}
+        onError={() => setFailed(true)}
       />
     </div>
   );

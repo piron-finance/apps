@@ -55,8 +55,15 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
     query: searchQuery,
   });
 
-  const showEditorialSections = !data.activeCategory && !data.searchQuery;
-  const resultsTitle = data.activeCategory || data.searchQuery ? "Results" : "Most recent";
+  const isFiltering = Boolean(data.activeCategory || data.searchQuery);
+  const showEditorialSections = !isFiltering;
+  const resultsTitle = isFiltering ? "Results" : "Most recent";
+
+  // With few posts, everything can end up in the hero and featured slots, leaving
+  // the archive empty. Showing an empty "Most recent" section then reads as a
+  // broken page rather than a young one, so drop it unless there is something to
+  // list or a filter is active, where an empty result is the actual answer.
+  const showArchive = data.recentPosts.length > 0 || isFiltering;
 
   return (
     <div className="relative min-h-screen w-full bg-[#0a0a0b]">
@@ -122,36 +129,40 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
               </section>
             ) : null}
 
-            <section>
-              <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-                <div>
-                  <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-content-tertiary">
-                    Archive
-                  </p>
-                  <h2 className="mt-2 text-3xl font-bold tracking-tight text-content-primary">
-                    {resultsTitle}
-                  </h2>
+            {showArchive ? (
+              <section>
+                <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+                  <div>
+                    <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-content-tertiary">
+                      Archive
+                    </p>
+                    <h2 className="mt-2 text-3xl font-bold tracking-tight text-content-primary">
+                      {resultsTitle}
+                    </h2>
+                  </div>
+
+                  {isFiltering && data.totalRecentPosts > 0 ? (
+                    <p className="text-sm text-content-tertiary">
+                      {data.totalRecentPosts} article{data.totalRecentPosts === 1 ? "" : "s"}
+                    </p>
+                  ) : null}
                 </div>
 
-                {(data.activeCategory || data.searchQuery) && data.totalRecentPosts > 0 ? (
-                  <p className="text-sm text-content-tertiary">
-                    {data.totalRecentPosts} article{data.totalRecentPosts === 1 ? "" : "s"}
-                  </p>
-                ) : null}
-              </div>
-
-              {data.recentPosts.length > 0 ? (
-                <div className="grid gap-8 lg:grid-cols-3">
-                  {data.recentPosts.map((post) => (
-                    <PostCard key={post._id} post={post} />
-                  ))}
-                </div>
-              ) : (
-                <div className="rounded-2xl border border-border bg-surface-card p-8 text-content-secondary">
-                  No articles matched this filter yet.
-                </div>
-              )}
-            </section>
+                {data.recentPosts.length > 0 ? (
+                  <div className="grid gap-8 lg:grid-cols-3">
+                    {data.recentPosts.map((post) => (
+                      <PostCard key={post._id} post={post} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="rounded-2xl border border-border bg-surface-card p-8 text-content-secondary">
+                    {data.searchQuery
+                      ? `Nothing matches “${data.searchQuery}”.`
+                      : "Nothing in this category yet."}
+                  </div>
+                )}
+              </section>
+            ) : null}
 
             {data.hasMore ? (
               <div className="flex justify-center">
