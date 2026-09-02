@@ -1,8 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    // Blog cover images are uploaded through the backend to Supabase Storage and
-    // served from `https://<project-ref>.supabase.co/storage/v1/object/public/blog/...`.
+    // Blog cover images are uploaded through the backend to Cloudflare R2. Keep
+    // the Supabase pattern during migration so existing posts continue to render.
     // next/image refuses any host not listed here, so without this every cover
     // image fails with "Invalid src prop ... hostname is not configured".
     //
@@ -14,6 +14,16 @@ const nextConfig = {
         protocol: "https",
         hostname: "*.supabase.co",
         pathname: "/storage/v1/object/public/**",
+      },
+      {
+        protocol: "https",
+        hostname: "media.piron.finance",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "*.r2.dev",
+        pathname: "/**",
       },
     ],
 
