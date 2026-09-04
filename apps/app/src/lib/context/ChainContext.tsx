@@ -67,16 +67,20 @@ export const SUPPORTED_CHAINS: ChainOption[] = [
 
 const ALL_CHAINS_OPTION = SUPPORTED_CHAINS[0] as ChainOption;
 
-// Base is the default chain the dashboard opens on. Every other chain (and
-// "All Chains") stays selectable from the dropdown; this only sets where a new
-// visitor lands before they pick, or choose to persist, something else.
-const DEFAULT_CHAIN_ID = 84532; // Base Sepolia
+// The dashboard opens on every chain. A product groups pool instances across
+// chains, so chain is a deposit-time detail rather than something that should
+// decide what a visitor is allowed to browse. Defaulting to a single chain hid
+// most of the catalogue behind a dropdown people had no reason to touch.
+//
+// Picking a chain from the header still filters, and that choice persists.
+const DEFAULT_CHAIN_ID: number | undefined = undefined; // All Chains
 
 // Separate storage key from admin/SPV so each app persists independently.
-// v2: the old key was polluted by the earlier Arbitrum "pin" (every visitor had
-// 421614 force-written), so bumping the key discards those stale values and lets
-// the Base default below take effect. Genuine choices persist under the new key.
-const STORAGE_KEY = "piron_app_active_chain_v2";
+// v3: v2 force-wrote Base Sepolia for every visitor, so anyone who loaded the
+// old dashboard has 84532 persisted and would keep the single-chain view even
+// after this change. Bumping the key discards those and lets the all-chains
+// default apply. Deliberate choices persist under the new key.
+const STORAGE_KEY = "piron_app_active_chain_v3";
 
 // ─── Context ──────────────────────────────────────────────────────────────────
 
@@ -103,6 +107,8 @@ export function ChainProvider({ children }: { children: React.ReactNode }) {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored !== null) {
+        // "undefined" is the stored form of an explicit All Chains choice, and
+        // is a valid entry in SUPPORTED_CHAINS rather than a missing value.
         const parsed =
           stored === "undefined" ? undefined : parseInt(stored, 10);
         const valid = SUPPORTED_CHAINS.some((c) => c.id === parsed);
