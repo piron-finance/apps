@@ -154,13 +154,18 @@ export default function DashboardPage() {
   const chainLabel =
     SUPPORTED_CHAINS.find((o) => o.id === activeChainId)?.label ?? "All chains";
 
-  const noPoolsOnChain =
-    !poolsLoading && activeChainId !== undefined && products.length === 0;
+  // Nothing came back at all. On a single chain that is worth saying, because
+  // switching is the fix. On all chains it means the catalogue is empty or the
+  // request failed, and pointing at the network switcher would be misleading.
+  const noProducts = !poolsLoading && products.length === 0;
+  const isChainFiltered = activeChainId !== undefined;
 
-  const emptyFor = (kind: string) =>
-    noPoolsOnChain
-      ? `No products are available on ${chainLabel} yet. Switch networks from the header.`
-      : `No ${kind} products match the current filter.`;
+  const emptyFor = (kind: string) => {
+    if (!noProducts) return `No ${kind} products match the current filter.`;
+    return isChainFiltered
+      ? `No products are available on ${chainLabel} yet. Switch networks from the header, or view all chains.`
+      : "No products are available right now.";
+  };
 
   return (
     <div className="mx-auto max-w-[1320px] px-5 sm:px-8">
