@@ -8,7 +8,7 @@ import { getTransactionUrl, getChainName } from "@/lib/constants/chains";
 // Chains the faucet can mint on (must match the backend FAUCET_CHAIN_IDS). The
 // modal lets the user pick which one to receive tokens on; the default follows
 // the connected wallet's chain when it is one of these.
-const FAUCET_CHAINS = [84532, 5042002, 421614, 46630]; // Base Sepolia, Arc Testnet, Arbitrum Sepolia, Robinhood Testnet
+const FAUCET_CHAINS = [84532, 421614, 46630]; // Base Sepolia, Arbitrum Sepolia, Robinhood Testnet
 const DEFAULT_FAUCET_CHAIN_ID = 421614;
 
 type ClaimStatus =

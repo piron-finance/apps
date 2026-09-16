@@ -13,7 +13,6 @@ import { cn } from "@/lib/utils";
 // per-chain mockUSDC addresses.
 const TEST_TOKENS = [
   { chainId: 84532, address: "0x94ac688dEd59cf284274DbD289AC6acfd2d5721C" }, // Base Sepolia
-  { chainId: 5042002, address: "0xa8e1Ac7c693bF6e0Aef8a9D4af674F240dE0d466" }, // Arc Testnet
   { chainId: 421614, address: "0x55Cd228ec5A4AB43FA26Bf404Fe9f687918c8f8b" }, // Arbitrum Sepolia
   { chainId: 46630, address: "0xD910E50B04a319e8AF9beeCDCB583864c41b1712" }, // Robinhood Testnet
 ] as const;
