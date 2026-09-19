@@ -17,7 +17,7 @@ import { useWeb3Modal } from "@web3modal/wagmi/react";
 import { usePoolData, usePoolNavHistory, usePoolPerformance, usePoolInstruments, usePoolStats } from "@/hooks/usePoolsData";
 import { usePoolTransactions } from "@/hooks/useTransactions";
 import { useUserPositionInPool } from "@/hooks/useUserData";
-import { useDeposit } from "@/hooks/useDeposit";
+import { useDepositWithAnalytics, capturePoolView, captureModalOpen, captureAmountEntered } from "@/hooks/useDepositWithAnalytics";
 import { usePoolExit } from "@/hooks/usePoolExit";
 import { useFeeCalculation, usePoolFeeRates } from "@/hooks/useFees";
 import { useWithdrawalPreview, useWithdrawalQueueStatus, usePoolWithdrawalRequests } from "@/hooks/useWithdrawals";
@@ -219,6 +219,11 @@ function PoolDetailContent({ pool }: { pool: Pool }) {
   const [depositOpen, setDepositOpen] = useState(false);
   const availability = getDepositAvailability(pool);
   const effectiveApy = getEffectiveApy(pool);
+
+  // Analytics: record a pool view once per pool (feeds Watchtower "Pool Views").
+  useEffect(() => {
+    capturePoolView(pool);
+  }, [pool.poolAddress]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const openDeposit = useCallback(() => {
     if (availability.canDeposit) setDepositOpen(true);
@@ -813,9 +818,14 @@ function DepositModal({
     transactionHash,
     balance,
     refetchBalance,
-  } = useDeposit(pool);
+  } = useDepositWithAnalytics(pool);
 
   const showSuccess = submitted && isSuccess;
+
+  // Analytics: funnel — deposit modal opened.
+  useEffect(() => {
+    if (isOpen) captureModalOpen(pool);
+  }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Lock body scroll + allow Escape to dismiss while the modal is open.
   useEffect(() => {
@@ -837,6 +847,7 @@ function DepositModal({
       setSubmitted(false);
       setPendingDepositAfterApproval(false);
       setDepositError(null);
+      amountTrackedRef.current = false;
     }
   }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -865,10 +876,16 @@ function DepositModal({
   // Debounce amount for API queries so they don't fire on every keystroke
   const [debouncedAmount, setDebouncedAmount] = useState("");
   const debounceTimer = useRef<NodeJS.Timeout>();
+  // Analytics: fire deposit_amount_entered once per modal session, not per keystroke.
+  const amountTrackedRef = useRef(false);
   useEffect(() => {
     clearTimeout(debounceTimer.current);
     debounceTimer.current = setTimeout(() => {
       setDebouncedAmount(amount);
+      if (amount && !amountTrackedRef.current) {
+        captureAmountEntered(pool);
+        amountTrackedRef.current = true;
+      }
       // Re-check the on-chain wallet balance once the user stops typing, so a
       // freshly-received transfer is reflected without needing a page reload.
       if (isConnected && amount) refetchBalance();
