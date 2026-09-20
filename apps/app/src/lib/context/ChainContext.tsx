@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { isChainDisabled } from "@/lib/constants/disabled-chains";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -65,6 +66,12 @@ export const SUPPORTED_CHAINS: ChainOption[] = [
   },
 ];
 
+// Disabled chains are removed from the selector entirely. `id: undefined` is the
+// All Chains entry and always survives.
+const SELECTABLE_CHAINS: ChainOption[] = SUPPORTED_CHAINS.filter(
+  (c) => !isChainDisabled(c.id)
+);
+
 const ALL_CHAINS_OPTION = SUPPORTED_CHAINS[0] as ChainOption;
 
 // The dashboard opens on every chain. A product groups pool instances across
@@ -91,7 +98,7 @@ const ChainContext = createContext<ChainContextValue>({
   activeChainId: DEFAULT_CHAIN_ID,
   setActiveChainId: () => {},
   activeChain: DEFAULT_CHAIN,
-  supportedChains: SUPPORTED_CHAINS,
+  supportedChains: SELECTABLE_CHAINS,
 });
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
@@ -111,7 +118,8 @@ export function ChainProvider({ children }: { children: React.ReactNode }) {
         // is a valid entry in SUPPORTED_CHAINS rather than a missing value.
         const parsed =
           stored === "undefined" ? undefined : parseInt(stored, 10);
-        const valid = SUPPORTED_CHAINS.some((c) => c.id === parsed);
+        // A chain disabled since the choice was stored falls back to All Chains.
+        const valid = SELECTABLE_CHAINS.some((c) => c.id === parsed);
         if (valid) setActiveChainIdState(parsed);
       }
     } catch {
@@ -130,7 +138,7 @@ export function ChainProvider({ children }: { children: React.ReactNode }) {
   };
 
   const activeChain =
-    SUPPORTED_CHAINS.find((c) => c.id === activeChainId) ?? ALL_CHAINS_OPTION;
+    SELECTABLE_CHAINS.find((c) => c.id === activeChainId) ?? ALL_CHAINS_OPTION;
 
   return (
     <ChainContext.Provider
@@ -138,7 +146,7 @@ export function ChainProvider({ children }: { children: React.ReactNode }) {
         activeChainId,
         setActiveChainId,
         activeChain,
-        supportedChains: SUPPORTED_CHAINS,
+        supportedChains: SELECTABLE_CHAINS,
       }}
     >
       {children}
