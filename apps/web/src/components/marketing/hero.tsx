@@ -51,8 +51,8 @@ export function Hero() {
           transition={{ duration: 0.65, delay: 0.2 }}
           className="mx-auto mt-7 max-w-2xl text-[16px] leading-7 text-white/62 sm:text-[18px]"
         >
-          Put stablecoins to work across global short-duration treasuries,
-          fixed-rate products and defined deals—all in one clear app.
+          Access tokenized fixed income through flexible portfolios, fixed-rate
+          products and defined deals—all in one clear app.
         </motion.p>
 
         <motion.div

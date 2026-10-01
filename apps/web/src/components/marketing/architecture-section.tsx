@@ -97,14 +97,15 @@ export function ArchitectureSection() {
           <div className="grid lg:grid-cols-[0.75fr_1.25fr]">
             <div className="border-b border-white/10 p-7 sm:p-10 lg:border-b-0 lg:border-r lg:p-12">
               <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/32">
-                Under the app
+                The operating layer
               </p>
               <h3 className="mt-5 max-w-md text-[38px] font-semibold leading-[1] tracking-[-0.055em] text-white/90 sm:text-[48px]">
                 One system. The full investment lifecycle.
               </h3>
               <p className="mt-5 max-w-md text-[13px] leading-6 text-white/40">
-                Piron connects the work between a deposit and a redemption,
-                instead of leaving each product to operate as an island.
+                Investors access products in the app. Issuers and administrators
+                launch, value, service and settle them through the same operating
+                layer.
               </p>
             </div>
 
@@ -127,8 +128,8 @@ export function ArchitectureSection() {
                 ))}
               </div>
               <p className="mt-8 text-[11px] leading-5 text-white/30">
-                Subscription, allocation, NAV, cash flows and redemptions are
-                handled across the same operating layer.
+                One programmable workflow connects subscription, allocation,
+                NAV, cash flows, servicing and redemption.
               </p>
             </div>
           </div>

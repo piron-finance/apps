@@ -48,8 +48,8 @@ export function Footer() {
               Piron Finance
             </h3>
             <p className="mt-2 text-sm leading-relaxed text-content-secondary">
-              Global fixed income for stablecoins—flexible, fixed-rate and term
-              investments in one clear app.
+              The onchain fixed-income operating system for investors, issuers
+              and administrators.
             </p>
             {SOCIAL_LINKS.length > 0 ? (
               <div className="mt-5 flex flex-wrap items-center gap-3">
