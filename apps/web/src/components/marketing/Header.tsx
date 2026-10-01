@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Menu } from "lucide-react";
-import { APP_URL } from "@/components/marketing/links";
+import { APP_URL, DOCS_URL } from "@/components/marketing/links";
 import {
   Sheet,
   SheetTrigger,
@@ -15,23 +15,15 @@ import {
 } from "@/components/ui/sheet";
 
 const navItems = [
-  { name: "Products", href: "/#products" },
-  { name: "Why Piron", href: "/#why-piron" },
-  { name: "How it works", href: "/#how-it-works" },
+  { name: "Overview", href: "/" },
+  { name: "How it works", href: "/how-it-works" },
   { name: "Blog", href: "/blog" },
+  { name: "Docs", href: DOCS_URL },
 ];
 
-const Header = ({
-  transparent = false,
-  initialTheme = "dark",
-}: {
-  transparent?: boolean;
-  initialTheme?: "dark" | "light";
-}) => {
+const Header = ({ transparent = false }: { transparent?: boolean }) => {
   const [scrolled, setScrolled] = useState(!transparent);
-  const [overDark, setOverDark] = useState(
-    transparent && initialTheme === "dark",
-  );
+  const [overDark, setOverDark] = useState(transparent);
 
   const checkSection = useCallback(() => {
     const sections = document.querySelectorAll("[data-header-theme]");
@@ -104,10 +96,10 @@ const Header = ({
             className={`rounded-full px-5 py-2 text-sm font-medium transition-all duration-300 ${
               isDark
                 ? "bg-white text-black hover:bg-white/90"
-                : "bg-[#0d573e] text-white hover:bg-[#0a4632]"
+                : "bg-accent text-accent-text hover:bg-accent-hover"
             }`}
           >
-            Explore markets
+            Launch app
           </Link>
         </div>
 
@@ -149,9 +141,9 @@ const Header = ({
                 <SheetClose asChild>
                   <Link
                     href={APP_URL}
-                    className="flex w-full items-center justify-center rounded-md bg-[#0d573e] px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-[#0a4632]"
+                    className="flex w-full items-center justify-center rounded-full bg-accent px-5 py-3 text-sm font-medium text-accent-text transition-colors hover:bg-accent-hover"
                   >
-                    Explore markets
+                    Launch app
                   </Link>
                 </SheetClose>
               </div>

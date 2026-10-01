@@ -9,7 +9,7 @@ import Header from "@/components/marketing/Header";
 export default function MarketingPage() {
   return (
     <div className="relative min-h-screen w-full">
-      <Header transparent initialTheme="light" />
+      <Header transparent />
       <Hero />
       <PoolsSection />
       <ArchitectureSection />

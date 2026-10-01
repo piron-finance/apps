@@ -12,9 +12,9 @@ const serif = Source_Serif_4({
 });
 
 export const metadata: Metadata = {
-  title: "Piron Finance — Fixed income, made clear",
+  title: "Piron Finance",
   description:
-    "Choose flexible yield, lock a fixed rate, or invest in one defined deal. Explore real-world fixed income in one clear, wallet-native app.",
+    "The future of global money markets. Earn yield on fixed income from anywhere in the world.",
 };
 
 export default function RootLayout({
