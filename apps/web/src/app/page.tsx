@@ -1,4 +1,5 @@
 import { Hero } from "@/components/marketing/hero";
+import { ProductShowcase } from "@/components/marketing/product-showcase";
 import { PoolsSection } from "@/components/marketing/pools-section";
 import { ArchitectureSection } from "@/components/marketing/architecture-section";
 import { HowItWorks } from "@/components/marketing/how-it-works";
@@ -11,6 +12,7 @@ export default function MarketingPage() {
     <div className="relative min-h-screen w-full">
       <Header transparent />
       <Hero />
+      <ProductShowcase />
       <PoolsSection />
       <ArchitectureSection />
       <HowItWorks />

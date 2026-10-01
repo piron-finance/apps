@@ -1,125 +1,139 @@
 "use client";
 
-import { motion } from "framer-motion";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
 import { APP_URL } from "@/components/marketing/links";
 
-const pools = [
+const products = [
   {
     number: "01",
-    label: "Flexible Yield",
-    name: "Daily Access Pool",
-    description:
-      "Deposit stablecoins and start earning from day one. Your capital is allocated to Treasury Bills and short-duration instruments. Withdraw freely after a short holding period.",
-    features: [
-      { key: "Holding period", value: "7 days" },
-      { key: "Yield source", value: "T-Bills, commercial paper" },
-      { key: "Withdrawals", value: "Flexible, anytime after hold" },
-      { key: "Pricing", value: "NAV-based, updated daily" },
+    type: "Flexible yield",
+    headline: "Stay flexible.",
+    copy: "A NAV-priced portfolio of treasuries and short-duration instruments. Capital starts working from day one, with withdrawals after the minimum hold.",
+    details: [
+      ["Best for", "Money you may need"],
+      ["Pricing", "NAV, updated daily"],
+      ["Liquidity", "After the minimum hold"],
     ],
+    accent: "#37aa78",
   },
   {
     number: "02",
-    label: "Fixed Yield",
-    name: "Fixed Rate Pool",
-    description:
-      "Lock a fixed rate for 90, 180, or 365 days, set when you deposit. At maturity, choose to withdraw or roll over into a new term automatically. Returns are subject to risk and are not guaranteed.",
-    features: [
-      { key: "Lock-in periods", value: "90 / 180 / 365 days" },
-      { key: "Your rate", value: "Fixed at deposit" },
-      { key: "At maturity", value: "Withdraw or auto-renew" },
-      { key: "Early exit", value: "Available with a fee" },
+    type: "Fixed yield",
+    headline: "Lock in the terms.",
+    copy: "Choose a fixed rate and term before you deposit. Decide when interest is paid, then withdraw, roll over, or use an offered early exit.",
+    details: [
+      ["Best for", "Money you can set aside"],
+      ["Terms", "Defined at deposit"],
+      ["Rate", "Fixed at deposit"],
     ],
+    accent: "#7089df",
   },
   {
     number: "03",
-    label: "Term Deals",
-    name: "Deal-Specific Pool",
-    description:
-      "Back a specific real-world asset: an invoice, trade deal, or bond. See the borrower, the terms, and the payment schedule before you commit a single dollar.",
-    features: [
-      { key: "Asset type", value: "Invoice, bond, trade deal" },
-      { key: "Structure", value: "Ring-fenced, fixed maturity" },
-      { key: "Returns", value: "Scheduled payments on-chain" },
-      { key: "Minimum", value: "Pool-specific threshold" },
+    type: "Term deals",
+    headline: "Pick the opportunity.",
+    copy: "Invest in one named asset or financing opportunity. Review the issuer, use of funds, documents and repayment schedule before you commit.",
+    details: [
+      ["Best for", "Selective conviction"],
+      ["Exposure", "One disclosed deal"],
+      ["Cash flows", "Scheduled by the asset"],
     ],
+    accent: "#d99552",
   },
-];
+] as const;
 
 export function PoolsSection() {
   return (
-    <section data-header-theme="light" className="bg-surface-warm py-32">
-      <div className="mx-auto w-full max-w-7xl px-6">
+    <section
+      id="products"
+      data-header-theme="light"
+      className="border-y border-black/[0.07] bg-[#fbfaf7] py-24 sm:py-32"
+    >
+      <div className="mx-auto w-full max-w-[1280px] px-6 sm:px-8">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 18 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.5 }}
-          className="mb-20 max-w-3xl"
+          transition={{ duration: 0.55 }}
+          className="grid gap-7 lg:grid-cols-[1.08fr_0.92fr] lg:items-end lg:gap-20"
         >
-          <p className="text-[13px] font-medium uppercase tracking-[0.2em] text-content-tertiary">
-            Pool architecture
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#737a75]">
+              Three ways to invest
+            </p>
+            <h2 className="mt-5 max-w-3xl text-[clamp(3rem,6vw,6rem)] font-semibold leading-[0.93] tracking-[-0.065em] text-[#171b18]">
+              Choose what your money needs to do.
+            </h2>
+          </div>
+          <p className="max-w-xl text-[16px] leading-7 text-[#616862]">
+            One generic vault cannot serve every goal. Piron gives each kind of
+            capital a product structure that matches it.
           </p>
-          <h2 className="mt-4 text-4xl font-bold tracking-tight text-content-primary md:text-5xl lg:text-6xl">
-            Three pool types.
-            <br />
-            Each built for a different mandate.
-          </h2>
         </motion.div>
 
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-          {pools.map((pool, idx) => (
-            <motion.div
-              key={pool.label}
-              initial={{ opacity: 0, y: 24 }}
+        <div className="mt-16 grid border-y border-black/10 lg:grid-cols-3">
+          {products.map((product, index) => (
+            <motion.article
+              key={product.type}
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.15 }}
-              transition={{ duration: 0.5, delay: idx * 0.1 }}
-              className="rounded-2xl bg-white p-8 shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-shadow duration-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)]"
+              transition={{ duration: 0.5, delay: index * 0.07 }}
+              className={`relative flex min-h-[520px] flex-col py-9 lg:px-8 lg:py-11 ${
+                index > 0 ? "border-t border-black/10 lg:border-l lg:border-t-0" : ""
+              }`}
             >
-              <span className="text-5xl font-bold leading-none tracking-tight text-content-tertiary/15">
-                {pool.number}
-              </span>
-
-              <h3 className="mt-5 text-xl font-bold tracking-tight text-content-primary">
-                {pool.name}
-              </h3>
-              <p className="mt-1 text-[13px] font-medium uppercase tracking-[0.15em] text-content-tertiary">
-                {pool.label}
-              </p>
-
-              <p className="mt-4 text-sm leading-relaxed text-content-secondary">
-                {pool.description}
-              </p>
-
-              <div className="mt-6 rounded-xl bg-surface-warm p-4">
-                <div className="space-y-2.5">
-                  {pool.features.map((f) => (
-                    <div
-                      key={f.key}
-                      className="flex items-baseline justify-between gap-4"
-                    >
-                      <span className="text-xs text-content-tertiary">
-                        {f.key}
-                      </span>
-                      <span className="text-right font-mono text-xs font-semibold text-content-primary">
-                        {f.value}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+              <span
+                className="absolute left-0 top-0 h-[3px] w-14 lg:left-8"
+                style={{ backgroundColor: product.accent }}
+              />
+              <div className="flex items-center justify-between">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#4f5852]">
+                  {product.type}
+                </p>
+                <span className="font-mono text-[10px] text-black/28">
+                  {product.number}
+                </span>
               </div>
+
+              <h3 className="mt-12 text-[34px] font-semibold leading-[1.02] tracking-[-0.045em] text-[#181d1a]">
+                {product.headline}
+              </h3>
+              <p className="mt-5 max-w-sm text-[14px] leading-6 text-[#666d68]">
+                {product.copy}
+              </p>
+
+              <dl className="mt-10 divide-y divide-black/[0.07] border-y border-black/[0.07]">
+                {product.details.map(([label, value]) => (
+                  <div
+                    key={label}
+                    className="flex items-center justify-between gap-5 py-3.5"
+                  >
+                    <dt className="text-[11px] text-black/42">{label}</dt>
+                    <dd className="text-right text-[12px] font-medium text-[#323a35]">
+                      {value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
 
               <Link
                 href={APP_URL}
-                className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-content-primary transition-colors hover:text-accent"
+                className="group mt-auto inline-flex items-center gap-2 pt-10 text-[13px] font-semibold text-[#1c4d38]"
               >
-                Learn more
-                <span aria-hidden="true">&#8594;</span>
+                Explore this product
+                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
               </Link>
-            </motion.div>
+            </motion.article>
           ))}
         </div>
+
+        <p className="mt-5 text-[10px] leading-5 text-black/38">
+          Product availability and terms vary. Returns are not guaranteed and
+          capital is at risk.
+        </p>
       </div>
     </section>
   );
