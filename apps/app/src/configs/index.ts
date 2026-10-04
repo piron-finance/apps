@@ -51,7 +51,7 @@ function rpcTransport(chainId: number, override?: string): Transport {
 // its only option for the app's own reads (the direct transport below).
 const ARC_TESTNET_RPC =
   process.env.NEXT_PUBLIC_ARC_TESTNET_RPC ||
-  "https://arc-testnet.g.alchemy.com/v2/FeJRn-TNvhl6iQRFlBHPL";
+  "https://arc-testnet.g.alchemy.com/v2/alch_O2Sm9bftkuIw39-V2y5Uy";
 
 // Wallet-facing RPC for the keyless chains. wallet_addEthereumChain saves this URL
 // permanently in the user's wallet, so it must NOT contain the provider key — it
@@ -63,6 +63,17 @@ const API_BASE =
 const ARC_WALLET_RPC = `${API_BASE}/rpc/arc`;
 const ROBINHOOD_WALLET_RPC = `${API_BASE}/rpc/robinhood`;
 
+// viem buffers the base fee by only 1.2× by default when estimating maxFeePerGas.
+// On these L2 testnets the base fee can tick up between estimation and submission,
+// making maxFeePerGas fall *below* the live base fee — the wallet then rejects the tx
+// with "max fee per gas less than block base fee". A 2× buffer absorbs normal base-fee
+// movement (testnet gas is negligible, so over-budgeting costs nothing).
+const FEES = { baseFeeMultiplier: 2 } as const;
+const withFeeBuffer = <T extends { fees?: unknown }>(chain: T): T => ({
+  ...chain,
+  fees: { ...(chain.fees as object), ...FEES },
+});
+
 export const arcTestnet = defineChain({
   id: 5042002,
   name: "Arc Testnet",
@@ -73,13 +84,14 @@ export const arcTestnet = defineChain({
   blockExplorers: {
     default: { name: "Arc Explorer", url: "https://explorer.arc.fun" },
   },
+  fees: FEES,
   testnet: true,
 });
 
 // Robinhood Testnet — an Arbitrum-Orbit L2 with no public RPC.
 const ROBINHOOD_TESTNET_RPC =
   process.env.NEXT_PUBLIC_ROBINHOOD_TESTNET_RPC ||
-  "https://robinhood-testnet.g.alchemy.com/v2/oseXvdn8oXOMITWZqEdAn";
+  "https://robinhood-testnet.g.alchemy.com/v2/alch_O2Sm9bftkuIw39-V2y5Uy";
 
 export const robinhoodTestnet = defineChain({
   id: 46630,
@@ -88,6 +100,7 @@ export const robinhoodTestnet = defineChain({
   rpcUrls: {
     default: { http: [ROBINHOOD_WALLET_RPC] },
   },
+  fees: FEES,
   testnet: true,
 });
 
@@ -100,7 +113,14 @@ if (!projectId) {
 }
 
 export const config = createConfig({
-  chains: [baseSepolia, arcTestnet, arbitrumSepolia, robinhoodTestnet, morphHolesky, arbitrum],
+  chains: [
+    withFeeBuffer(baseSepolia),
+    arcTestnet,
+    withFeeBuffer(arbitrumSepolia),
+    robinhoodTestnet,
+    withFeeBuffer(morphHolesky),
+    withFeeBuffer(arbitrum),
+  ],
   connectors: [
     injected(),
     coinbaseWallet({
