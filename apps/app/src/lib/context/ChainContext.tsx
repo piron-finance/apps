@@ -64,6 +64,14 @@ export const SUPPORTED_CHAINS: ChainOption[] = [
     bgColor: "rgba(0,200,5,0.12)",
     isTestnet: true,
   },
+  {
+    id: 10143,
+    label: "Monad Testnet",
+    shortLabel: "Monad",
+    color: "#836EF9",
+    bgColor: "rgba(131,110,249,0.12)",
+    isTestnet: true,
+  },
 ];
 
 // Disabled chains are removed from the selector entirely. `id: undefined` is the
