@@ -302,6 +302,16 @@ export const confirmDepositTransaction = async (txHash: string, chainId: number)
   return data;
 };
 
+/**
+ * The same hand-off for any other mined transaction — withdrawals, redemptions, early
+ * exits. The backend indexes it from its receipt and drops every cached view of the
+ * pools it touched before it answers, so the refetch that follows is already current.
+ */
+export const confirmTransaction = async (txHash: string, chainId: number) => {
+  const { data } = await apiClient.post("/transactions/confirm", { txHash, chainId });
+  return data;
+};
+
 // ============================================================================
 // LOCKED POSITIONS APIs
 // ============================================================================

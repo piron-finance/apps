@@ -12,7 +12,7 @@ import LOCKED_POOL_ABI from "@/contracts/abis/LockedPool.json";
 import { Pool } from "@/lib/api/types";
 import { useInvalidateAfterMutation } from "@/hooks/useQueryInvalidation";
 import { usePendingTx, type PendingTxType } from "@/lib/context/PendingTxContext";
-import { withdrawalsApi } from "@/lib/api/endpoints";
+import { confirmTransaction, withdrawalsApi } from "@/lib/api/endpoints";
 
 /**
  * Every user-side EXIT/CLAIM action across the three pool types. Mirrors the
@@ -35,10 +35,18 @@ export function usePoolExit(pool?: Pool) {
     hash: txHash,
   });
 
+  // Same hand-off as a deposit: give the backend the mined hash so it indexes the exit
+  // from its receipt and drops its cached pool data, and only then refetch. Refetching
+  // first returns the position as it was before the exit.
   useEffect(() => {
-    if (!isSuccess || !address || !pool?.poolAddress) return;
-    if (txHash) markMined(txHash);
-    invalidateAfterMutation(address, pool.poolAddress);
+    if (!isSuccess || !address || !pool?.poolAddress || !txHash) return;
+    markMined(txHash);
+    confirmTransaction(txHash, pool.chainId)
+      .catch((err) => {
+        // Non-fatal: the backend's own sweep still picks the exit up.
+        console.warn("[usePoolExit] confirm push failed, falling back to indexer:", err?.message);
+      })
+      .finally(() => invalidateAfterMutation(address, pool.poolAddress));
   }, [isSuccess]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /**
@@ -66,9 +74,10 @@ export function usePoolExit(pool?: Pool) {
 
   /**
    * Tells the backend an exit is inbound so its indexer bursts before the tx
-   * lands. Exits have no confirm-receipt endpoint, so this is the only thing
-   * keeping them off the 60s indexer cadence. Fire-and-forget by design — a
-   * failure here must never block the user's exit.
+   * lands. The mined hash is handed over afterwards (see the effect above), which
+   * is what makes the exit show up at once; this keeps the indexer close behind as
+   * the fallback. Fire-and-forget by design — a failure here must never block the
+   * user's exit.
    */
   const signalExit = (functionName: string, args: unknown[], amount?: string) => {
     if (!pool) return;
