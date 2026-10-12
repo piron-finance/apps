@@ -1,3 +1,5 @@
+import { rpcProxyUrl } from "./rpc";
+
 export interface ChainInfo {
   id: number;
   name: string;
@@ -229,10 +231,7 @@ export const CHAIN_INFO: Record<number, ChainInfo> = {
       symbol: "ETH",
       decimals: 18,
     },
-    rpcUrls: [
-      process.env.NEXT_PUBLIC_ARC_TESTNET_RPC ||
-        "https://arc-testnet.g.alchemy.com/v2/FeJRn-TNvhl6iQRFlBHPL",
-    ],
+    rpcUrls: [rpcProxyUrl("arc")],
     blockExplorers: [
       {
         name: "Arc Explorer",
@@ -254,10 +253,7 @@ export const CHAIN_INFO: Record<number, ChainInfo> = {
       symbol: "ETH",
       decimals: 18,
     },
-    rpcUrls: [
-      process.env.NEXT_PUBLIC_ROBINHOOD_TESTNET_RPC ||
-        "https://robinhood-testnet.g.alchemy.com/v2/oseXvdn8oXOMITWZqEdAn",
-    ],
+    rpcUrls: [rpcProxyUrl("robinhood")],
     blockExplorers: [],
     logo: "/chains/robinhood.svg",
     color: "#00C805",
