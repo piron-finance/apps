@@ -2,6 +2,7 @@ import { createConfig, http, fallback } from "wagmi";
 import { baseSepolia, morphHolesky, arbitrum, arbitrumSepolia } from "wagmi/chains";
 import { walletConnect, injected, coinbaseWallet } from "wagmi/connectors";
 import { defineChain, type Transport } from "viem";
+import { rpcProxyUrl, RPC_PROXY_BATCH } from "@/lib/constants/rpc";
 
 // Keyless public RPCs are ALWAYS the primary path. A NEXT_PUBLIC_* provider key
 // ships in the client bundle, so it is (a) publicly visible and (b) hit directly
@@ -47,21 +48,11 @@ function rpcTransport(chainId: number, override?: string): Transport {
   );
 }
 
-// Arc Testnet has no public RPC, so the (env-overridable) provider endpoint is
-// its only option for the app's own reads (the direct transport below).
-const ARC_TESTNET_RPC =
-  process.env.NEXT_PUBLIC_ARC_TESTNET_RPC ||
-  "https://arc-testnet.g.alchemy.com/v2/alch_O2Sm9bftkuIw39-V2y5Uy";
-
-// Wallet-facing RPC for the keyless chains. wallet_addEthereumChain saves this URL
-// permanently in the user's wallet, so it must NOT contain the provider key — it
-// points at our backend RPC proxy, which forwards to the provider server-side.
-// The app's own reads still use the direct transport above; only the chain params
-// handed to the wallet use the proxy.
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3008/api/v1";
-const ARC_WALLET_RPC = `${API_BASE}/rpc/arc`;
-const ROBINHOOD_WALLET_RPC = `${API_BASE}/rpc/robinhood`;
+// Arc and Robinhood have no public RPC. Both the app's own reads and the chain params a
+// wallet saves on wallet_addEthereumChain go through the backend RPC proxy, so the
+// provider key never reaches a browser or a wallet. See lib/constants/rpc.ts.
+const ARC_TESTNET_RPC = rpcProxyUrl("arc");
+const ROBINHOOD_TESTNET_RPC = rpcProxyUrl("robinhood");
 
 // viem buffers the base fee by only 1.2× by default when estimating maxFeePerGas.
 // On these L2 testnets the base fee can tick up between estimation and submission,
@@ -79,7 +70,7 @@ export const arcTestnet = defineChain({
   name: "Arc Testnet",
   nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
   rpcUrls: {
-    default: { http: [ARC_WALLET_RPC] },
+    default: { http: [ARC_TESTNET_RPC] },
   },
   blockExplorers: {
     default: { name: "Arc Explorer", url: "https://explorer.arc.fun" },
@@ -89,16 +80,12 @@ export const arcTestnet = defineChain({
 });
 
 // Robinhood Testnet — an Arbitrum-Orbit L2 with no public RPC.
-const ROBINHOOD_TESTNET_RPC =
-  process.env.NEXT_PUBLIC_ROBINHOOD_TESTNET_RPC ||
-  "https://robinhood-testnet.g.alchemy.com/v2/alch_O2Sm9bftkuIw39-V2y5Uy";
-
 export const robinhoodTestnet = defineChain({
   id: 46630,
   name: "Robinhood Testnet",
   nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
   rpcUrls: {
-    default: { http: [ROBINHOOD_WALLET_RPC] },
+    default: { http: [ROBINHOOD_TESTNET_RPC] },
   },
   fees: FEES,
   testnet: true,
@@ -153,13 +140,12 @@ export const config = createConfig({
     ),
     [morphHolesky.id]: rpcTransport(morphHolesky.id),
     [arbitrum.id]: rpcTransport(arbitrum.id),
-    // Arc has no public RPC — single provider endpoint, batched + low-retry.
+    // Arc and Robinhood read through the backend proxy — batched within its limit, low-retry.
     [arcTestnet.id]: fallback([
-      http(ARC_TESTNET_RPC, { batch: true, retryCount: 1 }),
+      http(ARC_TESTNET_RPC, { batch: RPC_PROXY_BATCH, retryCount: 1 }),
     ]),
-    // Robinhood has no public RPC — single provider endpoint, batched + low-retry.
     [robinhoodTestnet.id]: fallback([
-      http(ROBINHOOD_TESTNET_RPC, { batch: true, retryCount: 1 }),
+      http(ROBINHOOD_TESTNET_RPC, { batch: RPC_PROXY_BATCH, retryCount: 1 }),
     ]),
   },
   ssr: true,

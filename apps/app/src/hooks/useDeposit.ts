@@ -62,8 +62,8 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
   // wrong one when the user picks a network to invest on. wagmi's switchChainAsync
   // prompts wallet_switchEthereumChain and auto-adds the chain (wallet_addEthereumChain)
   // from the wagmi config if the wallet doesn't have it yet. Without this the write
-  // throws ChainMismatchError. NOTE: for Arc/Robinhood the add-chain RPC still carries
-  // the provider key — swap to a keyless/proxy RPC before public launch (plan U4).
+  // throws ChainMismatchError. For Arc/Robinhood the RPC the wallet saves is the
+  // backend proxy, so no provider key ends up in a user's wallet.
   const ensureChain = async () => {
     if (!pool) return;
     if (walletChainId !== pool.chainId) {
