@@ -90,6 +90,8 @@ export interface Pool {
   // Analytics (if included)
   analytics?: {
     totalValueLocked: string;
+    /** Single Asset only: amount subscribed during funding. Not the same as TVL. */
+    totalRaised?: string | null;
     totalShares?: string;
     navPerShare?: string | null;
     uniqueInvestors?: number;

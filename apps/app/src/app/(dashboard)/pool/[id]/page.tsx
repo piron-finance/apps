@@ -630,8 +630,15 @@ function NAVYieldHistory({ pool }: { pool: Pool }) {
 function FundingProgress({ pool, availability, onDeposit }: { pool: Pool; availability: DepositAvailability; onDeposit: () => void }) {
   const { data: stats } = usePoolStats(pool.poolAddress);
 
-  const tvlRaw = stats?.totalValueLocked || pool.analytics?.totalValueLocked || "0";
-  const raised = parseFloat(tvlRaw);
+  // Progress is measured against the amount subscribed, not TVL. The two are equal
+  // only while a pool is funding: once it is invested or matured, TVL moves with yield
+  // and redemptions, and a half-redeemed pool would otherwise read as half funded.
+  // `totalRaised` is absent until the backend's first sync after it was introduced,
+  // so TVL stays as the fallback.
+  const analytics = stats?.analytics ?? pool.analytics;
+  const raisedRaw =
+    analytics?.totalRaised || stats?.totalValueLocked || pool.analytics?.totalValueLocked || "0";
+  const raised = parseFloat(raisedRaw);
   const target = pool.targetRaise ? parseFloat(pool.targetRaise) : 0;
   const percent = target > 0 ? Math.min((raised / target) * 100, 100) : 0;
 
