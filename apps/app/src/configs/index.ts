@@ -33,6 +33,8 @@ const PUBLIC_RPCS: Record<number, string[]> = {
   ],
   // Morph Holesky
   2810: ["https://rpc-holesky.morphl2.io"],
+  // Monad Testnet
+  10143: ["https://testnet-rpc.monad.xyz"],
 };
 
 // Build a batched, low-retry fallback transport. Batching collapses the many
@@ -91,6 +93,33 @@ export const robinhoodTestnet = defineChain({
   testnet: true,
 });
 
+// Monad Testnet — the first chain on the audited (v2) contracts. It has a keyless
+// public RPC, so the wallet is handed that directly; there is no key to hide behind
+// the proxy.
+//
+// No fee buffer here, and never pad `gas` on this chain: Monad charges for the gas
+// LIMIT, not the gas used, so any padding on the limit is paid for in full. Leave the
+// estimate to the Monad node, which also prices cold storage above what a local
+// simulation assumes.
+export const monadTestnet = defineChain({
+  id: 10143,
+  name: "Monad Testnet",
+  nativeCurrency: { name: "Monad", symbol: "MON", decimals: 18 },
+  rpcUrls: {
+    default: { http: PUBLIC_RPCS[10143] },
+  },
+  blockExplorers: {
+    default: { name: "MonadScan", url: "https://testnet.monadscan.com" },
+  },
+  contracts: {
+    multicall3: {
+      address: "0xcA11bde05977b3631167028862bE2a173976CA11",
+      blockCreated: 251449,
+    },
+  },
+  testnet: true,
+});
+
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID;
 
 if (!projectId) {
@@ -105,6 +134,7 @@ export const config = createConfig({
     arcTestnet,
     withFeeBuffer(arbitrumSepolia),
     robinhoodTestnet,
+    monadTestnet,
     withFeeBuffer(morphHolesky),
     withFeeBuffer(arbitrum),
   ],
@@ -139,6 +169,10 @@ export const config = createConfig({
       process.env.NEXT_PUBLIC_ARBITRUM_SEPOLIA_RPC
     ),
     [morphHolesky.id]: rpcTransport(morphHolesky.id),
+    [monadTestnet.id]: rpcTransport(
+      monadTestnet.id,
+      process.env.NEXT_PUBLIC_MONAD_TESTNET_RPC
+    ),
     [arbitrum.id]: rpcTransport(arbitrum.id),
     // Arc and Robinhood read through the backend proxy — batched within its limit, low-retry.
     [arcTestnet.id]: fallback([

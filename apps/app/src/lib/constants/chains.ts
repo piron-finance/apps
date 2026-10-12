@@ -258,6 +258,31 @@ export const CHAIN_INFO: Record<number, ChainInfo> = {
     logo: "/chains/robinhood.svg",
     color: "#00C805",
   },
+
+  // Monad Testnet
+  10143: {
+    id: 10143,
+    name: "Monad Testnet",
+    shortName: "Monad",
+    network: "monad-testnet",
+    nativeCurrency: {
+      name: "Monad",
+      symbol: "MON",
+      decimals: 18,
+    },
+    rpcUrls: [
+      process.env.NEXT_PUBLIC_MONAD_TESTNET_RPC ||
+        "https://testnet-rpc.monad.xyz",
+    ],
+    blockExplorers: [
+      {
+        name: "MonadScan",
+        url: "https://testnet.monadscan.com",
+      },
+    ],
+    logo: "/chains/monad.svg",
+    color: "#836EF9",
+  },
 };
 
 /**
@@ -337,7 +362,7 @@ export function getAddressUrl(chainId: number, address: string): string {
  * Check if chain is a testnet
  */
 export function isTestnet(chainId: number): boolean {
-  const testnets = [84532, 2810, 11155111, 5, 5042002, 421614, 46630]; // Base Sepolia, Morph Holesky, Sepolia, Goerli, Arc Testnet, Arbitrum Sepolia, Robinhood Testnet
+  const testnets = [84532, 2810, 11155111, 5, 5042002, 421614, 46630, 10143]; // Base Sepolia, Morph Holesky, Sepolia, Goerli, Arc Testnet, Arbitrum Sepolia, Robinhood Testnet, Monad Testnet
   return testnets.includes(chainId);
 }
 
