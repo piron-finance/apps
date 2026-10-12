@@ -1553,9 +1553,7 @@ function LockedPositions({ pool }: { pool: Pool }) {
 
   // Early exit preview for selected position
   const { data: earlyExitPreview } = useEarlyExitPreview(
-    showEarlyExitModal && selectedPosition?.globalPositionId !== undefined
-      ? selectedPosition.globalPositionId
-      : undefined
+    showEarlyExitModal ? selectedPosition?.id : undefined
   );
 
   if (!isConnected) {
@@ -1801,31 +1799,35 @@ function LockedPositions({ pool }: { pool: Pool }) {
                   <span className="text-foreground">${parseFloat(earlyExitPreview.principal).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-[12px]">
-                  <span className="text-muted-foreground">Accrued Interest</span>
-                  <span className="text-brand-ink">+${parseFloat(earlyExitPreview.accruedInterest).toLocaleString()}</span>
+                  <span className="text-muted-foreground">
+                    {earlyExitPreview.interestPayment === "UPFRONT" ? "Interest Paid Upfront" : "Interest Earned"}
+                  </span>
+                  <span className="text-brand-ink">+${parseFloat(earlyExitPreview.proRataInterest).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-[12px]">
                   <span className="text-muted-foreground">Days Completed</span>
-                  <span className="text-foreground">{earlyExitPreview.timeElapsedDays} / {earlyExitPreview.timeElapsedDays + earlyExitPreview.timeRemainingDays}</span>
+                  <span className="text-foreground">{earlyExitPreview.daysElapsed} / {earlyExitPreview.daysElapsed + earlyExitPreview.daysRemaining}</span>
                 </div>
                 <div className="border-t border-border-subtle pt-3">
                   <div className="flex justify-between text-[12px]">
-                    <span className="text-negative">Early Exit Penalty ({earlyExitPreview.penaltyPercent}%)</span>
-                    <span className="text-negative">-${parseFloat(earlyExitPreview.earlyExitPenalty).toLocaleString()}</span>
+                    <span className="text-negative">Early Exit Penalty ({earlyExitPreview.penaltyPercentage}%)</span>
+                    <span className="text-negative">-${parseFloat(earlyExitPreview.penalty).toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between text-[12px] mt-2">
-                    <span className="text-muted-foreground">Forfeited Interest</span>
-                    <span className="text-muted-foreground">-${parseFloat(earlyExitPreview.forfeitedInterest).toLocaleString()}</span>
-                  </div>
+                  {parseFloat(earlyExitPreview.forfeitedInterest) > 0 && (
+                    <div className="flex justify-between text-[12px] mt-2">
+                      <span className="text-muted-foreground">Forfeited Interest</span>
+                      <span className="text-muted-foreground">-${parseFloat(earlyExitPreview.forfeitedInterest).toLocaleString()}</span>
+                    </div>
+                  )}
                 </div>
                 <div className="border-t border-border-subtle pt-3">
                   <div className="flex justify-between text-[14px]">
                     <span className="text-foreground font-medium">You Receive</span>
-                    <span className="text-foreground font-medium">${parseFloat(earlyExitPreview.netReceived).toLocaleString()}</span>
+                    <span className="text-foreground font-medium">${parseFloat(earlyExitPreview.estimatedPayout).toLocaleString()}</span>
                   </div>
                 </div>
-                {earlyExitPreview.recommendation && (
-                  <p className="text-[11px] text-warning mt-2">{earlyExitPreview.recommendation}</p>
+                {earlyExitPreview.note && (
+                  <p className="text-[11px] text-warning mt-2">{earlyExitPreview.note}</p>
                 )}
               </div>
             ) : (
@@ -2281,11 +2283,6 @@ function HoldingExitsCard({ pool, isLockedPool, tiers: tiersProp }: { pool: Pool
   const minLockDays = tiers.length > 0 ? Math.min(...tiers.map(t => t.lockDurationDays)) : undefined;
   const maxLockDays = tiers.length > 0 ? Math.max(...tiers.map(t => t.lockDurationDays)) : undefined;
 
-  // Early exit penalty from fee rates
-  const earlyExitPenalty = feeRates?.earlyExitPenalty
-    ? `${(parseFloat(feeRates.earlyExitPenalty) * 100).toFixed(1)}%`
-    : "5–15%";
-
   if (isLockedPool) {
     return (
       <div className="section-block">
@@ -2310,10 +2307,6 @@ function HoldingExitsCard({ pool, isLockedPool, tiers: tiersProp }: { pool: Pool
           <div className="flex justify-between text-[12px]">
             <span className="text-muted-foreground">Early exit</span>
             <span className="text-foreground">Allowed with penalty</span>
-          </div>
-          <div className="flex justify-between text-[12px]">
-            <span className="text-muted-foreground">Early exit penalty</span>
-            <span className="text-warning">{earlyExitPenalty}</span>
           </div>
           <div className="flex justify-between text-[12px]">
             <span className="text-muted-foreground">Interest payment</span>

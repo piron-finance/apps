@@ -75,9 +75,9 @@ export function usePoolExit(pool?: Pool) {
     const positionId = Number(args[0]);
     const send =
       functionName === "redeemPosition"
-        ? withdrawalsApi.signalRedeem(pool.poolAddress, positionId)
+        ? withdrawalsApi.signalRedeem(pool.poolAddress, positionId, pool.chainId)
         : functionName === "earlyExitPosition"
-        ? withdrawalsApi.signalEarlyExit(pool.poolAddress, positionId)
+        ? withdrawalsApi.signalEarlyExit(pool.poolAddress, positionId, pool.chainId)
         : amount && address
         ? withdrawalsApi.signalWithdrawal(pool.poolAddress, amount, address)
         : null;
