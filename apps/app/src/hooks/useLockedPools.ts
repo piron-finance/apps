@@ -54,11 +54,11 @@ export function useLockedDepositPreview(
 /**
  * Hook to preview early exit from locked position
  */
-export function useEarlyExitPreview(positionId?: number) {
+export function useEarlyExitPreview(positionRowId?: string) {
   return useQuery({
-    queryKey: ["early-exit-preview", positionId],
-    queryFn: () => lockedPositionsApi.previewEarlyExit(positionId!),
-    enabled: positionId !== undefined,
+    queryKey: ["early-exit-preview", positionRowId],
+    queryFn: () => lockedPositionsApi.previewEarlyExit(positionRowId!),
+    enabled: !!positionRowId,
     staleTime: 30000,
     retry: 2,
   });

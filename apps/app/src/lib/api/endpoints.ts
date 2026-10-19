@@ -302,17 +302,30 @@ export const confirmDepositTransaction = async (txHash: string, chainId: number)
   return data;
 };
 
+/**
+ * The same hand-off for any other mined transaction — withdrawals, redemptions, early
+ * exits. The backend indexes it from its receipt and drops every cached view of the
+ * pools it touched before it answers, so the refetch that follows is already current.
+ */
+export const confirmTransaction = async (txHash: string, chainId: number) => {
+  const { data } = await apiClient.post("/transactions/confirm", { txHash, chainId });
+  return data;
+};
+
 // ============================================================================
 // LOCKED POSITIONS APIs
 // ============================================================================
 
 export const lockedPositionsApi = {
   /**
-   * Preview early exit from locked position
+   * Preview early exit from a locked position.
+   *
+   * Takes the position's row id, not its on-chain number: every chain numbers its
+   * positions from 1, so the number alone does not say which position is meant.
    */
-  previewEarlyExit: async (positionId: number): Promise<EarlyExitPreview> => {
+  previewEarlyExit: async (positionRowId: string): Promise<EarlyExitPreview> => {
     const { data } = await apiClient.get(
-      `/locked-positions/${positionId}/preview-early-exit`
+      `/locked-positions/${positionRowId}/preview-early-exit`
     );
     return data;
   },
@@ -334,13 +347,13 @@ export const withdrawalsApi = {
     return data;
   },
 
-  signalRedeem: async (poolAddress: string, positionId: number) => {
-    const { data } = await apiClient.post("/withdrawals/redeem", { poolAddress, positionId });
+  signalRedeem: async (poolAddress: string, positionId: number, chainId: number) => {
+    const { data } = await apiClient.post("/withdrawals/redeem", { poolAddress, positionId, chainId });
     return data;
   },
 
-  signalEarlyExit: async (poolAddress: string, positionId: number) => {
-    const { data } = await apiClient.post("/withdrawals/early-exit", { poolAddress, positionId });
+  signalEarlyExit: async (poolAddress: string, positionId: number, chainId: number) => {
+    const { data } = await apiClient.post("/withdrawals/early-exit", { poolAddress, positionId, chainId });
     return data;
   },
 

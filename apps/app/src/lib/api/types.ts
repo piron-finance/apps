@@ -90,6 +90,8 @@ export interface Pool {
   // Analytics (if included)
   analytics?: {
     totalValueLocked: string;
+    /** Single Asset only: amount subscribed during funding. Not the same as TVL. */
+    totalRaised?: string | null;
     totalShares?: string;
     navPerShare?: string | null;
     uniqueInvestors?: number;
@@ -217,20 +219,26 @@ export interface UserLockedPositionsResponse {
   };
 }
 
-// Early exit preview
+// Early exit preview: what leaving a locked position now would pay, in whole tokens.
+// Mirrors GET /locked-positions/:id/preview-early-exit field for field.
 export interface EarlyExitPreview {
+  id: string;
   positionId: number;
+  poolAddress: string;
+  chainId: number;
   principal: string;
-  accruedInterest: string;
-  timeElapsed: number;
-  timeElapsedDays: number;
-  timeRemaining: number;
-  timeRemainingDays: number;
-  earlyExitPenalty: string;
-  penaltyPercent: string;
-  netReceived: string;
+  interest: string;
+  interestPayment: "UPFRONT" | "AT_MATURITY";
+  daysElapsed: number;
+  daysRemaining: number;
+  penalty: string;
+  /** The rate this position exits at. Its own, fixed at deposit, where the contract fixes one. */
+  penaltyPercentage: string;
+  proRataInterest: string;
   forfeitedInterest: string;
-  recommendation: string;
+  estimatedPayout: string;
+  /** Set only when the chain could not be read and the figures are an estimate. */
+  note?: string;
 }
 
 export interface PoolsResponse {

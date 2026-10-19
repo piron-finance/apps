@@ -16,6 +16,7 @@ const TEST_TOKENS = [
   { chainId: 5042002, address: "0xa8e1Ac7c693bF6e0Aef8a9D4af674F240dE0d466" }, // Arc Testnet
   { chainId: 421614, address: "0x55Cd228ec5A4AB43FA26Bf404Fe9f687918c8f8b" }, // Arbitrum Sepolia
   { chainId: 46630, address: "0xD910E50B04a319e8AF9beeCDCB583864c41b1712" }, // Robinhood Testnet
+  { chainId: 10143, address: "0xD769415374e7Ee71678a6637a06cCd934C7F4A57" }, // Monad Testnet
 ] as const;
 const DISMISS_KEY = "piron_firstrun_dismissed";
 
