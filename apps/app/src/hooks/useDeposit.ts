@@ -19,8 +19,11 @@ import {
 } from "@/lib/api/endpoints";
 import { useInvalidateAfterMutation } from "@/hooks/useQueryInvalidation";
 import { usePendingTx } from "@/lib/context/PendingTxContext";
+import { canSignFor, networkLabel } from "../lib/constants/networks";
 
 interface UseDepositReturn {
+  /** Set when this app cannot take a deposit for the pool's network. */
+  depositUnavailableReason?: string;
   deposit: (amount: string, tierIndex?: number, interestPayment?: "UPFRONT" | "AT_MATURITY") => Promise<`0x${string}`>;
   approve: (amount: string) => Promise<`0x${string}`>;
   approveAndDeposit: (amount: string) => Promise<void>;
@@ -64,12 +67,47 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
   // from the wagmi config if the wallet doesn't have it yet. Without this the write
   // throws ChainMismatchError. For Arc/Robinhood the RPC the wallet saves is the
   // backend proxy, so no provider key ends up in a user's wallet.
-  const ensureChain = async () => {
-    if (!pool) return;
-    if (walletChainId !== pool.chainId) {
-      await switchChainAsync({ chainId: pool.chainId as any });
+  /**
+   * Put the wallet on the pool's chain, refusing when there is no chain to put it on.
+   *
+   * `switchChainAsync({ chainId: pool.chainId as any })` ran unguarded, and `as any` is
+   * what let it compile: off EVM `chainId` is null, `84532 !== null` is true, so the app
+   * asked the wallet to switch to null and the wallet threw. An investor clicking Deposit
+   * on a Stellar pool got an opaque wallet failure rather than being told this app cannot
+   * sign for that network yet.
+   */
+  const ensureChain = async (): Promise<number> => {
+    if (!pool) throw new Error("Pool not loaded");
+    if (!canSignFor(pool)) {
+      throw new Error(
+        `${networkLabel(pool)} deposits are not available in this app yet. The pool is ` +
+          "live and its figures are real, but signing for this network needs a wallet " +
+          "connection we have not shipped — so nothing can be submitted from here.",
+      );
     }
+    if (pool.chainId === null || pool.chainId === undefined) {
+      throw new Error(
+        `This pool has no EVM chain id, so a deposit cannot be targeted. (${networkLabel(pool)})`,
+      );
+    }
+    if (walletChainId !== pool.chainId) {
+      await switchChainAsync({ chainId: pool.chainId as never });
+    }
+    return pool.chainId;
   };
+
+  /**
+   * Whether this app can take a deposit for this pool at all.
+   *
+   * Exposed so the panel can disable the control with a reason instead of letting an
+   * investor find out by clicking. A disabled button that explains itself is a different
+   * experience from one that fails.
+   */
+  const depositUnavailableReason = !pool
+    ? undefined
+    : !canSignFor(pool)
+      ? `Deposits on ${networkLabel(pool)} are not available in this app yet.`
+      : undefined;
   const [depositTxHash, setDepositTxHash] = useState<
     `0x${string}` | undefined
   >();
@@ -166,7 +204,7 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
   useEffect(() => {
     if (!isDepositSuccess || !address || !pool?.poolAddress || !depositTxHash) return;
     markMined(depositTxHash);
-    confirmDepositTransaction(depositTxHash, pool.chainId)
+    confirmDepositTransaction(depositTxHash, pool.chainId ?? undefined, pool.networkId)
       .catch((err) => {
         // Non-fatal: the indexer still picks the deposit up on its own. The
         // optimistic row stays on screen until then.
@@ -232,7 +270,7 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
       throw new Error("Pool or wallet not connected");
     }
 
-    await ensureChain();
+    const chainId = await ensureChain();
 
     const amountBigInt = parseUnits(amount, pool.assetDecimals);
 
@@ -258,7 +296,7 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
       throw new Error("Pool or wallet not connected");
     }
 
-    await ensureChain();
+    const chainId = await ensureChain();
 
     try {
       const amountBigInt = parseUnits(amount, pool.assetDecimals);
@@ -280,7 +318,7 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
           depositor: address,
           tierIndex: tierIndex ?? 0,
           interestPayment: interestPayment ?? "AT_MATURITY",
-          chainId: pool.chainId,
+          chainId,
         }).catch((err) => {
           console.warn("[useDeposit] locked deposit pre-signal failed:", err?.message);
         });
@@ -313,7 +351,7 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
       // straight into a visible record rather than an unchanged page.
       addPendingTx({
         txHash: hash,
-        chainId: pool.chainId,
+        chainId,
         poolAddress: pool.poolAddress,
         userAddress: address,
         type: pool.poolType === "LOCKED" ? "POSITION_CREATED" : "DEPOSIT",
@@ -354,6 +392,8 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
     getUserBalance,
     getMaxDepositAmount,
     reset,
+    /** Set when this app cannot take a deposit for the pool's network. */
+    depositUnavailableReason,
     refetchAllowance,
     refetchBalance,
 

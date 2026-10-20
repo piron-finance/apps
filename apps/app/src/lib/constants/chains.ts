@@ -1,4 +1,5 @@
 import { rpcProxyUrl } from "./rpc";
+import { networkLabel, resolveNetwork, type NetworkRef } from "./networks";
 
 export interface ChainInfo {
   id: number;
@@ -311,8 +312,12 @@ export function getChainInfo(chainId: number): ChainInfo {
 /**
  * Get chain name by chain ID
  */
-export function getChainName(chainId: number): string {
-  return getChainInfo(chainId).name;
+export function getChainName(ref: number | NetworkRef | null | undefined): string {
+  // Takes either identity. The numeric form could only ever answer for EVM, so a Stellar
+  // or Solana pool rendered whatever `getChainInfo(null)` falls back to — which is not
+  // its network. `networkLabel` degrades through the CAIP-2 id to the chain id to a
+  // legible string, so an unknown network reads as something rather than as a wrong name.
+  return networkLabel(typeof ref === "number" ? { chainId: ref } : (ref ?? {}));
 }
 
 /**
@@ -350,10 +355,30 @@ export function getTransactionUrl(chainId: number, txHash: string): string {
 /**
  * Get block explorer URL for an address
  */
-export function getAddressUrl(chainId: number, address: string): string {
-  const chainInfo = getChainInfo(chainId);
-  if (chainInfo.blockExplorers.length > 0) {
-    return `${chainInfo.blockExplorers[0].url}/address/${address}`;
+export function getAddressUrl(
+  ref: number | NetworkRef | null | undefined,
+  address: string,
+): string {
+  const net = resolveNetwork(typeof ref === "number" ? { chainId: ref } : (ref ?? {}));
+  if (net) {
+    const base = net.explorerUrl.replace(/\/$/, "");
+    // The URL shape differs per runtime, and getting it wrong produces a real link to a
+    // real explorer that shows nothing. Stellar separates contracts from accounts, and
+    // Solana needs the cluster as a query parameter or the page is blank.
+    if (net.runtime === "stellar") {
+      return `${base}/${address.startsWith("C") ? "contract" : "account"}/${address}`;
+    }
+    if (net.runtime === "solana") {
+      return `${base}/address/${address}?cluster=${net.isTestnet ? "devnet" : "mainnet-beta"}`;
+    }
+    return `${base}/address/${address}`;
+  }
+  // Fall back to the legacy table for an EVM chain the network registry does not list.
+  if (typeof ref === "number") {
+    const chainInfo = getChainInfo(ref);
+    if (chainInfo.blockExplorers.length > 0) {
+      return `${chainInfo.blockExplorers[0].url}/address/${address}`;
+    }
   }
   return "#";
 }

@@ -100,7 +100,11 @@ function ProductDetail({ product }: { product: Product }) {
   // regardless of scope, and the queries are shared with the scoped views.
   const { pools: allPools } = useDeploymentPools(product.instances);
   const scopedChainIds = new Set(scopedInstances.map((i) => i.chainId));
-  const scopedPools = allPools.filter((p) => scopedChainIds.has(p.chainId));
+  // A non-EVM instance has no chain id, so a numeric set can never contain it — such a
+  // pool silently dropped out of every scoped product view.
+  const scopedPools = allPools.filter(
+    (p) => p.chainId !== null && p.chainId !== undefined && scopedChainIds.has(p.chainId),
+  );
 
   // NAV comes from the same snapshots the chart plots, so the headline figure and
   // the end of the line agree. `analytics.navPerShare` can lag them, so it's only

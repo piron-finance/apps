@@ -142,7 +142,13 @@ export function AddressLine({
 }: {
   label: string;
   address?: string | null;
-  chainId: number;
+  /**
+   * Null off EVM. `getAddressUrl` takes either identity and picks the right URL shape per
+   * runtime, so a Stellar contract links to /contract/ and a Solana address carries its
+   * cluster — both of which a numeric-only prop could never have produced.
+   */
+  chainId: number | null;
+  networkId?: string | null;
 }) {
   const [copied, setCopied] = useState(false);
 

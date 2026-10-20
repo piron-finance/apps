@@ -13,6 +13,7 @@ import { Pool } from "@/lib/api/types";
 import { useInvalidateAfterMutation } from "@/hooks/useQueryInvalidation";
 import { usePendingTx, type PendingTxType } from "@/lib/context/PendingTxContext";
 import { confirmTransaction, withdrawalsApi } from "@/lib/api/endpoints";
+import { canSignFor, networkLabel } from "../lib/constants/networks";
 
 /**
  * Every user-side EXIT/CLAIM action across the three pool types. Mirrors the
@@ -41,7 +42,7 @@ export function usePoolExit(pool?: Pool) {
   useEffect(() => {
     if (!isSuccess || !address || !pool?.poolAddress || !txHash) return;
     markMined(txHash);
-    confirmTransaction(txHash, pool.chainId)
+    confirmTransaction(txHash, pool.chainId ?? undefined, pool.networkId)
       .catch((err) => {
         // Non-fatal: the backend's own sweep still picks the exit up.
         console.warn("[usePoolExit] confirm push failed, falling back to indexer:", err?.message);
@@ -84,9 +85,9 @@ export function usePoolExit(pool?: Pool) {
     const positionId = Number(args[0]);
     const send =
       functionName === "redeemPosition"
-        ? withdrawalsApi.signalRedeem(pool.poolAddress, positionId, pool.chainId)
+        ? withdrawalsApi.signalRedeem(pool.poolAddress, positionId, pool.chainId ?? undefined)
         : functionName === "earlyExitPosition"
-        ? withdrawalsApi.signalEarlyExit(pool.poolAddress, positionId, pool.chainId)
+        ? withdrawalsApi.signalEarlyExit(pool.poolAddress, positionId, pool.chainId ?? undefined)
         : amount && address
         ? withdrawalsApi.signalWithdrawal(pool.poolAddress, amount, address)
         : null;
@@ -98,16 +99,37 @@ export function usePoolExit(pool?: Pool) {
 
   const call = async (functionName: string, args: unknown[], amount?: string) => {
     if (!pool || !address) throw new Error("Pool or wallet not connected");
+    // Refuse before touching the wallet when there is no chain to target. The unguarded
+    // `switchChainAsync({ chainId: pool.chainId as any })` compiled only because of the
+    // cast: off EVM `chainId` is null, so this asked the wallet to switch to null and
+    // threw. An investor exiting a Stellar position saw a wallet error instead of being
+    // told this app cannot sign for that network yet — and an exit is money leaving a
+    // pool, so a misleading failure there is worse than on a deposit.
+    if (!canSignFor(pool)) {
+      throw new Error(
+        `Exiting a position on ${networkLabel(pool)} is not available in this app yet. ` +
+          "Your position and its value are real; signing for this network needs a wallet " +
+          "connection we have not shipped.",
+      );
+    }
+    if (pool.chainId === null || pool.chainId === undefined) {
+      throw new Error(
+        `This pool has no EVM chain id, so an exit cannot be targeted. (${networkLabel(pool)})`,
+      );
+    }
+    // Captured past the guard, so the rest of this function has a number rather than
+    // re-widening what was just proved with a `?? undefined` or a cast.
+    const chainId: number = pool.chainId;
     // Exit actions run on the pool's chain; switch (and add if needed) the wallet
     // so the write doesn't throw ChainMismatchError when it's on another network.
-    if (walletChainId !== pool.chainId) {
-      await switchChainAsync({ chainId: pool.chainId as any });
+    if (walletChainId !== chainId) {
+      await switchChainAsync({ chainId: chainId as never });
     }
     if (LEDGER_TYPES[functionName]) signalExit(functionName, args, amount);
     try {
       const hash = await writeContractAsync({
         address: pool.poolAddress as `0x${string}`,
-        chainId: pool.chainId as any,
+        chainId: chainId as never,
         abi: poolABI as any,
         functionName,
         args,
@@ -117,7 +139,7 @@ export function usePoolExit(pool?: Pool) {
       if (ledgerType) {
         addPendingTx({
           txHash: hash,
-          chainId: pool.chainId,
+          chainId: pool.chainId ?? undefined,
           poolAddress: pool.poolAddress,
           userAddress: address,
           type: ledgerType,

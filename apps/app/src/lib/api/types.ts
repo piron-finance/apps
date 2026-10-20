@@ -48,7 +48,24 @@ export type PoolStatus =
 
 export interface Pool {
   id: string;
-  chainId: number;
+  /**
+   * CAIP-2 network identity — the only identity a Stellar or Solana pool has.
+   *
+   * Optional because a backend deployed before the runtime work does not send it; prefer
+   * it over `chainId` wherever both would do.
+   */
+  networkId?: string;
+  /** Which runtime this pool lives on. Served alongside networkId. */
+  runtime?: "evm" | "stellar" | "solana";
+  /**
+   * EVM chain id, or null off EVM.
+   *
+   * Was `number`, which the backend has never sent for a Stellar or Solana pool — those
+   * rows carry null. Declaring it non-nullable meant nothing here was forced to handle
+   * the null, and the app typechecked clean while every non-EVM pool rendered with no
+   * network marker and `switchChainAsync({ chainId: null })` threw at the wallet.
+   */
+  chainId: number | null;
   poolAddress: string;
   poolType: PoolType;
   name: string;
@@ -267,7 +284,15 @@ export interface ProductInstance {
 
 export interface ProductAggregates {
   totalTvl: string;
+  /**
+   * EVM chain ids of this product's instances.
+   *
+   * Numeric, so it cannot include a Stellar or Solana instance — a product live on Base
+   * and Stellar appeared here as one network. Prefer `networks`.
+   */
   chains: number[];
+  /** CAIP-2 ids of every network this product is on. Served alongside `chains`. */
+  networks?: string[];
   instanceCount: number;
   blendedApy: number | null;
   /** null for SINGLE_ASSET — read statusByChain instead. */

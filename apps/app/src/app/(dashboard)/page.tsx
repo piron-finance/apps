@@ -61,6 +61,9 @@ function productCard(product: Product): PoolCardData {
     poolId: product.instances[0]?.poolAddress ?? product.productKey,
     productKey: product.productKey,
     chains: product.aggregates.chains,
+    // The identity that can name every network. `chains` is numeric and silently omits
+    // Stellar and Solana instances, so a product on Base and Stellar counted as one.
+    networks: product.aggregates.networks,
     kind: k.kind,
     accent: k.accent,
     name: product.name,

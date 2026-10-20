@@ -26,7 +26,7 @@ const is404 = (error: unknown): boolean =>
 
 export function useDeploymentPools(instances: ProductInstance[]): {
   pools: Pool[];
-  byChain: Map<number, Pool>;
+  byChain: Map<string, Pool>;
   isLoading: boolean;
 } {
   const results = useQueries({
@@ -44,7 +44,15 @@ export function useDeploymentPools(instances: ProductInstance[]): {
 
   return {
     pools,
-    byChain: new Map(pools.map((p) => [p.chainId, p])),
+    // Keyed on CAIP-2, with a fallback derived from the chain id for a backend that does
+    // not serve one yet. Keying on chainId alone put every Stellar and Solana instance
+    // under the same `null` key, so a product with one of each kept only the last.
+    byChain: new Map(
+      pools.map((p) => [
+        p.networkId ?? (p.chainId != null ? `eip155:${p.chainId}` : "unknown"),
+        p,
+      ]),
+    ),
     isLoading: results.some((r) => r.isLoading),
   };
 }

@@ -295,10 +295,21 @@ export const buildLockedDepositTransaction = async (depositData: {
  * indexer poll. This is what takes a deposit from "visible in up to 90s" to
  * "visible on the next refetch".
  */
-export const confirmDepositTransaction = async (txHash: string, chainId: number) => {
-  const { data } = await apiClient.post("/deposits/confirm", { txHash, chainId }, {
-    params: { chainId },
-  });
+export const confirmDepositTransaction = async (
+  txHash: string,
+  chainId?: number,
+  networkId?: string,
+) => {
+  // Both identities. The backend takes either and refuses a disagreeing pair; `networkId`
+  // is the one that can name a Stellar or Solana transaction, where the reference is not
+  // an 0x-prefixed hash at all — a Stellar hash is 64 hex with no prefix and a Solana
+  // signature is base58, and the endpoint rejected both until it stopped validating every
+  // runtime with one EVM pattern.
+  const { data } = await apiClient.post(
+    "/deposits/confirm",
+    { txHash, reference: txHash, chainId, networkId },
+    { params: { ...(chainId !== undefined && { chainId }), ...(networkId && { networkId }) } },
+  );
   return data;
 };
 
@@ -307,8 +318,17 @@ export const confirmDepositTransaction = async (txHash: string, chainId: number)
  * exits. The backend indexes it from its receipt and drops every cached view of the
  * pools it touched before it answers, so the refetch that follows is already current.
  */
-export const confirmTransaction = async (txHash: string, chainId: number) => {
-  const { data } = await apiClient.post("/transactions/confirm", { txHash, chainId });
+export const confirmTransaction = async (
+  txHash: string,
+  chainId?: number,
+  networkId?: string,
+) => {
+  const { data } = await apiClient.post("/transactions/confirm", {
+    txHash,
+    reference: txHash,
+    chainId,
+    networkId,
+  });
   return data;
 };
 
@@ -347,12 +367,12 @@ export const withdrawalsApi = {
     return data;
   },
 
-  signalRedeem: async (poolAddress: string, positionId: number, chainId: number) => {
+  signalRedeem: async (poolAddress: string, positionId: number, chainId?: number) => {
     const { data } = await apiClient.post("/withdrawals/redeem", { poolAddress, positionId, chainId });
     return data;
   },
 
-  signalEarlyExit: async (poolAddress: string, positionId: number, chainId: number) => {
+  signalEarlyExit: async (poolAddress: string, positionId: number, chainId?: number) => {
     const { data } = await apiClient.post("/withdrawals/early-exit", { poolAddress, positionId, chainId });
     return data;
   },

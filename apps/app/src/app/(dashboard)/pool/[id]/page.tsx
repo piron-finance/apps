@@ -28,6 +28,7 @@ import { getTransactionUrl } from "@/lib/constants/chains";
 import { MetricRow } from "@/components/dashboard/stat-card";
 import { PoolTrustPanel, VerifiedMark } from "@/components/dashboard/pool-trust-panel";
 import { usePendingTx, useReconcilePending, type PendingTx } from "@/lib/context/PendingTxContext";
+import { txExplorerUrl } from "@/lib/constants/networks";
 
 function formatValue(value: string | number | null | undefined, decimals = 2): string {
   if (value === null || value === undefined) return "—";
@@ -175,7 +176,7 @@ function PendingActivity({ pool, pending }: { pool: Pool; pending: PendingTx[] }
               </p>
             )}
             <a
-              href={getTransactionUrl(p.chainId, p.txHash)}
+              href={txExplorerUrl({ networkId: pool.networkId, chainId: p.chainId }, p.txHash) ?? "#"}
               target="_blank"
               rel="noopener noreferrer"
               className="focus-ring rounded font-mono text-[11px] text-muted-foreground hover:text-foreground"
@@ -243,7 +244,7 @@ function PoolDetailContent({ pool }: { pool: Pool }) {
 
   //  locked pool metrics for locked pools
   const { data: lockedMetrics } = useLockedPoolMetrics(
-    isLockedPool ? pool.chainId : undefined,
+    isLockedPool ? (pool.chainId ?? undefined) : undefined,
     isLockedPool ? pool.poolAddress : undefined
   );
   const { data: tiersData } = usePoolTiers(isLockedPool ? pool.poolAddress : undefined);
@@ -335,7 +336,12 @@ function PoolDetailContent({ pool }: { pool: Pool }) {
               <YourPositions pool={pool} />
             )}
           </div>
-          <PoolTransactionsTable poolAddress={pool.poolAddress} assetSymbol={pool.assetSymbol} chainId={pool.chainId} />
+          <PoolTransactionsTable
+            poolAddress={pool.poolAddress}
+            assetSymbol={pool.assetSymbol}
+            chainId={pool.chainId}
+            networkId={pool.networkId}
+          />
           <AboutPoolCard pool={pool} />
         </div>
 
@@ -815,6 +821,7 @@ function DepositModal({
     hasInsufficientBalance,
     exceedsMaxDeposit,
     poolNotAcceptingDeposits,
+    depositUnavailableReason,
     refetchAllowance,
     reset,
     isApproving,
@@ -903,7 +910,7 @@ function DepositModal({
   const { data: feeCalc } = useFeeCalculation(pool.poolAddress, debouncedAmount);
 
   const { data: lockedPreview, isFetching: isPreviewFetching, isError: isPreviewError } = useLockedDepositPreview(
-    isLockedPool ? pool.chainId : undefined,
+    isLockedPool ? (pool.chainId ?? undefined) : undefined,
     isLockedPool ? pool.poolAddress : undefined,
     debouncedAmount,
     selectedTier
@@ -928,7 +935,14 @@ function DepositModal({
   const userBalance = balance ? parseFloat(balance) : 0;
   const requiresApproval = isConnected && parsedAmount > 0 && needsApproval(amount);
   const insufficientBalance = isConnected && parsedAmount > 0 && hasInsufficientBalance(amount);
-  const depositsDisabled = !availability.canDeposit || (isConnected && poolNotAcceptingDeposits());
+  // A deposit this app cannot sign for is disabled with a reason, not left live to fail
+  // at the wallet. The three states stay distinct on purpose: "the pool is not taking
+  // deposits", "this app cannot sign for this network", and "you are not connected" are
+  // different things and an investor should be able to tell which one applies.
+  const depositsDisabled =
+    !availability.canDeposit ||
+    Boolean(depositUnavailableReason) ||
+    (isConnected && poolNotAcceptingDeposits());
   const overMaxDeposit = isConnected && parsedAmount > 0 && exceedsMaxDeposit(amount);
 
   const handleMaxClick = () => {
@@ -1020,7 +1034,7 @@ function DepositModal({
           </p>
           {transactionHash && (
             <a
-              href={getTransactionUrl(pool.chainId, transactionHash)}
+              href={txExplorerUrl(pool, transactionHash) ?? "#"}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-3 inline-block text-[12px] text-brand-ink hover:underline"
@@ -1199,6 +1213,16 @@ function DepositModal({
 
         {depositError && (
           <p className="text-[11px] text-negative mt-3">{depositError}</p>
+        )}
+
+        {/* Stated, not implied by a greyed-out button. The pool is real and its APY is
+            real; what is missing is a wallet connection for this runtime, and an investor
+            is owed that distinction rather than being left to guess whether the pool is
+            closed, their wallet is wrong, or the app is broken. */}
+        {depositUnavailableReason && (
+          <p className="mt-3 rounded-lg border border-warning/30 bg-warning/5 px-3 py-2 text-[11.5px] leading-relaxed text-foreground">
+            {depositUnavailableReason}
+          </p>
         )}
 
         <div className="mt-5 flex flex-col gap-3 sm:flex-row">
@@ -2450,7 +2474,8 @@ interface LedgerRow {
   amount: string;
   userWallet: string;
   txHash: string;
-  chainId: number;
+  /** Null off EVM. A ledger row's explorer link resolves from the pool's network. */
+  chainId: number | null;
   isPending: boolean;
 }
 
@@ -2467,7 +2492,18 @@ function pendingToRow(p: PendingTx): LedgerRow {
   };
 }
 
-function PoolTransactionsTable({ poolAddress, assetSymbol, chainId }: { poolAddress: string; assetSymbol: string; chainId: number }) {
+function PoolTransactionsTable({
+  poolAddress,
+  assetSymbol,
+  chainId,
+  networkId,
+}: {
+  poolAddress: string;
+  assetSymbol: string;
+  /** Null off EVM; the explorer link resolves from whichever identity is present. */
+  chainId: number | null;
+  networkId?: string;
+}) {
   const [filter, setFilter] = useState<"all" | "deposits" | "withdrawals">("all");
   const { data: txResponse, isLoading } = usePoolTransactions(poolAddress, { limit: 10 });
   const { pendingForPool } = usePendingTx();
@@ -2582,7 +2618,7 @@ function PoolTransactionsTable({ poolAddress, assetSymbol, chainId }: { poolAddr
                   <div className="flex justify-between gap-3">
                     <span className="text-muted-foreground">Hash</span>
                     <a
-                      href={getTransactionUrl(tx.chainId, tx.txHash)}
+                      href={txExplorerUrl({ chainId: tx.chainId }, tx.txHash) ?? "#"}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="font-mono text-muted-foreground hover:text-foreground"
@@ -2633,7 +2669,7 @@ function PoolTransactionsTable({ poolAddress, assetSymbol, chainId }: { poolAddr
                     </td>
                     <td className="py-3">
                       <a
-                        href={getTransactionUrl(tx.chainId, tx.txHash)}
+                        href={txExplorerUrl({ chainId: tx.chainId }, tx.txHash) ?? "#"}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-[12px] text-muted-foreground font-mono hover:text-foreground"
