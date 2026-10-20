@@ -9,10 +9,12 @@ import { productsApi } from "@/lib/api/endpoints";
  * (instances are the transaction unit) — these are for browse/detail only.
  */
 
-export function useProductsData(chainId?: number) {
+export function useProductsData(chainId?: number, networkId?: string) {
   return useQuery({
-    queryKey: ["products", chainId ?? "all"],
-    queryFn: () => productsApi.getAll(chainId),
+    // Keyed on both, so switching between two networks does not serve the other's
+    // cached rows. networkId is the identity that can name every runtime.
+    queryKey: ["products", networkId ?? chainId ?? "all"],
+    queryFn: () => productsApi.getAll(chainId, networkId),
     staleTime: 30_000,
   });
 }

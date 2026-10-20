@@ -39,10 +39,17 @@ export const platformApi = {
 
 export const productsApi = {
   /** Product-first list; chainId filters to products with an instance on that chain. */
-  getAll: async (chainId?: number): Promise<ProductsResponse> => {
-    const { data } = await apiClient.get("/products", {
-      params: chainId !== undefined ? { chainId } : undefined,
-    });
+  getAll: async (chainId?: number, networkId?: string): Promise<ProductsResponse> => {
+    // Send one identity, not both. The product list treats chainId and networkId as
+    // independent filters that AND together — a product spans networks, so asking for
+    // both would return only products present on each, which is not what a single
+    // selection means.
+    const params = networkId
+      ? { networkId }
+      : chainId !== undefined
+        ? { chainId }
+        : undefined;
+    const { data } = await apiClient.get("/products", { params });
     return data;
   },
   getFeatured: async (): Promise<Product[]> => {
