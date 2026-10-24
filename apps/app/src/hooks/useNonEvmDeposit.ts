@@ -108,9 +108,16 @@ export function useNonEvmDeposit(pool?: Pool): NonEvmDepositState {
           }
           // Poll to SUCCESS before reporting, so the caller is not told a deposit landed
           // while it is still only submitted.
+          //
+          // Every 2.5s, not every second. Stellar closes a ledger about every five
+          // seconds, so a one-second poll spends four calls out of five learning nothing
+          // — and confirmation polling, not indexing, is what actually pressures the
+          // public node's rate limit: the indexer costs one call a minute per pool, while
+          // a handful of concurrent deposits each polling every second is an order of
+          // magnitude more. Same overall patience, a fraction of the calls.
           let result = await server.getTransaction(sent.hash);
-          for (let i = 0; i < 30 && result.status === "NOT_FOUND"; i++) {
-            await new Promise((r) => setTimeout(r, 1000));
+          for (let i = 0; i < 24 && result.status === "NOT_FOUND"; i++) {
+            await new Promise((r) => setTimeout(r, 2500));
             result = await server.getTransaction(sent.hash);
           }
           if (result.status !== "SUCCESS") {
