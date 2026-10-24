@@ -20,6 +20,7 @@ import {
 import { useInvalidateAfterMutation } from "@/hooks/useQueryInvalidation";
 import { usePendingTx } from "@/lib/context/PendingTxContext";
 import { canSignFor, networkLabel } from "../lib/constants/networks";
+import { useNonEvmDeposit } from "./useNonEvmDeposit";
 
 interface UseDepositReturn {
   /** Set when this app cannot take a deposit for the pool's network. */
@@ -76,6 +77,16 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
    * on a Stellar pool got an opaque wallet failure rather than being told this app cannot
    * sign for that network yet.
    */
+  /**
+   * Whether this pool is signed by a non-EVM wallet.
+   *
+   * Read off the chain id rather than the runtime string: `chainId === null` is what the
+   * backend's CHECK constraint guarantees for every non-EVM pool, whereas `runtime` is
+   * optional on the response and absent from an older backend.
+   */
+  const isNonEvm = Boolean(pool) && (pool!.chainId === null || pool!.chainId === undefined);
+  const nonEvm = useNonEvmDeposit(isNonEvm ? pool : undefined);
+
   const ensureChain = async (): Promise<number> => {
     if (!pool) throw new Error("Pool not loaded");
     if (!canSignFor(pool)) {
@@ -107,7 +118,12 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
     ? undefined
     : !canSignFor(pool)
       ? `Deposits on ${networkLabel(pool)} are not available in this app yet.`
-      : undefined;
+      : // Off EVM the blocker is no longer "this app cannot sign for the network" but
+        // "no wallet for that network is connected", which is something the investor can
+        // actually fix — so the message says which wallet.
+        isNonEvm
+        ? nonEvm.needsWalletReason
+        : undefined;
   const [depositTxHash, setDepositTxHash] = useState<
     `0x${string}` | undefined
   >();
@@ -214,6 +230,12 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
   }, [isDepositSuccess]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const needsApproval = (amount: string): boolean => {
+    // Neither non-EVM runtime has an allowance. Soroban carries the token transfer's
+    // authorisation in the same transaction's auth entries, and an SPL transfer is
+    // authorised by the signature that authorises the instruction — so there is nothing
+    // to approve, and returning true here would gate the deposit behind a step that can
+    // never complete.
+    if (isNonEvm) return false;
     if (!pool || !allowance) return true;
 
     try {
@@ -225,6 +247,11 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
   };
 
   const hasInsufficientBalance = (amount: string): boolean => {
+    // The balance read below is an ERC20 call, so off EVM it is always undefined and the
+    // `!balance` guard would report every amount as unaffordable. The contract checks the
+    // balance when the transfer runs, so an over-deposit fails there with a real reason
+    // rather than being pre-empted by a figure we never fetched.
+    if (isNonEvm) return false;
     if (!pool || !balance) return true;
 
     try {
@@ -292,7 +319,21 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
   };
 
   const deposit = async (amount: string, tierIndex?: number, interestPayment?: "UPFRONT" | "AT_MATURITY") => {
-    if (!pool || !address) {
+    if (!pool) throw new Error("Pool not loaded");
+
+    // A Stellar or Solana pool is signed by its own wallet, through its own envelope, and
+    // with no approval leg. Delegated rather than branched through the rest of this hook,
+    // which is built around an ERC20 allowance and wagmi's receipt tracking — neither of
+    // which exists off EVM. The call site stays one `deposit(...)` either way.
+    if (isNonEvm) {
+      return (await nonEvm.deposit(
+        amount,
+        tierIndex ?? 0,
+        interestPayment ?? "AT_MATURITY",
+      )) as `0x${string}`;
+    }
+
+    if (!address) {
       throw new Error("Pool or wallet not connected");
     }
 
@@ -401,13 +442,15 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
     isApprovalSuccess,
     isConfirming,
     isPending: false,
-    isDepositing: isApproving || isConfirming,
-    isSuccess: isDepositSuccess,
-    isLoading: isApproving || isConfirming,
+    isDepositing: isApproving || isConfirming || nonEvm.isDepositing,
+    isSuccess: isNonEvm ? Boolean(nonEvm.reference) : isDepositSuccess,
+    isLoading: isApproving || isConfirming || nonEvm.isDepositing,
 
     error: null,
     shares,
-    transactionHash: depositTxHash,
+    // A Soroban hash and a Solana signature are not 0x-prefixed, but every consumer of
+    // this treats it as an opaque reference to show and link, so the shape holds.
+    transactionHash: (isNonEvm ? nonEvm.reference : depositTxHash) as `0x${string}` | undefined,
     approvalTxHash,
     balance: balance ? getUserBalance() : undefined, // Return undefined if balance not loaded
     balanceRaw: balance as bigint | undefined, // Raw balance data for checking if loaded

@@ -25,9 +25,10 @@ export interface NetworkCapabilities {
   /**
    * A wallet connector exists in THIS app for this runtime.
    *
-   * False for Stellar and Solana: there is no Freighter or wallet-adapter connection here
-   * yet, so a deposit cannot be signed however willing the investor is. A control that
-   * cannot complete should say so rather than fail at the wallet.
+   * True for every network Piron is live on: EVM through wagmi, Stellar through Freighter
+   * and Solana through the wallet-adapter. It stays a capability rather than being
+   * assumed, because a control that cannot complete should say so rather than fail at the
+   * wallet — and the next runtime starts out unable to sign.
    */
   canSign: boolean;
   /** Piron has pools on this network, so it is worth showing and filtering to. */
@@ -46,14 +47,29 @@ export interface NetworkMeta {
   isTestnet: boolean;
   /** No trailing slash. */
   explorerUrl: string;
+  /**
+   * Non-EVM only: the public node this app reads and submits through.
+   *
+   * EVM networks are absent on purpose — their RPC is configured in the wagmi setup, and
+   * Arc and Robinhood go through the backend proxy so that no provider key reaches a
+   * browser. Stellar and Solana both have free public nodes, so there is no key to leak
+   * and no reason to proxy.
+   */
+  rpcUrl?: string;
   capabilities: NetworkCapabilities;
 }
 
 const EVM: NetworkCapabilities = { canSign: true, hasPools: true };
 /** Signable, but nothing deployed — present so a record can be labelled, not selected. */
 const EVM_NO_DEPLOYMENT: NetworkCapabilities = { canSign: true, hasPools: false };
-/** Served by the backend and visible to investors; not signable from this app yet. */
-const READ_ONLY: NetworkCapabilities = { canSign: false, hasPools: true };
+/**
+ * Served by the backend, visible to investors, and signable here.
+ *
+ * Stellar signs through Freighter and Solana through the wallet-adapter, both of which
+ * this app now carries. The capability is named for what it allows rather than the
+ * runtime, because what matters at a call site is "can this app complete a deposit".
+ */
+const NON_EVM: NetworkCapabilities = { canSign: true, hasPools: true };
 
 export const NETWORKS: NetworkMeta[] = [
   {
@@ -138,7 +154,8 @@ export const NETWORKS: NetworkMeta[] = [
     logo: "/chains/stellar.svg",
     isTestnet: true,
     explorerUrl: "https://stellar.expert/explorer/testnet",
-    capabilities: READ_ONLY,
+    rpcUrl: "https://soroban-testnet.stellar.org",
+    capabilities: NON_EVM,
   },
   {
     networkId: "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
@@ -150,7 +167,8 @@ export const NETWORKS: NetworkMeta[] = [
     logo: "/chains/solana.svg",
     isTestnet: true,
     explorerUrl: "https://explorer.solana.com",
-    capabilities: READ_ONLY,
+    rpcUrl: "https://api.devnet.solana.com",
+    capabilities: NON_EVM,
   },
 ];
 
@@ -215,8 +233,9 @@ export function networkLabel(ref: NetworkRef): string {
 export function canSignFor(ref: NetworkRef): boolean {
   const net = resolveNetwork(ref);
   if (net) return net.capabilities.canSign;
-  const runtime = runtimeOf(ref.networkId);
-  if (runtime && runtime !== "evm") return false;
+  // Unknown network. Still false, and still for the original reason: undefined read as
+  // "assume we can" would offer a deposit the investor cannot complete. That a runtime
+  // is signable in general says nothing about a network this app has never heard of.
   return false;
 }
 

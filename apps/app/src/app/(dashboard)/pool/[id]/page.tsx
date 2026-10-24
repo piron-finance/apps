@@ -29,6 +29,7 @@ import { MetricRow } from "@/components/dashboard/stat-card";
 import { PoolTrustPanel, VerifiedMark } from "@/components/dashboard/pool-trust-panel";
 import { usePendingTx, useReconcilePending, type PendingTx } from "@/lib/context/PendingTxContext";
 import { txExplorerUrl } from "@/lib/constants/networks";
+import { NonEvmWalletButton } from "@/components/dashboard/non-evm-wallet-button";
 
 function formatValue(value: string | number | null | undefined, decimals = 2): string {
   if (value === null || value === undefined) return "—";
@@ -1220,9 +1221,15 @@ function DepositModal({
             is owed that distinction rather than being left to guess whether the pool is
             closed, their wallet is wrong, or the app is broken. */}
         {depositUnavailableReason && (
-          <p className="mt-3 rounded-lg border border-warning/30 bg-warning/5 px-3 py-2 text-[11.5px] leading-relaxed text-foreground">
-            {depositUnavailableReason}
-          </p>
+          <div className="mt-3 flex flex-col gap-2 rounded-lg border border-warning/30 bg-warning/5 px-3 py-2">
+            <p className="text-[11.5px] leading-relaxed text-foreground">
+              {depositUnavailableReason}
+            </p>
+            {/* The reason off EVM is "no wallet for this network", which is fixable from
+                here — so the fix sits with the message rather than leaving the investor
+                to find it. */}
+            <NonEvmWalletButton pool={pool} />
+          </div>
         )}
 
         <div className="mt-5 flex flex-col gap-3 sm:flex-row">

@@ -551,3 +551,84 @@ export interface NetworkStatus {
   explorerUrl?: string;
   enabled: boolean;
 }
+
+/**
+ * A transaction the backend built for us to sign, tagged with the runtime that signs it.
+ *
+ * Discriminated on `runtime` so the shape and the signing path cannot disagree: narrowing
+ * on it gives exactly the fields that runtime needs, and a new runtime added to the union
+ * makes every switch that does not handle it a type error rather than a silent fallthrough.
+ * Mirrors `UnsignedTransaction` in the backend's runtime types.
+ */
+export type UnsignedTransaction =
+  | EvmUnsignedTransaction
+  | StellarUnsignedTransaction
+  | SolanaUnsignedTransaction;
+
+export interface EvmUnsignedTransaction {
+  runtime: "evm";
+  networkId: string;
+  chainId: number;
+  to: string;
+  data: string;
+  value: string;
+}
+
+export interface StellarUnsignedTransaction {
+  runtime: "stellar";
+  networkId: string;
+  /** Base64 transaction envelope, signed whole by Freighter. */
+  xdr: string;
+  /**
+   * The network this envelope was built for.
+   *
+   * Stellar has no numeric chain id — the passphrase *is* the network identity, and it is
+   * mixed into the signature. Signing against the wrong one produces a signature the
+   * network rejects, so it travels with the envelope rather than being read from the
+   * wallet at signing time.
+   */
+  networkPassphrase: string;
+  /**
+   * Unix seconds after which this envelope is dead.
+   *
+   * A prepared Soroban transaction expires, unlike EVM calldata which is good forever. A
+   * quote left on screen for five minutes is no longer submittable, and saying so beats
+   * an opaque rejection from the network.
+   */
+  validUntilTime?: number;
+  /** Where to submit. Absent falls back to the public testnet node. */
+  rpcUrl?: string;
+}
+
+export interface SolanaUnsignedTransaction {
+  runtime: "solana";
+  networkId: string;
+  /** Base64 serialised transaction. */
+  transaction: string;
+  blockhash: string;
+  lastValidBlockHeight: number;
+  /** Accounts that must sign. The investor's wallet is one; a client-created account may be another. */
+  requiredSigners: string[];
+}
+
+/** What `POST /deposits/locked` returns for a Stellar or Solana pool. */
+export interface NonEvmLockedDepositQuote {
+  transaction: UnsignedTransaction;
+  deposit: {
+    amount: string;
+    amountWei: string;
+    depositor: string;
+    poolAddress: string;
+    poolName: string;
+    assetSymbol: string;
+    tierIndex: number;
+    interestPayment: "UPFRONT" | "AT_MATURITY";
+    durationDays: number;
+    apyBps: number;
+    expectedInterest: string;
+    expectedTotal: string;
+    lockEndDate: string;
+  };
+  /** Always false off EVM: neither runtime needs a separate allowance transaction. */
+  requiresApproval: boolean;
+}

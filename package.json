@@ -23,5 +23,10 @@
     "@vercel/analytics": "^2.0.1",
     "axios": "^1.13.1",
     "framer-motion": "^12.23.24"
+  },
+  "overrides": {
+    "@types/react": "18.3.26",
+    "@types/react-dom": "18.3.7",
+    "@solana/web3.js": "1.98.4"
   }
 }

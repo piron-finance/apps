@@ -1,6 +1,6 @@
 import { apiClient } from "./client";
 import type { Product, ProductsResponse } from "./types";
-import type { NetworkStatus } from "./types";
+import type { NetworkStatus, NonEvmLockedDepositQuote } from "./types";
 import type {
   PlatformMetrics,
   PoolsResponse,
@@ -304,8 +304,11 @@ export const buildLockedDepositTransaction = async (depositData: {
   depositor: string;
   tierIndex: number;
   interestPayment: "UPFRONT" | "AT_MATURITY";
-  chainId: number;
-}) => {
+  /** EVM only. A Stellar or Solana pool has none, so pass networkId instead. */
+  chainId?: number;
+  /** CAIP-2 id. Names a pool on any runtime, including the two with no chain id. */
+  networkId?: string;
+}): Promise<NonEvmLockedDepositQuote> => {
   const { data } = await apiClient.post("/deposits/locked", depositData);
   return data;
 };
