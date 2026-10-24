@@ -1,5 +1,6 @@
 import { apiClient } from "./client";
 import type { Product, ProductsResponse } from "./types";
+import type { NetworkStatus } from "./types";
 import type {
   PlatformMetrics,
   PoolsResponse,
@@ -29,6 +30,19 @@ export const platformApi = {
     const { data } = await apiClient.get("/platform/metrics", {
       params: chainId !== undefined ? { chainId } : undefined,
     });
+    return data;
+  },
+
+  /**
+   * Which networks the backend is currently serving.
+   *
+   * The chain picker is otherwise built from a registry compiled into this bundle, so a
+   * chain switched off in the admin console still appeared in the dropdown and led to an
+   * empty catalogue. The registry still supplies the label, colour and logo — this
+   * supplies whether to offer it at all.
+   */
+  getNetworks: async (): Promise<NetworkStatus[]> => {
+    const { data } = await apiClient.get("/health/runtime-chains");
     return data;
   },
 };

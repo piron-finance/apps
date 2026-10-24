@@ -1,6 +1,7 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
+import { platformApi } from "@/lib/api/endpoints";
 import {
   NETWORKS,
   SELECTABLE_NETWORKS,
@@ -129,6 +130,33 @@ export function ChainProvider({ children }: { children: React.ReactNode }) {
     DEFAULT_NETWORK_ID
   );
 
+  /**
+   * CAIP-2 ids the backend reports as switched off, or null before it has answered.
+   *
+   * Null rather than an empty array, so "not asked yet" is distinguishable from "nothing
+   * is off" — the first should show the full list rather than briefly flashing a chain
+   * away and back. If the call fails this stays null and the registry alone decides,
+   * which is the old behaviour: a chain picker that works offline beats one that empties
+   * when a health endpoint is slow.
+   */
+  const [disabledNetworkIds, setDisabledNetworkIds] = useState<string[] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    platformApi
+      .getNetworks()
+      .then((networks) => {
+        if (cancelled) return;
+        setDisabledNetworkIds(networks.filter((n) => !n.enabled).map((n) => n.id));
+      })
+      .catch(() => {
+        // Left null on purpose. See above.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   useEffect(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -169,6 +197,26 @@ export function ChainProvider({ children }: { children: React.ReactNode }) {
   const activeChain =
     SUPPORTED_CHAINS.find((c) => c.networkId === activeNetworkId) ?? ALL_CHAINS_OPTION;
 
+  // A switched-off chain is dropped from the picker. "All Chains" has no networkId and
+  // so is never filtered out, which is what should happen: it is the one option that
+  // still means something when a chain disappears.
+  const supportedChains = useMemo(() => {
+    if (!disabledNetworkIds || disabledNetworkIds.length === 0) return SELECTABLE_CHAINS;
+    return SELECTABLE_CHAINS.filter(
+      (c) => !c.networkId || !disabledNetworkIds.includes(c.networkId)
+    );
+  }, [disabledNetworkIds]);
+
+  // Someone sitting on a chain that has just been switched off is moved to All Chains
+  // rather than left looking at a filter for a network no longer in the list — which
+  // renders as an empty catalogue with no obvious way out.
+  useEffect(() => {
+    if (!activeNetworkId || !disabledNetworkIds) return;
+    if (disabledNetworkIds.includes(activeNetworkId)) setActiveNetworkId(undefined);
+    // setActiveNetworkId is stable; re-running on it would loop through its setState.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeNetworkId, disabledNetworkIds]);
+
   return (
     <ChainContext.Provider
       value={{
@@ -177,7 +225,7 @@ export function ChainProvider({ children }: { children: React.ReactNode }) {
         setActiveChainId,
         setActiveNetworkId,
         activeChain,
-        supportedChains: SELECTABLE_CHAINS,
+        supportedChains,
       }}
     >
       {children}

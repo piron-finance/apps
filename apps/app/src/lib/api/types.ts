@@ -534,3 +534,20 @@ export interface PoolPerformance {
   uniqueDepositors: number;
   uniqueWithdrawers: number;
 }
+
+/**
+ * A network as the backend reports it, from GET /health/runtime-chains.
+ *
+ * `enabled` is the field that matters here: it is false while a chain is switched off in
+ * the admin console, and a chain that is off has no pools to show and takes no deposits,
+ * so it should not be offered. Everything else is duplicated in the local registry,
+ * which keeps working if this call fails.
+ */
+export interface NetworkStatus {
+  id: string;
+  runtime: "evm" | "stellar" | "solana";
+  name: string;
+  isTestnet: boolean;
+  explorerUrl?: string;
+  enabled: boolean;
+}
