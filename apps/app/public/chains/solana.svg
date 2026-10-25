@@ -1,0 +1,15 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="12" cy="12" r="12" fill="#11121A"/>
+  <!-- Solana's three slanted bars, in its own purple-to-green gradient. The skew
+       alternates per bar, which is what makes the mark read as Solana rather than as
+       three stripes. -->
+  <defs>
+    <linearGradient id="sol" x1="5" y1="17" x2="19" y2="7" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#14F195"/>
+      <stop offset="1" stop-color="#9945FF"/>
+    </linearGradient>
+  </defs>
+  <path d="M7.4 7.1h10.1a.5.5 0 0 1 .35.85l-1.6 1.6a.5.5 0 0 1-.35.15H5.8a.5.5 0 0 1-.35-.85l1.6-1.6a.5.5 0 0 1 .35-.15Z" fill="url(#sol)"/>
+  <path d="M5.8 11.2h10.1a.5.5 0 0 1 .35.85l-1.6 1.6a.5.5 0 0 1-.35.15H4.2a.5.5 0 0 1-.35-.85l1.6-1.6a.5.5 0 0 1 .35-.15Z" fill="url(#sol)" transform="translate(2.1 0)"/>
+  <path d="M7.4 15.3h10.1a.5.5 0 0 1 .35.85l-1.6 1.6a.5.5 0 0 1-.35.15H5.8a.5.5 0 0 1-.35-.85l1.6-1.6a.5.5 0 0 1 .35-.15Z" fill="url(#sol)"/>
+</svg>
