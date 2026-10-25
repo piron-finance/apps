@@ -3,13 +3,14 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAccount } from "wagmi";
+import { useInvestorWallets } from "@/hooks/useInvestorWallets";
 import { useWeb3Modal } from "@web3modal/wagmi/react";
 import { ChevronRight, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { MetricRow } from "@/components/dashboard/stat-card";
 import { usersApi } from "@/lib/api/endpoints";
-import type { PortfolioSummary } from "@/lib/api/types";
+import type { PortfolioAnalytics, PortfolioSummary } from "@/lib/api/types";
 import { poolTypeLabel } from "@/lib/pool-helpers";
 import { cn } from "@/lib/utils";
 
@@ -67,18 +68,27 @@ const GRID =
   "grid grid-cols-[minmax(0,1fr)_120px_120px_130px_80px_20px] items-center gap-4";
 
 export default function PortfolioPage() {
-  const { address } = useAccount();
   const { open } = useWeb3Modal();
+  // Every connected wallet, not just the EVM one. Positions are keyed on the address
+  // that holds them, and an investor may hold them through more than one wallet —
+  // reading only wagmi's address is why a Stellar holder saw "connect a wallet" while
+  // connected, with their position sitting in the backend the whole time.
+  const wallets = useInvestorWallets();
   const [portfolio, setPortfolio] = useState<PortfolioSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Joined so the effect re-runs when the set of connections changes, not on every
+  // render of a new array with the same contents.
+  const walletKey = wallets.map((w) => w.address).join(",");
+
   useEffect(() => {
-    if (!address) {
+    if (wallets.length === 0) {
       setPortfolio(null);
       return;
     }
 
+    let cancelled = false;
     const fetchPortfolio = async () => {
       setLoading(true);
       setError(null);
@@ -86,18 +96,41 @@ export default function PortfolioPage() {
         // Portfolio spans every chain: a product's positions are held per network
         // and non-fungible across them, so show the user's full holdings regardless
         // of the header's browse chain. Each position carries its own chain badge.
-        const data = await usersApi.getPositions(address);
-        setPortfolio(data);
+        //
+        // One request per wallet, merged. The endpoint keys on a single address, and a
+        // wallet that fails should cost only its own positions rather than the view.
+        const results = await Promise.allSettled(
+          wallets.map((wallet) => usersApi.getPositions(wallet.address)),
+        );
+        if (cancelled) return;
+
+        const loaded = results
+          .filter((r): r is PromiseFulfilledResult<PortfolioSummary> => r.status === "fulfilled")
+          .map((r) => r.value);
+        if (loaded.length === 0) {
+          const reason = results.find((r) => r.status === "rejected") as
+            | PromiseRejectedResult
+            | undefined;
+          throw reason?.reason ?? new Error("Failed to load portfolio");
+        }
+
+        setPortfolio(mergePortfolios(loaded));
       } catch (err: any) {
+        if (cancelled) return;
         console.error("Error fetching portfolio:", err);
         setError(err?.response?.data?.message || "Failed to load portfolio");
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     fetchPortfolio();
-  }, [address]);
+    return () => {
+      cancelled = true;
+    };
+    // walletKey stands in for `wallets`, which is a new array each render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [walletKey]);
 
   const analytics = portfolio?.analytics;
   const positions = portfolio?.positions ?? [];
@@ -118,7 +151,7 @@ export default function PortfolioPage() {
         </p>
       </header>
 
-      {!address ? (
+      {wallets.length === 0 ? (
         <EmptyState
           title="Connect a wallet"
           description="Your positions are read straight from the chain. Connect to see them."
@@ -313,4 +346,50 @@ export default function PortfolioPage() {
       )}
     </div>
   );
+}
+
+/**
+ * One portfolio from several wallets' worth.
+ *
+ * Positions concatenate and the additive figures are summed, because each response is
+ * only that wallet's share. The money fields are strings on the wire, so they are summed
+ * as numbers and written back as strings rather than silently changing the type the UI
+ * reads.
+ *
+ * `averageAPY` is deliberately taken from the first response rather than combined: a mean
+ * of means is not the mean, and weighting it properly needs per-position principal the
+ * analytics block does not carry. With one wallet connected — which is the normal case —
+ * this function returns that response untouched.
+ */
+function mergePortfolios(parts: PortfolioSummary[]): PortfolioSummary {
+  if (parts.length === 1) return parts[0];
+  const base = parts[0];
+  const sum = (pick: (a: PortfolioAnalytics) => string | number | undefined) =>
+    parts.reduce((total, part) => total + (Number(pick(part.analytics)) || 0), 0);
+
+  const totalValue = sum((a) => a.totalValue);
+  const totalDeposited = sum((a) => a.totalDeposited);
+  const totalReturn = sum((a) => a.totalReturn);
+
+  return {
+    positions: parts.flatMap((p) => p.positions ?? []),
+    analytics: {
+      ...base.analytics,
+      totalValue: String(totalValue),
+      totalValueFormatted: totalValue.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }),
+      totalDeposited: String(totalDeposited),
+      totalReturn: String(totalReturn),
+      totalReturnPercentage:
+        totalDeposited > 0 ? ((totalReturn / totalDeposited) * 100).toFixed(2) : "0.00",
+      unrealizedReturn: String(sum((a) => a.unrealizedReturn)),
+      realizedReturn: String(sum((a) => a.realizedReturn)),
+      lockedPrincipal: String(sum((a) => a.lockedPrincipal)),
+      lockedExpectedPayout: String(sum((a) => a.lockedExpectedPayout)),
+      activePositions: sum((a) => a.activePositions),
+      activeLockedPositions: sum((a) => a.activeLockedPositions),
+    },
+  };
 }

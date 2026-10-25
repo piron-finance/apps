@@ -1,9 +1,10 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 import { poolsApi, lockedPositionsApi, usersApi } from "@/lib/api/endpoints";
 import { useHasPendingTx } from "@/lib/context/PendingTxContext";
 import { LIVE_POLL_MS, RESTING_POLL_MS, RESTING_USER_POLL_MS } from "@/lib/constants/polling";
+import { useInvestorWallets } from "./useInvestorWallets";
 
 /**
  * Hook to fetch lock tiers for a pool
@@ -81,3 +82,43 @@ export function useUserLockedPositions(walletAddress?: string) {
   });
 }
 
+/**
+ * Locked positions across every connected wallet.
+ *
+ * A position is keyed on the address that holds it, and an investor may hold them through
+ * more than one wallet — an EVM position through wagmi and a Stellar one through
+ * Freighter. Asking only about the EVM address is why a Stellar holder saw an empty
+ * portfolio while connected.
+ *
+ * One query per wallet rather than one combined request: the backend keys this endpoint
+ * on a single address, and merging here keeps each wallet's result independently
+ * cacheable and independently refetchable.
+ */
+export function useAllLockedPositions() {
+  const wallets = useInvestorWallets();
+  const hasPending = useHasPendingTx();
+
+  const queries = useQueries({
+    queries: wallets.map((wallet) => ({
+      queryKey: ["user-locked-positions", wallet.address],
+      queryFn: () => usersApi.getLockedPositions(wallet.address),
+      staleTime: hasPending ? 0 : 30000,
+      refetchInterval: hasPending ? LIVE_POLL_MS : RESTING_USER_POLL_MS,
+      retry: 2,
+    })),
+  });
+
+  return {
+    positions: queries.flatMap((q) => {
+      const data = q.data as unknown;
+      if (Array.isArray(data)) return data;
+      const rows = (data as { positions?: unknown[]; data?: unknown[] } | undefined);
+      return rows?.positions ?? rows?.data ?? [];
+    }),
+    // Loading only while nothing has arrived: one slow wallet should not hide the
+    // positions another has already returned.
+    isLoading: queries.length > 0 && queries.every((q) => q.isLoading),
+    isError: queries.length > 0 && queries.every((q) => q.isError),
+    refetch: () => Promise.all(queries.map((q) => q.refetch())),
+  };
+}

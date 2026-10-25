@@ -14,6 +14,7 @@ import { useInvalidateAfterMutation } from "@/hooks/useQueryInvalidation";
 import { usePendingTx, type PendingTxType } from "@/lib/context/PendingTxContext";
 import { confirmTransaction, withdrawalsApi } from "@/lib/api/endpoints";
 import { canSignFor, networkLabel } from "../lib/constants/networks";
+import { useNonEvmExit } from "./useNonEvmExit";
 
 /**
  * Every user-side EXIT/CLAIM action across the three pool types. Mirrors the
@@ -66,6 +67,15 @@ export function usePoolExit(pool?: Pool) {
     earlyExitPosition: "EARLY_EXIT",
   };
 
+  /**
+   * Whether this pool's exits are signed by a non-EVM wallet.
+   *
+   * Read off the chain id, which the backend's CHECK constraint guarantees is null for
+   * every non-EVM pool, rather than the optional `runtime` field.
+   */
+  const isNonEvm = Boolean(pool) && (pool!.chainId === null || pool!.chainId === undefined);
+  const nonEvm = useNonEvmExit(isNonEvm ? pool : undefined);
+
   const poolABI =
     pool?.poolType === "STABLE_YIELD"
       ? STABLE_YIELD_POOL_ABI
@@ -112,16 +122,14 @@ export function usePoolExit(pool?: Pool) {
           "connection we have not shipped.",
       );
     }
-    // Deposits on this pool can be signed but exits cannot yet: the Soroban and Anchor
-    // contracts have redeem, exit_early and roll_over, and the backend has no dispatch
-    // for them, so there is nothing to send. Said plainly, because `canSignFor` is now
-    // true for these networks and the generic message above no longer catches them — and
-    // an exit is money leaving a pool, so a vague failure here is the worst kind.
+    // Reached only by the operations with no non-EVM equivalent. Redeeming and exiting
+    // a locked position are delegated before this, so what lands here is a single-asset
+    // or stable-yield call, or a locked extra like setAutoRollover that exists on the
+    // Solidity contract alone.
     if (pool.chainId === null || pool.chainId === undefined) {
       throw new Error(
-        `Exits on ${networkLabel(pool)} are not available yet. Your position and its ` +
-          "value are real and held on chain — withdrawing from it is the next piece of " +
-          "work, and nothing has been submitted.",
+        `This action is not available on ${networkLabel(pool)}. Withdrawing from a ` +
+          "locked position is — nothing has been submitted.",
       );
     }
     // Captured past the guard, so the rest of this function has a number rather than
@@ -181,10 +189,29 @@ export function usePoolExit(pool?: Pool) {
     call("emergencyRedeem", [amt(shares), me()], shares);
 
   // LOCKED — position-scoped
+  // Off EVM these go through the backend-built envelope instead of wagmi. Delegated at
+  // the two entry points rather than inside `call`, because `call` encodes against an ABI
+  // this runtime has none of — and these are the only two locked exits the contracts
+  // expose to a holder.
   const redeemPosition = (positionId: number | string) =>
-    call("redeemPosition", [BigInt(positionId)]);
+    isNonEvm
+      ? nonEvm.exit(positionId, "REDEEM")
+      : call("redeemPosition", [BigInt(positionId)]);
   const earlyExitPosition = (positionId: number | string) =>
-    call("earlyExitPosition", [BigInt(positionId)]);
+    isNonEvm
+      ? nonEvm.exit(positionId, "EARLY_EXIT")
+      : call("earlyExitPosition", [BigInt(positionId)]);
+  /** Roll a matured position into another tier. Non-EVM only; EVM has no such call. */
+  const rollOverPosition = (
+    positionId: number | string,
+    tierIndex: number,
+    interestPayment?: "UPFRONT" | "AT_MATURITY",
+  ) => {
+    if (!isNonEvm) {
+      throw new Error("Rolling over is not available on this network.");
+    }
+    return nonEvm.exit(positionId, "ROLL_OVER", { tierIndex, interestPayment });
+  };
   const setAutoRollover = (positionId: number | string, enabled: boolean) =>
     call("setAutoRollover", [BigInt(positionId), enabled]);
   const transferPosition = (positionId: number | string, newOwner: string) =>
@@ -200,10 +227,11 @@ export function usePoolExit(pool?: Pool) {
     // locked
     redeemPosition,
     earlyExitPosition,
+    rollOverPosition,
     setAutoRollover,
     transferPosition,
     // tx state
-    txHash,
+    txHash: isNonEvm ? (nonEvm.reference as `0x${string}` | undefined) : txHash,
     isConfirming,
     isSuccess,
     reset: () => setTxHash(undefined),
