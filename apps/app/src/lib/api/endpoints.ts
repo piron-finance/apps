@@ -1,6 +1,10 @@
 import { apiClient } from "./client";
 import type { Product, ProductsResponse } from "./types";
-import type { NetworkStatus, NonEvmLockedDepositQuote } from "./types";
+import type {
+  NetworkStatus,
+  NonEvmLockedDepositQuote,
+  UnsignedTransaction,
+} from "./types";
 import type {
   PlatformMetrics,
   PoolsResponse,
@@ -455,4 +459,23 @@ export const transactionsApi = {
     return data;
   },
 
+};
+
+/**
+ * Ask the backend to build the transaction that leaves a locked position.
+ *
+ * Stellar and Solana only. On EVM the app has the ABI and encodes the call itself, so the
+ * backend refuses an EVM pool here rather than offering a second way to do the same thing.
+ */
+export const buildLockedExit = async (args: {
+  position: string | number;
+  action: "REDEEM" | "EARLY_EXIT" | "ROLL_OVER";
+  owner: string;
+  poolAddress?: string;
+  tierIndex?: number;
+  interestPayment?: "UPFRONT" | "AT_MATURITY";
+}): Promise<{ transaction: UnsignedTransaction; requiresApproval: boolean }> => {
+  const { position, ...body } = args;
+  const { data } = await apiClient.post(`/locked-positions/${position}/exit`, body);
+  return data;
 };
