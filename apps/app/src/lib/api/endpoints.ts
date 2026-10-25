@@ -351,6 +351,15 @@ export const confirmTransaction = async (
   chainId?: number,
   networkId?: string,
   poolAddress?: string,
+  /**
+   * What this transaction was. Off EVM only.
+   *
+   * There is no event decoder for Soroban or Anchor, so the client that signed is the
+   * only thing that knows a reference was a 25-unit deposit rather than a withdrawal.
+   * Supplying it is what puts the row in the pool's activity list; omitting it still
+   * confirms and invalidates, which is what every EVM caller does.
+   */
+  record?: { type: string; amount: string; from: string },
 ) => {
   const { data } = await apiClient.post("/transactions/confirm", {
     txHash,
@@ -361,6 +370,7 @@ export const confirmTransaction = async (
     // touched, and only to drop that pool's cached views. Without it a non-EVM confirm
     // leaves the stale read it was called to refresh.
     poolAddress,
+    ...record,
   });
   return data;
 };

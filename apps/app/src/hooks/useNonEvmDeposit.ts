@@ -6,7 +6,7 @@ import { TransactionBuilder } from "@stellar/stellar-sdk";
 import { rpc as stellarRpc } from "@stellar/stellar-sdk";
 import { useStellarWallet } from "@/lib/wallets/StellarWalletContext";
 import { useSolanaWallet } from "@/lib/wallets/SolanaWalletContext";
-import { buildLockedDepositTransaction } from "@/lib/api/endpoints";
+import { buildLockedDepositTransaction, confirmTransaction } from "@/lib/api/endpoints";
 import { Pool } from "@/lib/api/types";
 import { runtimeOf } from "@/lib/constants/networks";
 import { useInvalidateAfterMutation } from "@/hooks/useQueryInvalidation";
@@ -79,6 +79,17 @@ export function useNonEvmDeposit(pool?: Pool): NonEvmDepositState {
       }
       if (!signer) throw new Error(needsWalletReason ?? "Connect a wallet first.");
 
+      // Tell the backend what the reference was, so it lands in the pool's activity list.
+      // Best-effort: the deposit is already on chain and the position comes from the
+      // chain sweep, so a failure here costs a ledger row, not the holding.
+      const report = async (reference: string, amountReported: string) => {
+        await confirmTransaction(reference, undefined, pool.networkId!, pool.poolAddress, {
+          type: "DEPOSIT",
+          amount: amountReported,
+          from: signer,
+        }).catch(() => undefined);
+      };
+
       setIsDepositing(true);
       setError(undefined);
       try {
@@ -124,6 +135,7 @@ export function useNonEvmDeposit(pool?: Pool): NonEvmDepositState {
             throw new Error(`The deposit did not complete: ${result.status}`);
           }
           setReference(sent.hash);
+          await report(sent.hash, amount);
           await invalidateAfterMutation(signer, pool.poolAddress);
           return sent.hash;
         }
@@ -136,6 +148,7 @@ export function useNonEvmDeposit(pool?: Pool): NonEvmDepositState {
             tx.lastValidBlockHeight
           );
           setReference(signature);
+          await report(signature, amount);
           await invalidateAfterMutation(signer, pool.poolAddress);
           return signature;
         }

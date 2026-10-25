@@ -103,9 +103,22 @@ export function useNonEvmExit(pool?: { networkId?: string | null; poolAddress?: 
         // Hand the reference over so the pool's cached views are dropped before the next
         // read. Best-effort: the money has already moved, and the sweep catches up within
         // the minute regardless, so a failure here must not read as a failed withdrawal.
-        await confirmTransaction(ref, undefined, pool.networkId, pool.poolAddress).catch(
-          () => undefined,
-        );
+        await confirmTransaction(ref, undefined, pool.networkId, pool.poolAddress, {
+          // ROLL_OVER is not a withdrawal: nothing leaves the pool, the position is
+          // replaced. Recorded under its own type so the activity list does not read as
+          // money going out when it did not.
+          type:
+            action === "REDEEM"
+              ? "REDEEM"
+              : action === "EARLY_EXIT"
+                ? "EARLY_EXIT"
+                : "ROLLOVER",
+          // The payout is decided by the contract, so it is left to the chain sweep to
+          // fill in on the position. Zero here means "not known at report time" rather
+          // than "nothing was paid".
+          amount: "0",
+          from: signer,
+        }).catch(() => undefined);
 
         setReference(ref);
         return ref;
