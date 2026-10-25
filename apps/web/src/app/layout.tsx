@@ -12,9 +12,9 @@ const serif = Source_Serif_4({
 });
 
 export const metadata: Metadata = {
-  title: "Piron Finance",
+  title: "Piron Finance — The onchain fixed-income operating system",
   description:
-    "The future of global money markets. Earn yield on fixed income from anywhere in the world.",
+    "Access tokenized yield or launch, service and settle programmable fixed-income products with Piron.",
 };
 
 export default function RootLayout({

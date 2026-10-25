@@ -48,7 +48,24 @@ export type PoolStatus =
 
 export interface Pool {
   id: string;
-  chainId: number;
+  /**
+   * CAIP-2 network identity — the only identity a Stellar or Solana pool has.
+   *
+   * Optional because a backend deployed before the runtime work does not send it; prefer
+   * it over `chainId` wherever both would do.
+   */
+  networkId?: string;
+  /** Which runtime this pool lives on. Served alongside networkId. */
+  runtime?: "evm" | "stellar" | "solana";
+  /**
+   * EVM chain id, or null off EVM.
+   *
+   * Was `number`, which the backend has never sent for a Stellar or Solana pool — those
+   * rows carry null. Declaring it non-nullable meant nothing here was forced to handle
+   * the null, and the app typechecked clean while every non-EVM pool rendered with no
+   * network marker and `switchChainAsync({ chainId: null })` threw at the wallet.
+   */
+  chainId: number | null;
   poolAddress: string;
   poolType: PoolType;
   name: string;
@@ -267,7 +284,15 @@ export interface ProductInstance {
 
 export interface ProductAggregates {
   totalTvl: string;
+  /**
+   * EVM chain ids of this product's instances.
+   *
+   * Numeric, so it cannot include a Stellar or Solana instance — a product live on Base
+   * and Stellar appeared here as one network. Prefer `networks`.
+   */
   chains: number[];
+  /** CAIP-2 ids of every network this product is on. Served alongside `chains`. */
+  networks?: string[];
   instanceCount: number;
   blendedApy: number | null;
   /** null for SINGLE_ASSET — read statusByChain instead. */
@@ -508,4 +533,102 @@ export interface PoolPerformance {
   netFlow: string;
   uniqueDepositors: number;
   uniqueWithdrawers: number;
+}
+
+/**
+ * A network as the backend reports it, from GET /health/runtime-chains.
+ *
+ * `enabled` is the field that matters here: it is false while a chain is switched off in
+ * the admin console, and a chain that is off has no pools to show and takes no deposits,
+ * so it should not be offered. Everything else is duplicated in the local registry,
+ * which keeps working if this call fails.
+ */
+export interface NetworkStatus {
+  id: string;
+  runtime: "evm" | "stellar" | "solana";
+  name: string;
+  isTestnet: boolean;
+  explorerUrl?: string;
+  enabled: boolean;
+}
+
+/**
+ * A transaction the backend built for us to sign, tagged with the runtime that signs it.
+ *
+ * Discriminated on `runtime` so the shape and the signing path cannot disagree: narrowing
+ * on it gives exactly the fields that runtime needs, and a new runtime added to the union
+ * makes every switch that does not handle it a type error rather than a silent fallthrough.
+ * Mirrors `UnsignedTransaction` in the backend's runtime types.
+ */
+export type UnsignedTransaction =
+  | EvmUnsignedTransaction
+  | StellarUnsignedTransaction
+  | SolanaUnsignedTransaction;
+
+export interface EvmUnsignedTransaction {
+  runtime: "evm";
+  networkId: string;
+  chainId: number;
+  to: string;
+  data: string;
+  value: string;
+}
+
+export interface StellarUnsignedTransaction {
+  runtime: "stellar";
+  networkId: string;
+  /** Base64 transaction envelope, signed whole by Freighter. */
+  xdr: string;
+  /**
+   * The network this envelope was built for.
+   *
+   * Stellar has no numeric chain id — the passphrase *is* the network identity, and it is
+   * mixed into the signature. Signing against the wrong one produces a signature the
+   * network rejects, so it travels with the envelope rather than being read from the
+   * wallet at signing time.
+   */
+  networkPassphrase: string;
+  /**
+   * Unix seconds after which this envelope is dead.
+   *
+   * A prepared Soroban transaction expires, unlike EVM calldata which is good forever. A
+   * quote left on screen for five minutes is no longer submittable, and saying so beats
+   * an opaque rejection from the network.
+   */
+  validUntilTime?: number;
+  /** Where to submit. Absent falls back to the public testnet node. */
+  rpcUrl?: string;
+}
+
+export interface SolanaUnsignedTransaction {
+  runtime: "solana";
+  networkId: string;
+  /** Base64 serialised transaction. */
+  transaction: string;
+  blockhash: string;
+  lastValidBlockHeight: number;
+  /** Accounts that must sign. The investor's wallet is one; a client-created account may be another. */
+  requiredSigners: string[];
+}
+
+/** What `POST /deposits/locked` returns for a Stellar or Solana pool. */
+export interface NonEvmLockedDepositQuote {
+  transaction: UnsignedTransaction;
+  deposit: {
+    amount: string;
+    amountWei: string;
+    depositor: string;
+    poolAddress: string;
+    poolName: string;
+    assetSymbol: string;
+    tierIndex: number;
+    interestPayment: "UPFRONT" | "AT_MATURITY";
+    durationDays: number;
+    apyBps: number;
+    expectedInterest: string;
+    expectedTotal: string;
+    lockEndDate: string;
+  };
+  /** Always false off EVM: neither runtime needs a separate allowance transaction. */
+  requiresApproval: boolean;
 }

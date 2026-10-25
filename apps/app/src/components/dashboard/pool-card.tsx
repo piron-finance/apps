@@ -5,6 +5,7 @@ import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { CHAIN_INFO } from "@/lib/constants/chains";
 import { cn } from "@/lib/utils";
+import { findNetwork, networkLabel } from "@/lib/constants/networks";
 
 /** Each pool type owns a colour, shared with the allocation bar in the rail. */
 export type PoolAccent = "brand" | "info" | "warning";
@@ -12,11 +13,20 @@ export type PoolAccent = "brand" | "info" | "warning";
 export interface PoolCardData {
   id: string;
   poolId: string;
-  chainId?: number;
+  chainId?: number | null;
+  /** CAIP-2 — the only identity a Stellar or Solana pool has. Prefer it over chainId. */
+  networkId?: string | null;
   /** When set, the card is a product (links to /product/[key]) and shows all its
    *  networks. Falls back to a single-pool card + chainId when absent. */
   productKey?: string;
   chains?: number[];
+  /**
+   * CAIP-2 ids of every network this product is on.
+   *
+   * `chains` is numeric and so could never include a Stellar or Solana instance — a
+   * product live on Base and Stellar counted as one network and showed one marker.
+   */
+  networks?: string[];
   /** "Flexible yield" | "Fixed yield" | "Term deal" */
   kind: string;
   accent: PoolAccent;
@@ -58,13 +68,21 @@ const ACCENT = {
   },
 } as const;
 
-function ChainDot({ chainId, ring }: { chainId: number; ring?: boolean }) {
-  const chain = CHAIN_INFO[chainId];
-  if (!chain) return null;
-  return chain.logo ? (
+/**
+ * One network's logo, or its colour dot.
+ *
+ * Resolved through the network registry rather than `CHAIN_INFO[chainId]`. That lookup is
+ * numeric, so for a Stellar or Solana pool it returned undefined, the `if (!chain)` bailed
+ * out, and the card rendered with no network marker at all — correct code, wrong model. An
+ * investor could not tell which chain a pool was on.
+ */
+function ChainDot({ networkId, ring }: { networkId: string; ring?: boolean }) {
+  const net = findNetwork(networkId);
+  if (!net) return null;
+  return net.logo ? (
     <Image
-      src={chain.logo}
-      alt={chain.shortName}
+      src={net.logo}
+      alt={net.shortLabel}
       width={14}
       height={14}
       className={cn("shrink-0 rounded-full", ring && "ring-2 ring-surface")}
@@ -75,32 +93,31 @@ function ChainDot({ chainId, ring }: { chainId: number; ring?: boolean }) {
         "h-[9px] w-[9px] shrink-0 rounded-full",
         ring && "ring-2 ring-surface",
       )}
-      style={{ background: chain.color }}
+      style={{ background: net.color }}
     />
   );
 }
 
 /** One chain → logo + name. Many → overlapping logos + "N networks" (the
  *  "available networks" badge; shares are not fungible across them). */
-function ChainMarks({ chains }: { chains: number[] }) {
-  if (chains.length === 0) return null;
-  if (chains.length === 1) {
-    const chain = CHAIN_INFO[chains[0]];
+function ChainMarks({ networks }: { networks: string[] }) {
+  if (networks.length === 0) return null;
+  if (networks.length === 1) {
     return (
       <span className="inline-flex items-center gap-1.5 text-[11.5px] text-muted-foreground">
-        <ChainDot chainId={chains[0]} />
-        {chain?.shortName}
+        <ChainDot networkId={networks[0]!} />
+        {networkLabel({ networkId: networks[0] })}
       </span>
     );
   }
   return (
     <span className="inline-flex items-center gap-1.5 text-[11.5px] text-muted-foreground">
       <span className="flex -space-x-1.5">
-        {chains.slice(0, 4).map((c) => (
-          <ChainDot key={c} chainId={c} ring />
+        {networks.slice(0, 4).map((n) => (
+          <ChainDot key={n} networkId={n} ring />
         ))}
       </span>
-      {chains.length} networks
+      {networks.length} networks
     </span>
   );
 }
@@ -111,7 +128,15 @@ export function PoolCard({ pool }: { pool: PoolCardData }) {
   const href = pool.productKey
     ? `/product/${pool.productKey}`
     : `/pool/${pool.poolId}`;
-  const chains = pool.chains ?? (pool.chainId != null ? [pool.chainId] : []);
+  // Prefer the CAIP-2 list; fall back to deriving one from the numeric ids so a card fed
+  // by a backend that does not serve networkId yet still shows its networks.
+  const networks =
+    pool.networks ??
+    (pool.networkId
+      ? [pool.networkId]
+      : (pool.chains ?? (pool.chainId != null ? [pool.chainId] : [])).map(
+          (c) => `eip155:${c}`,
+        ));
 
   return (
     <Link
@@ -146,7 +171,7 @@ export function PoolCard({ pool }: { pool: PoolCardData }) {
         >
           {pool.kind}
         </span>
-        <ChainMarks chains={chains} />
+        <ChainMarks networks={networks} />
       </div>
 
       {/* Identity + rate share a baseline row so the card reads landscape. */}

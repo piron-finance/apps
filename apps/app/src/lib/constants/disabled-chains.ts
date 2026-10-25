@@ -9,17 +9,44 @@
  * chain, and the wallet still needs to be able to talk to it so they can read
  * and exit that position. Removing the chain definition would strand them.
  *
- * This is the stopgap version: a constant, changed by deploying. The intended
- * replacement is an operator toggle in the internal admin app, writing a flag the
- * backend serves, so a chain can be pulled without a release. When that lands,
- * this list becomes the fallback for when that call fails.
+ * The operator toggle this anticipated now exists: the backend serves `enabled` per
+ * network on GET /health/runtime-chains, and `ChainContext` feeds the answer in through
+ * `setServedDisabledNetworks`. So the list below is what it said it would become — the
+ * fallback for when that call has not answered or failed, which is also what makes the
+ * picker work offline rather than emptying.
  */
 export const DISABLED_CHAIN_IDS: readonly number[] = [
   5042002, // Arc Testnet
 ];
 
+/**
+ * CAIP-2 ids the backend reports as switched off, or null before it has answered.
+ *
+ * Module-level rather than context state because `isChainDisabled` is called from plain
+ * functions outside the React tree — the product-stripping helpers in `useProductsData`
+ * among them — and threading a hook through those would mean rewriting them for no gain.
+ */
+let servedDisabled: readonly string[] | null = null;
+
+/** Called by ChainContext once the backend has answered. Null resets to the fallback. */
+export function setServedDisabledNetworks(networkIds: readonly string[] | null): void {
+  servedDisabled = networkIds;
+}
+
+/** Whether a network is switched off, by CAIP-2 id. */
+export function isNetworkDisabled(networkId?: string | null): boolean {
+  if (!networkId) return false;
+  if (servedDisabled) return servedDisabled.includes(networkId);
+  // No answer yet: fall back to the constant, which only knows EVM chains.
+  const chainId = networkId.startsWith("eip155:")
+    ? parseInt(networkId.slice("eip155:".length), 10)
+    : NaN;
+  return Number.isFinite(chainId) && DISABLED_CHAIN_IDS.includes(chainId);
+}
+
 export function isChainDisabled(chainId?: number | null): boolean {
   if (chainId === undefined || chainId === null) return false;
+  if (servedDisabled) return servedDisabled.includes(`eip155:${chainId}`);
   return DISABLED_CHAIN_IDS.includes(chainId);
 }
 

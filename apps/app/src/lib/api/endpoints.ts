@@ -1,5 +1,6 @@
 import { apiClient } from "./client";
 import type { Product, ProductsResponse } from "./types";
+import type { NetworkStatus, NonEvmLockedDepositQuote } from "./types";
 import type {
   PlatformMetrics,
   PoolsResponse,
@@ -31,6 +32,19 @@ export const platformApi = {
     });
     return data;
   },
+
+  /**
+   * Which networks the backend is currently serving.
+   *
+   * The chain picker is otherwise built from a registry compiled into this bundle, so a
+   * chain switched off in the admin console still appeared in the dropdown and led to an
+   * empty catalogue. The registry still supplies the label, colour and logo — this
+   * supplies whether to offer it at all.
+   */
+  getNetworks: async (): Promise<NetworkStatus[]> => {
+    const { data } = await apiClient.get("/health/runtime-chains");
+    return data;
+  },
 };
 
 // ============================================================================
@@ -39,10 +53,17 @@ export const platformApi = {
 
 export const productsApi = {
   /** Product-first list; chainId filters to products with an instance on that chain. */
-  getAll: async (chainId?: number): Promise<ProductsResponse> => {
-    const { data } = await apiClient.get("/products", {
-      params: chainId !== undefined ? { chainId } : undefined,
-    });
+  getAll: async (chainId?: number, networkId?: string): Promise<ProductsResponse> => {
+    // Send one identity, not both. The product list treats chainId and networkId as
+    // independent filters that AND together — a product spans networks, so asking for
+    // both would return only products present on each, which is not what a single
+    // selection means.
+    const params = networkId
+      ? { networkId }
+      : chainId !== undefined
+        ? { chainId }
+        : undefined;
+    const { data } = await apiClient.get("/products", { params });
     return data;
   },
   getFeatured: async (): Promise<Product[]> => {
@@ -283,8 +304,11 @@ export const buildLockedDepositTransaction = async (depositData: {
   depositor: string;
   tierIndex: number;
   interestPayment: "UPFRONT" | "AT_MATURITY";
-  chainId: number;
-}) => {
+  /** EVM only. A Stellar or Solana pool has none, so pass networkId instead. */
+  chainId?: number;
+  /** CAIP-2 id. Names a pool on any runtime, including the two with no chain id. */
+  networkId?: string;
+}): Promise<NonEvmLockedDepositQuote> => {
   const { data } = await apiClient.post("/deposits/locked", depositData);
   return data;
 };
@@ -295,10 +319,21 @@ export const buildLockedDepositTransaction = async (depositData: {
  * indexer poll. This is what takes a deposit from "visible in up to 90s" to
  * "visible on the next refetch".
  */
-export const confirmDepositTransaction = async (txHash: string, chainId: number) => {
-  const { data } = await apiClient.post("/deposits/confirm", { txHash, chainId }, {
-    params: { chainId },
-  });
+export const confirmDepositTransaction = async (
+  txHash: string,
+  chainId?: number,
+  networkId?: string,
+) => {
+  // Both identities. The backend takes either and refuses a disagreeing pair; `networkId`
+  // is the one that can name a Stellar or Solana transaction, where the reference is not
+  // an 0x-prefixed hash at all — a Stellar hash is 64 hex with no prefix and a Solana
+  // signature is base58, and the endpoint rejected both until it stopped validating every
+  // runtime with one EVM pattern.
+  const { data } = await apiClient.post(
+    "/deposits/confirm",
+    { txHash, reference: txHash, chainId, networkId },
+    { params: { ...(chainId !== undefined && { chainId }), ...(networkId && { networkId }) } },
+  );
   return data;
 };
 
@@ -307,8 +342,22 @@ export const confirmDepositTransaction = async (txHash: string, chainId: number)
  * exits. The backend indexes it from its receipt and drops every cached view of the
  * pools it touched before it answers, so the refetch that follows is already current.
  */
-export const confirmTransaction = async (txHash: string, chainId: number) => {
-  const { data } = await apiClient.post("/transactions/confirm", { txHash, chainId });
+export const confirmTransaction = async (
+  txHash: string,
+  chainId?: number,
+  networkId?: string,
+  poolAddress?: string,
+) => {
+  const { data } = await apiClient.post("/transactions/confirm", {
+    txHash,
+    reference: txHash,
+    chainId,
+    networkId,
+    // Only read off EVM, where there is no event decoder to work out which pool was
+    // touched, and only to drop that pool's cached views. Without it a non-EVM confirm
+    // leaves the stale read it was called to refresh.
+    poolAddress,
+  });
   return data;
 };
 
@@ -347,12 +396,12 @@ export const withdrawalsApi = {
     return data;
   },
 
-  signalRedeem: async (poolAddress: string, positionId: number, chainId: number) => {
+  signalRedeem: async (poolAddress: string, positionId: number, chainId?: number) => {
     const { data } = await apiClient.post("/withdrawals/redeem", { poolAddress, positionId, chainId });
     return data;
   },
 
-  signalEarlyExit: async (poolAddress: string, positionId: number, chainId: number) => {
+  signalEarlyExit: async (poolAddress: string, positionId: number, chainId?: number) => {
     const { data } = await apiClient.post("/withdrawals/early-exit", { poolAddress, positionId, chainId });
     return data;
   },

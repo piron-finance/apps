@@ -15,8 +15,8 @@ import {
 } from "@/components/ui/sheet";
 
 const navItems = [
-  { name: "Overview", href: "/" },
-  { name: "How it works", href: "/how-it-works" },
+  { name: "Products", href: "/#products" },
+  { name: "How it works", href: "/#how-it-works" },
   { name: "Blog", href: "/blog" },
   { name: "Docs", href: DOCS_URL },
 ];
@@ -99,7 +99,7 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
                 : "bg-accent text-accent-text hover:bg-accent-hover"
             }`}
           >
-            Launch app
+            Explore markets
           </Link>
         </div>
 
@@ -143,7 +143,7 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
                     href={APP_URL}
                     className="flex w-full items-center justify-center rounded-full bg-accent px-5 py-3 text-sm font-medium text-accent-text transition-colors hover:bg-accent-hover"
                   >
-                    Launch app
+                    Explore markets
                   </Link>
                 </SheetClose>
               </div>

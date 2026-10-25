@@ -23,7 +23,10 @@ const socialIcons = {
 };
 
 const footerLinks = {
-  product: [{ label: "How it works", href: "/how-it-works" }],
+  product: [
+    { label: "Products", href: "/#products" },
+    { label: "How it works", href: "/#how-it-works" },
+  ],
   company: [
     { label: "About", href: "/about" },
     { label: "Blog", href: "/blog" },
@@ -45,8 +48,8 @@ export function Footer() {
               Piron Finance
             </h3>
             <p className="mt-2 text-sm leading-relaxed text-content-secondary">
-              Global fixed income made accessible. Simple on-chain pools for
-              emerging markets and serious treasuries.
+              The onchain fixed-income operating system for investors, issuers
+              and administrators.
             </p>
             {SOCIAL_LINKS.length > 0 ? (
               <div className="mt-5 flex flex-wrap items-center gap-3">

@@ -9,23 +9,29 @@ import {
   MenuLabel,
   MenuTrigger,
 } from "@/components/ui/menu";
-import { useChainContext, SUPPORTED_CHAINS } from "@/lib/context/ChainContext";
+import { useChainContext, type ChainOption } from "@/lib/context/ChainContext";
 import { getChainLogo } from "@/lib/constants/chains";
 import { cn } from "@/lib/utils";
 
-/** Chain identity: real logo where we have one, brand-coloured dot where we don't. */
+/**
+ * Network identity: real logo where we have one, brand-coloured dot where we don't.
+ *
+ * Keyed on the registry's own `logo` rather than `getChainLogo(chainId)`, which is a
+ * numeric lookup and so returned nothing for Stellar and Solana — and the `if (!chainId)`
+ * below then drew the generic "all networks" icon for a specific network.
+ */
 function ChainMark({
-  chainId,
-  color,
+  chain,
   size = 16,
 }: {
-  chainId?: number;
-  color: string;
+  chain: ChainOption;
   size?: number;
 }) {
-  const logo = chainId ? getChainLogo(chainId) : undefined;
+  const { networkId, id: chainId, color } = chain;
+  const logo = chain.logo ?? (chainId ? getChainLogo(chainId) : undefined);
 
-  if (!chainId) {
+  // Only the "All Chains" option has neither identity.
+  if (!networkId && !chainId) {
     return (
       <Layers
         className="text-subtle-foreground"
@@ -60,7 +66,8 @@ function ChainMark({
  * re-declared on every page that reads it.
  */
 export function ChainSwitcher({ className }: { className?: string }) {
-  const { activeChainId, setActiveChainId, activeChain } = useChainContext();
+  const { activeNetworkId, setActiveNetworkId, activeChain, supportedChains } =
+    useChainContext();
 
   return (
     <Menu>
@@ -71,7 +78,7 @@ export function ChainSwitcher({ className }: { className?: string }) {
         )}
         aria-label={`Network: ${activeChain.label}`}
       >
-        <ChainMark chainId={activeChainId} color={activeChain.color} size={15} />
+        <ChainMark chain={activeChain} size={15} />
         <span className="hidden sm:inline">{activeChain.shortLabel}</span>
         <ChevronDown
           className="h-3 w-3 text-subtle-foreground"
@@ -81,16 +88,27 @@ export function ChainSwitcher({ className }: { className?: string }) {
 
       <MenuContent className="w-60">
         <MenuLabel>Network</MenuLabel>
-        {SUPPORTED_CHAINS.map((chain) => {
-          const selected = chain.id === activeChainId;
+        {/* From the context, which offers only the networks Piron has pools on. Keyed on
+            CAIP-2: keying on `chain.id` meant Stellar and Solana both matched the "All
+            Chains" entry, so selecting either silently showed every network. */}
+        {supportedChains.map((chain) => {
+          const selected = chain.networkId === activeNetworkId;
           return (
             <MenuItem
-              key={chain.label}
-              onSelect={() => setActiveChainId(chain.id)}
+              key={chain.networkId ?? "all"}
+              onSelect={() => setActiveNetworkId(chain.networkId)}
               className="gap-2.5"
             >
-              <ChainMark chainId={chain.id} color={chain.color} size={18} />
+              <ChainMark chain={chain} size={18} />
               <span className="flex-1 truncate">{chain.label}</span>
+              {chain.canSign === false && (
+                <span
+                  className="rounded-full bg-muted px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-muted-foreground"
+                  title="Browse these pools here; depositing needs a wallet we have not shipped yet"
+                >
+                  View
+                </span>
+              )}
               {chain.isTestnet && (
                 <span className="rounded-full bg-warning-soft px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-warning">
                   Test

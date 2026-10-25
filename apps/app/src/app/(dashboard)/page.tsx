@@ -61,6 +61,9 @@ function productCard(product: Product): PoolCardData {
     poolId: product.instances[0]?.poolAddress ?? product.productKey,
     productKey: product.productKey,
     chains: product.aggregates.chains,
+    // The identity that can name every network. `chains` is numeric and silently omits
+    // Stellar and Solana instances, so a product on Base and Stellar counted as one.
+    networks: product.aggregates.networks,
     kind: k.kind,
     accent: k.accent,
     name: product.name,
@@ -86,20 +89,27 @@ function productCard(product: Product): PoolCardData {
 // ── Page ─────────────────────────────────────────────────────────────────────
 export default function DashboardPage() {
   const [activeAsset, setActiveAsset] = useState("All");
-  const { activeChainId } = useChainContext();
+  const { activeChainId, activeNetworkId, activeChain } = useChainContext();
 
   const { data: metrics } = usePlatformMetrics(activeChainId);
   const { data: productsResponse, isLoading: poolsLoading } =
-    useProductsData(activeChainId);
+    useProductsData(activeChainId, activeNetworkId);
   const { data: featuredData } = useFeaturedProducts();
 
   const products = productsResponse?.data || [];
 
   const allFeatured = featuredData || [];
-  const featuredProducts =
-    activeChainId !== undefined
-      ? allFeatured.filter((p) => p.aggregates.chains.includes(activeChainId))
-      : allFeatured;
+  // Filtered on CAIP-2, with the numeric list as a fallback for a backend that does not
+  // serve `networks` yet. `chains` is numeric, so a Stellar or Solana instance could
+  // never appear in it — selecting either network produced an empty featured row that
+  // read as "nothing featured here" rather than "we cannot express this network".
+  const featuredProducts = activeNetworkId
+    ? allFeatured.filter((p) =>
+        p.aggregates.networks
+          ? p.aggregates.networks.includes(activeNetworkId)
+          : activeChainId !== undefined && p.aggregates.chains.includes(activeChainId),
+      )
+    : allFeatured;
 
   const stableProducts = products.filter((p) => p.poolType === "STABLE_YIELD");
   const lockedProducts = products.filter((p) => p.poolType === "LOCKED");
@@ -151,8 +161,10 @@ export default function DashboardPage() {
     return totalWeight > 0 ? formatAPY(weightedSum / totalWeight) : "—";
   })();
 
-  const chainLabel =
-    SUPPORTED_CHAINS.find((o) => o.id === activeChainId)?.label ?? "All chains";
+  // From the active option itself, which is resolved by networkId — the lookup by numeric
+  // id answered "All chains" for Stellar and Solana, so the empty state told a visitor
+  // they were browsing every network while showing one network's results.
+  const chainLabel = activeChain.label;
 
   // Nothing came back at all. On a single chain that is worth saying, because
   // switching is the fix. On all chains it means the catalogue is empty or the
