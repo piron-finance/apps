@@ -107,9 +107,12 @@ export function useNonEvmExit(pool?: { networkId?: string | null; poolAddress?: 
           // ROLL_OVER is not a withdrawal: nothing leaves the pool, the position is
           // replaced. Recorded under its own type so the activity list does not read as
           // money going out when it did not.
+          // The ledger's own enum names, which differ from the action names: redeeming a
+          // position records POSITION_REDEEMED, not REDEEM. Sending the action straight
+          // through was rejected by the database, so the row never appeared.
           type:
             action === "REDEEM"
-              ? "REDEEM"
+              ? "POSITION_REDEEMED"
               : action === "EARLY_EXIT"
                 ? "EARLY_EXIT"
                 : "ROLLOVER",
