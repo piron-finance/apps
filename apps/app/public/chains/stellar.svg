@@ -1,0 +1,10 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="12" cy="12" r="12" fill="#7D00FF"/>
+  <!-- Stellar's rocket motif, reduced to the two strokes that carry it at 24px: the
+       orbit arc and the craft crossing it. Matches the house style used by the other
+       chain marks (solid brand-colour badge, white glyph) rather than the full brand
+       lockup, which does not survive this size. -->
+  <path d="M5.4 9.6 L18.6 7.2" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/>
+  <path d="M5.4 16.8 L18.6 14.4" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/>
+  <circle cx="12" cy="12" r="6.6" stroke="#fff" stroke-width="1.5" opacity="0.55"/>
+</svg>
