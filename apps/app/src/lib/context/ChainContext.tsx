@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
 import { platformApi } from "@/lib/api/endpoints";
+import { isNetworkDisabled, setServedDisabledNetworks } from "@/lib/constants/disabled-chains";
 import {
   NETWORKS,
   SELECTABLE_NETWORKS,
@@ -147,7 +148,12 @@ export function ChainProvider({ children }: { children: React.ReactNode }) {
       .getNetworks()
       .then((networks) => {
         if (cancelled) return;
-        setDisabledNetworkIds(networks.filter((n) => !n.enabled).map((n) => n.id));
+        const off = networks.filter((n) => !n.enabled).map((n) => n.id);
+        setDisabledNetworkIds(off);
+        // Also hand it to the module-level filter, which the product-stripping helpers
+        // use from outside the React tree. Until this lands they fall back to the
+        // hardcoded list, so a disabled chain is filtered either way.
+        setServedDisabledNetworks(off);
       })
       .catch(() => {
         // Left null on purpose. See above.
@@ -201,10 +207,11 @@ export function ChainProvider({ children }: { children: React.ReactNode }) {
   // so is never filtered out, which is what should happen: it is the one option that
   // still means something when a chain disappears.
   const supportedChains = useMemo(() => {
-    if (!disabledNetworkIds || disabledNetworkIds.length === 0) return SELECTABLE_CHAINS;
-    return SELECTABLE_CHAINS.filter(
-      (c) => !c.networkId || !disabledNetworkIds.includes(c.networkId)
-    );
+    // Before the backend answers this uses the hardcoded fallback, so a chain already
+    // known to be off never flashes into the picker on first paint.
+    return SELECTABLE_CHAINS.filter((c) => !c.networkId || !isNetworkDisabled(c.networkId));
+    // disabledNetworkIds is the trigger: isNetworkDisabled reads module state that the
+    // effect above sets, so this has to recompute when that arrives.
   }, [disabledNetworkIds]);
 
   // Someone sitting on a chain that has just been switched off is moved to All Chains

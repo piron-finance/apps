@@ -24,6 +24,33 @@ import { useEffect, PropsWithChildren } from "react";
 import posthog from "posthog-js";
 import { PostHogProvider as PHProvider } from "posthog-js/react";
 import { usePathname, useSearchParams } from "next/navigation";
+import { useAccount } from "wagmi";
+
+/**
+ * Tags the current visitor with is_internal=true when the connected wallet is
+ * listed in NEXT_PUBLIC_INTERNAL_WALLETS. The Watchtower audience queries
+ * exclude is_internal traffic, so the team's own testing never pollutes the
+ * "external user activity" numbers. Registered as a super property, so it
+ * rides along on every subsequent event this session.
+ */
+const INTERNAL_WALLETS = new Set(
+  (process.env.NEXT_PUBLIC_INTERNAL_WALLETS ?? "")
+    .split(",")
+    .map((w) => w.trim().toLowerCase())
+    .filter(Boolean),
+);
+
+function PostHogInternalTag() {
+  const { address } = useAccount();
+
+  useEffect(() => {
+    const internal = !!address && INTERNAL_WALLETS.has(address.toLowerCase());
+    // register persists the flag on all future events; false clears it on disconnect
+    posthog.register({ is_internal: internal });
+  }, [address]);
+
+  return null;
+}
 
 function PostHogPageView() {
   const pathname     = usePathname();
@@ -64,6 +91,7 @@ export function PostHogProvider({ children }: PropsWithChildren) {
   return (
     <PHProvider client={posthog}>
       <PostHogPageView />
+      <PostHogInternalTag />
       {children}
     </PHProvider>
   );
