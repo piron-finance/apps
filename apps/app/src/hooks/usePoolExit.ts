@@ -42,7 +42,7 @@ export function usePoolExit(pool?: Pool) {
   useEffect(() => {
     if (!isSuccess || !address || !pool?.poolAddress || !txHash) return;
     markMined(txHash);
-    confirmTransaction(txHash, pool.chainId ?? undefined, pool.networkId)
+    confirmTransaction(txHash, pool.chainId ?? undefined, pool.networkId, pool.poolAddress)
       .catch((err) => {
         // Non-fatal: the backend's own sweep still picks the exit up.
         console.warn("[usePoolExit] confirm push failed, falling back to indexer:", err?.message);
@@ -112,9 +112,16 @@ export function usePoolExit(pool?: Pool) {
           "connection we have not shipped.",
       );
     }
+    // Deposits on this pool can be signed but exits cannot yet: the Soroban and Anchor
+    // contracts have redeem, exit_early and roll_over, and the backend has no dispatch
+    // for them, so there is nothing to send. Said plainly, because `canSignFor` is now
+    // true for these networks and the generic message above no longer catches them — and
+    // an exit is money leaving a pool, so a vague failure here is the worst kind.
     if (pool.chainId === null || pool.chainId === undefined) {
       throw new Error(
-        `This pool has no EVM chain id, so an exit cannot be targeted. (${networkLabel(pool)})`,
+        `Exits on ${networkLabel(pool)} are not available yet. Your position and its ` +
+          "value are real and held on chain — withdrawing from it is the next piece of " +
+          "work, and nothing has been submitted.",
       );
     }
     // Captured past the guard, so the rest of this function has a number rather than

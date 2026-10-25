@@ -346,12 +346,17 @@ export const confirmTransaction = async (
   txHash: string,
   chainId?: number,
   networkId?: string,
+  poolAddress?: string,
 ) => {
   const { data } = await apiClient.post("/transactions/confirm", {
     txHash,
     reference: txHash,
     chainId,
     networkId,
+    // Only read off EVM, where there is no event decoder to work out which pool was
+    // touched, and only to drop that pool's cached views. Without it a non-EVM confirm
+    // leaves the stale read it was called to refresh.
+    poolAddress,
   });
   return data;
 };
