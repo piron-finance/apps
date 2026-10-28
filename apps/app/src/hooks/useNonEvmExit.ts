@@ -5,7 +5,11 @@ import { Transaction as SolanaTransaction } from "@solana/web3.js";
 import { TransactionBuilder, rpc as stellarRpc } from "@stellar/stellar-sdk";
 import { useStellarWallet } from "@/lib/wallets/StellarWalletContext";
 import { useSolanaWallet } from "@/lib/wallets/SolanaWalletContext";
-import { buildLockedExit, confirmTransaction } from "@/lib/api/endpoints";
+import {
+  buildAssetWithdrawal,
+  buildLockedExit,
+  confirmTransaction,
+} from "@/lib/api/endpoints";
 import { runtimeOf } from "@/lib/constants/networks";
 
 export type ExitAction = "REDEEM" | "EARLY_EXIT" | "ROLL_OVER";
@@ -21,8 +25,19 @@ export type ExitAction = "REDEEM" | "EARLY_EXIT" | "ROLL_OVER";
  * An exit is money leaving a pool, so this reports a failure rather than swallowing it,
  * and only reports success once the network has confirmed.
  */
-export function useNonEvmExit(pool?: { networkId?: string | null; poolAddress?: string }) {
+export function useNonEvmExit(pool?: {
+  networkId?: string | null;
+  poolAddress?: string;
+  poolType?: string;
+}) {
   const runtime = runtimeOf(pool?.networkId ?? undefined);
+  /**
+   * Whether this pool exits by amount rather than by position.
+   *
+   * A term deal and a managed yield pool have a share balance, not numbered positions,
+   * so there is nothing for `/locked-positions/:id/exit` to resolve.
+   */
+  const isAssetPool = pool?.poolType === "SINGLE_ASSET" || pool?.poolType === "STABLE_YIELD";
   const stellar = useStellarWallet();
   const solana = useSolanaWallet();
 
@@ -54,14 +69,27 @@ export function useNonEvmExit(pool?: { networkId?: string | null; poolAddress?: 
       setIsExiting(true);
       setError(undefined);
       try {
-        const built = await buildLockedExit({
-          position: positionId,
-          action,
-          owner: signer,
-          poolAddress: pool.poolAddress,
-          tierIndex: next?.tierIndex,
-          interestPayment: next?.interestPayment,
-        });
+        // A locked pool exits a numbered position; a term deal or managed yield pool
+        // exits an amount of its share balance. Different endpoints, because there is no
+        // position to name on the latter two.
+        const built = isAssetPool
+          ? await buildAssetWithdrawal({
+              poolAddress: pool.poolAddress!,
+              networkId: pool.networkId!,
+              // For a managed yield pool this is shares, not assets: the price moves
+              // between the request and the settlement, so the pool cannot promise an
+              // asset figure. The caller passes whichever the pool denominates in.
+              amount: String(positionId),
+              receiver: signer,
+            })
+          : await buildLockedExit({
+              position: positionId,
+              action,
+              owner: signer,
+              poolAddress: pool.poolAddress,
+              tierIndex: next?.tierIndex,
+              interestPayment: next?.interestPayment,
+            });
         const tx = built.transaction;
 
         let ref: string;

@@ -6,7 +6,11 @@ import { TransactionBuilder } from "@stellar/stellar-sdk";
 import { rpc as stellarRpc } from "@stellar/stellar-sdk";
 import { useStellarWallet } from "@/lib/wallets/StellarWalletContext";
 import { useSolanaWallet } from "@/lib/wallets/SolanaWalletContext";
-import { buildLockedDepositTransaction, confirmTransaction } from "@/lib/api/endpoints";
+import {
+  buildDepositTransaction,
+  buildLockedDepositTransaction,
+  confirmTransaction,
+} from "@/lib/api/endpoints";
 import { Pool } from "@/lib/api/types";
 import { runtimeOf } from "@/lib/constants/networks";
 import { useInvalidateAfterMutation } from "@/hooks/useQueryInvalidation";
@@ -93,14 +97,27 @@ export function useNonEvmDeposit(pool?: Pool): NonEvmDepositState {
       setIsDepositing(true);
       setError(undefined);
       try {
-        const built = await buildLockedDepositTransaction({
-          poolAddress: pool.poolAddress,
-          networkId: pool.networkId!,
-          amount,
-          depositor: signer,
-          tierIndex,
-          interestPayment,
-        });
+        // A locked pool deposits into a tier; the other two buy shares. Different
+        // endpoints, because the backend validates the tier and the minimums per type —
+        // sending a term deal to /deposits/locked is refused outright.
+        const built =
+          pool.poolType === "LOCKED"
+            ? await buildLockedDepositTransaction({
+                poolAddress: pool.poolAddress,
+                networkId: pool.networkId!,
+                amount,
+                depositor: signer,
+                tierIndex,
+                interestPayment,
+              })
+            : await buildDepositTransaction({
+                poolAddress: pool.poolAddress,
+                networkId: pool.networkId!,
+                amount,
+                // The Soroban entrypoints credit the caller, so the receiver is the
+                // signer rather than something the investor can redirect.
+                receiver: signer,
+              });
         const tx = built.transaction;
 
         if (tx.runtime === "stellar") {

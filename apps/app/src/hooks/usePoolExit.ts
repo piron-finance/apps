@@ -174,11 +174,18 @@ export function usePoolExit(pool?: Pool) {
   // ERC4626 withdraw by ASSET amount (single-asset + stable-yield).
   // Stable-yield auto-queues the request when reserves are low.
   const withdraw = (assetAmount: string) =>
-    call("withdraw", [amt(assetAmount), me(), me()], assetAmount);
+    isNonEvm
+      ? // Soroban has no ERC4626 shape: a term deal withdraws assets, a managed yield
+        // pool requests against shares. The backend picks the right entrypoint from the
+        // pool type, so both arrive here.
+        nonEvm.exit(assetAmount, "EARLY_EXIT")
+      : call("withdraw", [amt(assetAmount), me(), me()], assetAmount);
 
   // ERC4626 redeem by SHARE amount.
   const redeemShares = (shares: string) =>
-    call("redeem", [amt(shares), me(), me()], shares);
+    isNonEvm
+      ? nonEvm.exit(shares, "EARLY_EXIT")
+      : call("redeem", [amt(shares), me(), me()], shares);
 
   // SINGLE_ASSET
   const claimCoupon = () => call("claimCoupon", []);

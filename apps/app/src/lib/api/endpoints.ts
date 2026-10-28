@@ -290,8 +290,32 @@ export const buildDepositTransaction = async (depositData: {
   poolAddress: string;
   amount: string;
   receiver: string;
-}) => {
+  /** EVM only. A Stellar pool has none, so pass networkId instead. */
+  chainId?: number;
+  /** CAIP-2 id. Names a pool on any runtime, including the ones with no chain id. */
+  networkId?: string;
+}): Promise<{ transaction: UnsignedTransaction; requiresApproval?: boolean }> => {
   const { data } = await apiClient.post("/deposits", depositData);
+  return data;
+};
+
+/**
+ * Ask the backend to build a term-deal or managed-yield exit.
+ *
+ * Stellar only. A term deal pays out on submission; a managed yield pool burns the shares
+ * and queues, so `withdrawal.queued` says which happened and `denominatedIn` says whether
+ * the amount was assets or shares.
+ */
+export const buildAssetWithdrawal = async (args: {
+  poolAddress: string;
+  amount: string;
+  receiver: string;
+  networkId?: string;
+}): Promise<{
+  transaction: UnsignedTransaction;
+  withdrawal: { queued: boolean; denominatedIn: "ASSETS" | "SHARES" };
+}> => {
+  const { data } = await apiClient.post("/withdrawals", args);
   return data;
 };
 
