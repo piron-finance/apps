@@ -133,18 +133,6 @@ export const NETWORKS: NetworkMeta[] = [
     capabilities: EVM,
   },
   {
-    networkId: "eip155:10143",
-    runtime: "evm",
-    chainId: 10143,
-    label: "Monad Testnet",
-    shortLabel: "Monad",
-    color: "#836EF9",
-    logo: "/chains/monad.svg",
-    isTestnet: true,
-    explorerUrl: "https://testnet.monadscan.com",
-    capabilities: EVM,
-  },
-  {
     networkId: "stellar:testnet",
     runtime: "stellar",
     chainId: null,
