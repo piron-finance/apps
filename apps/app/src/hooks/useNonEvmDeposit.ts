@@ -2,17 +2,17 @@
 
 import { useCallback, useState } from "react";
 import { Transaction as SolanaTransaction } from "@solana/web3.js";
-import { TransactionBuilder } from "@stellar/stellar-sdk";
-import { rpc as stellarRpc } from "@stellar/stellar-sdk";
 import { useStellarWallet } from "@/lib/wallets/StellarWalletContext";
+import { signAndSubmitStellar } from "@/lib/wallets/submitStellar";
 import { useSolanaWallet } from "@/lib/wallets/SolanaWalletContext";
-import { buildLockedDepositTransaction, confirmTransaction } from "@/lib/api/endpoints";
+import { buildDepositTransaction, buildLockedDepositTransaction, confirmTransaction } from "@/lib/api/endpoints";
 import { Pool } from "@/lib/api/types";
 import { runtimeOf } from "@/lib/constants/networks";
 import { useInvalidateAfterMutation } from "@/hooks/useQueryInvalidation";
 
 /**
- * A locked deposit on Stellar or Solana.
+ * A deposit on Stellar or Solana: into a locked pool's tier, or into a term deal or managed
+ * yield pool.
  *
  * Kept apart from `useDeposit` rather than folded into it. The EVM flow is approve, wait,
  * deposit, wait — two transactions against an ERC20 allowance, with wagmi managing
@@ -93,51 +93,32 @@ export function useNonEvmDeposit(pool?: Pool): NonEvmDepositState {
       setIsDepositing(true);
       setError(undefined);
       try {
-        const built = await buildLockedDepositTransaction({
-          poolAddress: pool.poolAddress,
-          networkId: pool.networkId!,
-          amount,
-          depositor: signer,
-          tierIndex,
-          interestPayment,
-        });
+        // A term deal or managed yield pool takes `deposit(investor, assets)`: no tier and no
+        // interest choice, built by the same endpoint the EVM path uses for its calldata.
+        const built =
+          pool.poolType === "LOCKED"
+            ? await buildLockedDepositTransaction({
+                poolAddress: pool.poolAddress,
+                networkId: pool.networkId!,
+                amount,
+                depositor: signer,
+                tierIndex,
+                interestPayment,
+              })
+            : await buildDepositTransaction({
+                poolAddress: pool.poolAddress,
+                networkId: pool.networkId!,
+                amount,
+                receiver: signer,
+              });
         const tx = built.transaction;
 
         if (tx.runtime === "stellar") {
-          // A prepared Soroban envelope carries time bounds of a few minutes, so a stale
-          // one is refused by the network rather than mis-signed. Saying so here turns an
-          // opaque rejection into something an investor can act on.
-          if (tx.validUntilTime && tx.validUntilTime * 1000 < Date.now()) {
-            throw new Error("This quote expired before it was signed. Try again.");
-          }
-          const signedXdr = await stellar.signXdr(tx.xdr, tx.networkPassphrase);
-          const server = new stellarRpc.Server(tx.rpcUrl ?? "https://soroban-testnet.stellar.org");
-          const envelope = TransactionBuilder.fromXDR(signedXdr, tx.networkPassphrase);
-          const sent = await server.sendTransaction(envelope);
-          if (sent.status === "ERROR") {
-            throw new Error(`The network rejected the deposit: ${JSON.stringify(sent.errorResult)}`);
-          }
-          // Poll to SUCCESS before reporting, so the caller is not told a deposit landed
-          // while it is still only submitted.
-          //
-          // Every 2.5s, not every second. Stellar closes a ledger about every five
-          // seconds, so a one-second poll spends four calls out of five learning nothing
-          // — and confirmation polling, not indexing, is what actually pressures the
-          // public node's rate limit: the indexer costs one call a minute per pool, while
-          // a handful of concurrent deposits each polling every second is an order of
-          // magnitude more. Same overall patience, a fraction of the calls.
-          let result = await server.getTransaction(sent.hash);
-          for (let i = 0; i < 24 && result.status === "NOT_FOUND"; i++) {
-            await new Promise((r) => setTimeout(r, 2500));
-            result = await server.getTransaction(sent.hash);
-          }
-          if (result.status !== "SUCCESS") {
-            throw new Error(`The deposit did not complete: ${result.status}`);
-          }
-          setReference(sent.hash);
-          await report(sent.hash, amount);
+          const hash = await signAndSubmitStellar(stellar, tx, "deposit");
+          setReference(hash);
+          await report(hash, amount);
           await invalidateAfterMutation(signer, pool.poolAddress);
-          return sent.hash;
+          return hash;
         }
 
         if (tx.runtime === "solana") {

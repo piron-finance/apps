@@ -21,6 +21,7 @@ import { useInvalidateAfterMutation } from "@/hooks/useQueryInvalidation";
 import { usePendingTx } from "@/lib/context/PendingTxContext";
 import { canSignFor, networkLabel } from "../lib/constants/networks";
 import { useNonEvmDeposit } from "./useNonEvmDeposit";
+import { useStellarAssetBalance } from "./useStellarAssetBalance";
 
 interface UseDepositReturn {
   /** Set when this app cannot take a deposit for the pool's network. */
@@ -37,6 +38,12 @@ interface UseDepositReturn {
   reset: () => void;
   refetchAllowance: () => Promise<any>;
   refetchBalance: () => Promise<any>;
+  /** Off EVM: whether the wallet can hold the pool's asset (a classic asset needs a trustline). */
+  hasTrustline?: boolean;
+  refetchNonEvmBalance: () => Promise<unknown>;
+  /** The account that signs off EVM, or undefined when its wallet is not connected. */
+  nonEvmSigner?: string;
+  isNonEvm: boolean;
 
 
   isApproving: boolean;
@@ -86,6 +93,9 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
    */
   const isNonEvm = Boolean(pool) && (pool!.chainId === null || pool!.chainId === undefined);
   const nonEvm = useNonEvmDeposit(isNonEvm ? pool : undefined);
+  // The pool's asset as the Stellar wallet holds it. The ERC20 balance read below is EVM
+  // only, so off EVM the panel showed a balance of 0 to an investor holding thousands.
+  const stellarBalance = useStellarAssetBalance(isNonEvm ? pool : undefined, nonEvm.signer);
 
   const ensureChain = async (): Promise<number> => {
     if (!pool) throw new Error("Pool not loaded");
@@ -247,11 +257,13 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
   };
 
   const hasInsufficientBalance = (amount: string): boolean => {
-    // The balance read below is an ERC20 call, so off EVM it is always undefined and the
-    // `!balance` guard would report every amount as unaffordable. The contract checks the
-    // balance when the transfer runs, so an over-deposit fails there with a real reason
-    // rather than being pre-empted by a figure we never fetched.
-    if (isNonEvm) return false;
+    // Off EVM the ERC20 read below is always undefined. A Stellar balance is read from the
+    // asset contract instead; where none could be read, the contract checks it when the
+    // transfer runs and an over-deposit fails there with a real reason.
+    if (isNonEvm) {
+      const held = stellarBalance.data?.balance;
+      return held !== undefined && Number(amount) > Number(held);
+    }
     if (!pool || !balance) return true;
 
     try {
@@ -452,7 +464,13 @@ export function useDeposit(pool?: Pool): UseDepositReturn {
     // this treats it as an opaque reference to show and link, so the shape holds.
     transactionHash: (isNonEvm ? nonEvm.reference : depositTxHash) as `0x${string}` | undefined,
     approvalTxHash,
-    balance: balance ? getUserBalance() : undefined, // Return undefined if balance not loaded
+    balance: isNonEvm ? stellarBalance.data?.balance : balance ? getUserBalance() : undefined, // Return undefined if balance not loaded
     balanceRaw: balance as bigint | undefined, // Raw balance data for checking if loaded
+    /** Off EVM: whether the wallet can hold the pool's asset at all (a classic asset needs a trustline). */
+    hasTrustline: isNonEvm ? stellarBalance.data?.hasTrustline : undefined,
+    refetchNonEvmBalance: stellarBalance.refetch,
+    /** The account that signs off EVM, or undefined when its wallet is not connected. */
+    nonEvmSigner: isNonEvm ? nonEvm.signer : undefined,
+    isNonEvm,
   };
 }

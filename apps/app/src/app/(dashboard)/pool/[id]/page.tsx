@@ -30,6 +30,7 @@ import { PoolTrustPanel, VerifiedMark } from "@/components/dashboard/pool-trust-
 import { usePendingTx, useReconcilePending, type PendingTx } from "@/lib/context/PendingTxContext";
 import { txExplorerUrl } from "@/lib/constants/networks";
 import { NonEvmWalletButton } from "@/components/dashboard/non-evm-wallet-button";
+import { StellarTestUsdc } from "@/components/dashboard/stellar-test-usdc";
 
 function formatValue(value: string | number | null | undefined, decimals = 2): string {
   if (value === null || value === undefined) return "—";
@@ -801,7 +802,7 @@ function DepositModal({
   open: boolean;
   onClose: () => void;
 }) {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected: evmConnected } = useAccount();
   const { open } = useWeb3Modal();
   const [amount, setAmount] = useState("");
   const [selectedTier, setSelectedTier] = useState<number>(0);
@@ -833,7 +834,15 @@ function DepositModal({
     transactionHash,
     balance,
     refetchBalance,
+    isNonEvm,
+    nonEvmSigner,
+    hasTrustline,
+    refetchNonEvmBalance,
   } = useDepositWithAnalytics(pool);
+  // Connected means the wallet this pool's network signs with. A Stellar investor with only
+  // Freighter was told to connect a wallet and sent to the EVM wallet modal, so they could
+  // never deposit.
+  const isConnected = isNonEvm ? Boolean(nonEvmSigner) : evmConnected;
 
   const showSuccess = submitted && isSuccess;
 
@@ -954,7 +963,8 @@ function DepositModal({
 
   const handleAction = async () => {
     if (!isConnected) {
-      open();
+      // Off EVM the connect control for the pool's own wallet sits beside the reason.
+      if (!isNonEvm) open();
       return;
     }
 
@@ -1089,6 +1099,15 @@ function DepositModal({
         </div>
         <p className="text-[11px] text-muted-foreground mt-1">≈ ${parsedAmount.toLocaleString()}</p>
         <p className="text-[11px] text-muted-foreground mt-3">Min deposit {minDeposit.toLocaleString()} {pool.assetSymbol}</p>
+
+        {isNonEvm && nonEvmSigner && (
+          <StellarTestUsdc
+            pool={pool}
+            account={nonEvmSigner}
+            hasTrustline={hasTrustline}
+            onFunded={() => refetchNonEvmBalance()}
+          />
+        )}
 
         {/* Locked Pool Tier Selection */}
         {isLockedPool && tiers.length > 0 && (

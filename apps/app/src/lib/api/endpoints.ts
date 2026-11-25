@@ -290,7 +290,9 @@ export const buildDepositTransaction = async (depositData: {
   poolAddress: string;
   amount: string;
   receiver: string;
-}) => {
+  /** CAIP-2 id. Off EVM the backend builds the envelope for this network's pool. */
+  networkId?: string;
+}): Promise<{ transaction: UnsignedTransaction }> => {
   const { data } = await apiClient.post("/deposits", depositData);
   return data;
 };
@@ -397,6 +399,50 @@ export const lockedPositionsApi = {
 // ============================================================================
 // WITHDRAWALS APIs
 // ============================================================================
+
+/**
+ * A term-deal or managed-yield withdrawal off EVM, built for the owner.
+ *
+ * `amount` may be `ALL`, which the backend reads from the contract: a refund or redemption
+ * of everything has to match the chain exactly, and this app only has the database's
+ * figure. A managed yield pool's queue takes shares; `unit: "ASSETS"` converts at the
+ * current price.
+ */
+export const buildNonEvmWithdrawal = async (body: {
+  poolAddress: string;
+  networkId: string;
+  amount: string;
+  receiver: string;
+  unit?: "ASSETS" | "SHARES";
+}): Promise<{ transaction: UnsignedTransaction; withdrawal: { queued: boolean; amount: string } }> => {
+  const { data } = await apiClient.post("/withdrawals", body);
+  return data;
+};
+
+/** A term deal's coupon claim, built for the holder. Off EVM only. */
+export const buildCouponClaim = async (body: {
+  poolAddress: string;
+  networkId: string;
+  holder: string;
+}): Promise<{ transaction: UnsignedTransaction }> => {
+  const { data } = await apiClient.post("/withdrawals/claim-coupon", body);
+  return data;
+};
+
+/**
+ * Test USDC on Stellar: a trustline if the account lacks one, and a swap of XLM for USDC on
+ * the testnet exchange, as one transaction for the investor to sign.
+ */
+export const buildStellarTestUsdc = async (body: {
+  account: string;
+  xlm: string;
+}): Promise<{
+  transaction: UnsignedTransaction;
+  quote: { sendXlm: string; expectedUsdc: string; minimumUsdc: string; addsTrustline: boolean };
+}> => {
+  const { data } = await apiClient.post("/faucet/stellar/usdc", body);
+  return data;
+};
 
 export const withdrawalsApi = {
   /**
