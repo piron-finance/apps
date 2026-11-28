@@ -171,22 +171,39 @@ export function usePoolExit(pool?: Pool) {
   const amt = (v: string) => parseUnits(v, pool?.assetDecimals ?? 18);
   const me = () => address as `0x${string}`;
 
+  // Off EVM a term deal or managed yield pool exits through the backend-built envelope.
+  // Soroban has one `withdraw(owner, assets)` on a term deal, whose status decides whether it
+  // is a funding withdrawal, a redemption or a refund, and a managed yield pool queues shares
+  // with `request_withdrawal`. So the EVM calls map onto those two, with `ALL` standing for a
+  // whole position the backend reads from the contract.
+  const managedYield = pool?.poolType === "STABLE_YIELD";
+
   // ERC4626 withdraw by ASSET amount (single-asset + stable-yield).
   // Stable-yield auto-queues the request when reserves are low.
   const withdraw = (assetAmount: string) =>
-    call("withdraw", [amt(assetAmount), me(), me()], assetAmount);
+    isNonEvm
+      ? nonEvm.withdraw(assetAmount, managedYield ? "ASSETS" : undefined)
+      : call("withdraw", [amt(assetAmount), me(), me()], assetAmount);
 
-  // ERC4626 redeem by SHARE amount.
+  // ERC4626 redeem by SHARE amount. A matured term deal redeems the whole position on
+  // Soroban whatever is asked, so its shares are not needed there.
   const redeemShares = (shares: string) =>
-    call("redeem", [amt(shares), me(), me()], shares);
+    isNonEvm
+      ? nonEvm.withdraw(managedYield ? shares : "ALL", managedYield ? "SHARES" : undefined)
+      : call("redeem", [amt(shares), me(), me()], shares);
 
   // SINGLE_ASSET
-  const claimCoupon = () => call("claimCoupon", []);
-  const emergencyWithdraw = () => call("emergencyWithdraw", []);
+  const claimCoupon = () => (isNonEvm ? nonEvm.claimCoupon() : call("claimCoupon", []));
+  // A refund must not exceed the share balance on chain, which is why it is `ALL` rather than
+  // the database's figure.
+  const emergencyWithdraw = () =>
+    isNonEvm ? nonEvm.withdraw("ALL") : call("emergencyWithdraw", []);
 
   // STABLE_YIELD
   const emergencyRedeem = (shares: string) =>
-    call("emergencyRedeem", [amt(shares), me()], shares);
+    isNonEvm
+      ? nonEvm.withdraw(shares, "SHARES")
+      : call("emergencyRedeem", [amt(shares), me()], shares);
 
   // LOCKED — position-scoped
   // Off EVM these go through the backend-built envelope instead of wagmi. Delegated at
@@ -232,8 +249,13 @@ export function usePoolExit(pool?: Pool) {
     transferPosition,
     // tx state
     txHash: isNonEvm ? (nonEvm.reference as `0x${string}` | undefined) : txHash,
-    isConfirming,
-    isSuccess,
-    reset: () => setTxHash(undefined),
+    // wagmi's receipt tracking never resolves a Stellar or Solana reference, so off EVM the
+    // panel follows the envelope's own submission instead.
+    isConfirming: isNonEvm ? nonEvm.isExiting : isConfirming,
+    isSuccess: isNonEvm ? nonEvm.succeeded : isSuccess,
+    reset: () => {
+      setTxHash(undefined);
+      nonEvm.reset();
+    },
   };
 }

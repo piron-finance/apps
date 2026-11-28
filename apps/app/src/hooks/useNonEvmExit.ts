@@ -2,10 +2,16 @@
 
 import { useCallback, useState } from "react";
 import { Transaction as SolanaTransaction } from "@solana/web3.js";
-import { TransactionBuilder, rpc as stellarRpc } from "@stellar/stellar-sdk";
 import { useStellarWallet } from "@/lib/wallets/StellarWalletContext";
+import { signAndSubmitStellar } from "@/lib/wallets/submitStellar";
 import { useSolanaWallet } from "@/lib/wallets/SolanaWalletContext";
-import { buildLockedExit, confirmTransaction } from "@/lib/api/endpoints";
+import {
+  buildCouponClaim,
+  buildLockedExit,
+  buildNonEvmWithdrawal,
+  confirmTransaction,
+} from "@/lib/api/endpoints";
+import type { UnsignedTransaction } from "@/lib/api/types";
 import { runtimeOf } from "@/lib/constants/networks";
 
 export type ExitAction = "REDEEM" | "EARLY_EXIT" | "ROLL_OVER";
@@ -29,9 +35,92 @@ export function useNonEvmExit(pool?: { networkId?: string | null; poolAddress?: 
   const [isExiting, setIsExiting] = useState(false);
   const [error, setError] = useState<string | undefined>();
   const [reference, setReference] = useState<string | undefined>();
+  // Set once a transaction has landed, so a panel can close on it. wagmi's receipt tracking,
+  // which the EVM path closes on, never resolves for a Stellar or Solana reference.
+  const [succeeded, setSucceeded] = useState(false);
 
   const signer =
     runtime === "stellar" ? stellar.address : runtime === "solana" ? solana.address : undefined;
+
+  /** Sign and submit with whichever wallet the envelope's runtime needs. */
+  const submit = useCallback(
+    async (tx: UnsignedTransaction, what: string): Promise<string> => {
+      if (tx.runtime === "stellar") return signAndSubmitStellar(stellar, tx, what);
+      if (tx.runtime === "solana") {
+        return solana.signAndSend(
+          SolanaTransaction.from(Buffer.from(tx.transaction, "base64")),
+          tx.blockhash,
+          tx.lastValidBlockHeight,
+        );
+      }
+      throw new Error(`This is not supported on ${(tx as { runtime: string }).runtime}.`);
+    },
+    [stellar, solana],
+  );
+
+  /**
+   * Run one share-pool action: build it, sign it, submit it, report it. The ledger row comes
+   * from the transaction's own events on the backend, so nothing is claimed about it here.
+   */
+  const run = useCallback(
+    async (what: string, build: (owner: string) => Promise<{ transaction: UnsignedTransaction }>) => {
+      if (!pool?.networkId || !pool.poolAddress) throw new Error("No pool selected.");
+      if (!signer) {
+        throw new Error(
+          runtime === "stellar"
+            ? `Connect your Freighter wallet for the ${what}.`
+            : `Connect a Solana wallet for the ${what}.`,
+        );
+      }
+      setIsExiting(true);
+      setError(undefined);
+      setSucceeded(false);
+      try {
+        const built = await build(signer);
+        const ref = await submit(built.transaction, what);
+        await confirmTransaction(ref, undefined, pool.networkId, pool.poolAddress).catch(() => undefined);
+        setReference(ref);
+        setSucceeded(true);
+        return ref;
+      } catch (e) {
+        const message = e instanceof Error ? e.message : `The ${what} could not be completed.`;
+        setError(message);
+        throw new Error(message);
+      } finally {
+        setIsExiting(false);
+      }
+    },
+    [pool?.networkId, pool?.poolAddress, runtime, signer, submit],
+  );
+
+  /**
+   * Take assets out of a term deal, or queue shares to leave a managed yield pool.
+   *
+   * `ALL` is the whole balance, read from the contract by the backend; `unit` says whether a
+   * managed yield amount is in assets or shares.
+   */
+  const withdraw = useCallback(
+    (amount: string, unit?: "ASSETS" | "SHARES") =>
+      run("withdrawal", (owner) =>
+        buildNonEvmWithdrawal({
+          poolAddress: pool!.poolAddress!,
+          networkId: pool!.networkId!,
+          amount,
+          receiver: owner,
+          ...(unit ? { unit } : {}),
+        }),
+      ),
+    [run, pool?.poolAddress, pool?.networkId],
+  );
+
+  /** Collect a term deal's distributed coupons. */
+  const claimCoupon = useCallback(
+    () =>
+      run("coupon claim", (holder) =>
+        buildCouponClaim({ poolAddress: pool!.poolAddress!, networkId: pool!.networkId!, holder }),
+      ),
+    [run, pool?.poolAddress, pool?.networkId],
+  );
 
   const exit = useCallback(
     async (
@@ -53,6 +142,7 @@ export function useNonEvmExit(pool?: { networkId?: string | null; poolAddress?: 
 
       setIsExiting(true);
       setError(undefined);
+      setSucceeded(false);
       try {
         const built = await buildLockedExit({
           position: positionId,
@@ -64,41 +154,7 @@ export function useNonEvmExit(pool?: { networkId?: string | null; poolAddress?: 
         });
         const tx = built.transaction;
 
-        let ref: string;
-        if (tx.runtime === "stellar") {
-          if (tx.validUntilTime && tx.validUntilTime * 1000 < Date.now()) {
-            throw new Error("This quote expired before it was signed. Try again.");
-          }
-          const signedXdr = await stellar.signXdr(tx.xdr, tx.networkPassphrase);
-          const server = new stellarRpc.Server(
-            tx.rpcUrl ?? "https://soroban-testnet.stellar.org",
-          );
-          const sent = await server.sendTransaction(
-            TransactionBuilder.fromXDR(signedXdr, tx.networkPassphrase),
-          );
-          if (sent.status === "ERROR") {
-            throw new Error(`The network rejected the withdrawal: ${JSON.stringify(sent.errorResult)}`);
-          }
-          // 2.5s, matching the deposit: Stellar closes a ledger about every five seconds,
-          // so polling faster spends calls to learn nothing.
-          let result = await server.getTransaction(sent.hash);
-          for (let i = 0; i < 24 && result.status === "NOT_FOUND"; i++) {
-            await new Promise((r) => setTimeout(r, 2500));
-            result = await server.getTransaction(sent.hash);
-          }
-          if (result.status !== "SUCCESS") {
-            throw new Error(`The withdrawal did not complete: ${result.status}`);
-          }
-          ref = sent.hash;
-        } else if (tx.runtime === "solana") {
-          ref = await solana.signAndSend(
-            SolanaTransaction.from(Buffer.from(tx.transaction, "base64")),
-            tx.blockhash,
-            tx.lastValidBlockHeight,
-          );
-        } else {
-          throw new Error(`Withdrawals are not supported on ${(tx as { runtime: string }).runtime}.`);
-        }
+        const ref = await submit(tx, "withdrawal");
 
         // Hand the reference over so the pool's cached views are dropped before the next
         // read. Best-effort: the money has already moved, and the sweep catches up within
@@ -121,6 +177,7 @@ export function useNonEvmExit(pool?: { networkId?: string | null; poolAddress?: 
         }).catch(() => undefined);
 
         setReference(ref);
+        setSucceeded(true);
         return ref;
       } catch (e) {
         const message = e instanceof Error ? e.message : "The withdrawal could not be completed.";
@@ -130,8 +187,13 @@ export function useNonEvmExit(pool?: { networkId?: string | null; poolAddress?: 
         setIsExiting(false);
       }
     },
-    [pool?.networkId, pool?.poolAddress, runtime, signer, stellar, solana],
+    [pool?.networkId, pool?.poolAddress, runtime, signer, submit],
   );
 
-  return { exit, isExiting, error, reference, signer };
+  const reset = useCallback(() => {
+    setSucceeded(false);
+    setError(undefined);
+  }, []);
+
+  return { exit, withdraw, claimCoupon, isExiting, error, reference, signer, succeeded, reset };
 }
